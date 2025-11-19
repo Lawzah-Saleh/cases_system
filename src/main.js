@@ -6,6 +6,7 @@ import router from './router'
 import { createPinia } from 'pinia'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap'
+import './assets/styles/variables.css'
 
 const app = createApp(App)
 

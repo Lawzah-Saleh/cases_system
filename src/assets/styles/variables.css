@@ -1,0 +1,10 @@
+:root {
+  --sidebar-bg: #1B1450;
+  --sidebar-hover: #2E2677;
+  --sidebar-text: #ffffff;
+  --sidebar-width: 240px;
+
+  --appbar-height: 70px;
+  --appbar-bg: #ffffff;
+  --appbar-text: #1B1450;
+}
