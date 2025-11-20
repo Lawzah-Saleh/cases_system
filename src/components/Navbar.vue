@@ -1,6 +1,6 @@
 <template>
   <header class="appbar">
-    <!-- Left: Hamburger + Logo -->
+    
     <div class="appbar-left">
       <button class="hamburger-btn" @click="$emit('toggle')">
         <i class="bi bi-list"></i>
@@ -8,10 +8,10 @@
       </button>
     </div>
 
-    <!-- Center: Search -->
+  
 
 
-    <!-- Right: Actions -->
+  
     <div class="actions">
           <div class="search-box">
       <input type="text" placeholder="Search..." />
@@ -51,7 +51,6 @@ const emit = defineEmits(['toggle'])
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  gap: 20px;
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -59,7 +58,7 @@ const emit = defineEmits(['toggle'])
   font-family: 'Segoe UI', sans-serif;
 }
 
-/* Left: Hamburger + logo */
+
 .appbar-left {
   display: flex;
   align-items: center;

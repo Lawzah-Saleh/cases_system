@@ -1,15 +1,15 @@
 <template>
-  <div class="layout">
+  <div class="main-layout">
     <!-- Sidebar ثابت -->
     <Sidebar :isOpen="isOpen" @close="isOpen = false" />
 
     <!-- Main content -->
-    <div class="main">
+    
       <AppBar @toggle="toggleSidebar" />
       <main class="content">
         <router-view />
       </main>
-    </div>
+   
   </div>
 </template>
 
@@ -28,12 +28,8 @@ const toggleSidebar = () => { isOpen.value = !isOpen.value }
   --appbar-height: 60px;
 }
 
-/* Layout */
-.layout {
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-}
+
+
 
 /* Sidebar ثابت */
 .sidebar {
@@ -55,20 +51,9 @@ const toggleSidebar = () => { isOpen.value = !isOpen.value }
   z-index: 900;
 }
 
-/* Main content تحت AppBar */
-.main {
-  padding-top: var(--appbar-height);
-  padding-left: var(--sidebar-width);
-  height: 100%;
-  overflow-y: auto; /* فقط التمرير العمودي */
-}
 
-/* Content area */
-.content {
-  min-height: 100%;
-  background: #f5f5f5;
-  padding: 20px;
-}
+
+
 
 /* Responsive: على الموبايل Sidebar يغطي الشاشة */
 @media (max-width: 768px) {

@@ -1,10 +1,117 @@
 :root {
-  --sidebar-bg: #1B1450;
+  --sidebar-bg: #190F4A;
   --sidebar-hover: #2E2677;
   --sidebar-text: #ffffff;
   --sidebar-width: 240px;
 
   --appbar-height: 70px;
   --appbar-bg: #ffffff;
-  --appbar-text: #1B1450;
+  --appbar-text: #190F4A;
+
+   --primary-color: #190F4A;
+  --primary-hover: #2E2677;
+
+  --table-header-bg: #F5F4FA;
+  --table-border: #E3E3E3;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --transition: 0.2s ease;
 }
+
+
+
+.main-layout {
+  width: 100%;
+  height: 100%;
+  padding-top: 100px;
+  padding-right: 20px;
+  padding-left: 270px;
+  overflow: hidden;
+}
+
+
+/* Tablets */
+@media (max-width: 1024px) {
+  .main-layout {
+    padding-left: 200px; /* smaller sidebar area */
+    padding-right: 15px;
+  }
+}
+
+/* Large phones */
+@media (max-width: 768px) {
+  .main-layout {
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 80px;
+  }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+  .main-layout {
+    padding-left: 0;
+    padding-right: 8px;
+    padding-top: 70px;
+  }
+}
+/* =========================
+   Global Button Style
+========================= */
+.add-button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: var(--transition);
+}
+
+.add-button:hover {
+  background-color: var(--primary-hover);
+}
+
+
+.main-header {
+  font-style: bold;
+  font-size: px;
+  color: var(--primary-color);
+}
+/* =========================
+   Global Table
+========================= */
+.table-container {
+  width: 100%;
+  max-width: 100%;
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  border: 1px solid var(--table-border);
+  box-sizing: border-box;
+}
+
+.table-header-row {
+  background: var(--table-header-bg);
+  font-weight: 600;
+}
+
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.custom-table th,
+.custom-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--table-border);
+  font-size: 14px;
+}
+
+.custom-table th{
+  font-style: bold;
+  font-size: 18px;
+}
+
