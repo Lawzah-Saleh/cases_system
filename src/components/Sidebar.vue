@@ -28,7 +28,7 @@
       <li>
         <router-link to="/app/team">
           <i class="bi bi-person-badge"></i>
-          <span class="menu-text">Team</span>
+          <span class="menu-text">Employee</span>
         </router-link>
       </li>
       <li>

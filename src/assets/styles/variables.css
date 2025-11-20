@@ -81,12 +81,12 @@
   color: var(--primary-color);
 }
 /* =========================
-   Global Table
+   Global Table Styles
 ========================= */
+
 .table-container {
   width: 100%;
-  max-width: 100%;
-  background: white;
+  background: #fff;
   border-radius: var(--radius-lg);
   padding: 20px;
   border: 1px solid var(--table-border);
@@ -98,11 +98,17 @@
 .table-header-row {
   background: var(--table-header-bg);
   font-weight: 600;
+  overflow-x: auto;
 }
 
 .custom-table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 700px;
+}
+
+.table-header-row {
+  background: var(--table-header-bg);
 }
 
 .custom-table th,
@@ -112,8 +118,27 @@
   font-size: 14px;
 }
 
-.custom-table th{
-  font-style: bold;
-  font-size: 18px;
+.custom-table th {
+  font-size: 15px;
+  font-weight: 600;
 }
+/* GLOBAL EDIT BUTTON */
+.edit-button-global {
+  background-color: var(--primary-color);
+  color: #ffffff;
+  padding: 10px 24px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  margin: 25px auto 0 auto;
+  display: block;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.edit-button-global:hover {
+  background-color: var(--primary-hover);
+}
+
 
