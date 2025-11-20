@@ -7,7 +7,7 @@ import TeamView from '@/views/TeamView.vue'
 import UsersView from '@/views/UsersView.vue'
 import StatisticsView from '@/views/StatisticsView.vue'
 import ReportView from '@/views/ReportView.vue'
-import CustomerView from '@/views/CustomerView.vue'
+import ClientView from '@/views/ClientView.vue'
 import SupportView from '@/views/SupportView.vue'
 
 
@@ -31,7 +31,7 @@ const routes = [
     children: [
        { path: 'dashboard', component: DashboardView },
       { path: 'supports', component: SupportView },
-      { path: 'customers', component: CustomerView },
+      { path: 'clients', component: ClientView },
       { path: 'team', component: TeamView },
       { path: 'users', component: UsersView },
       { path: 'statistics', component: StatisticsView },

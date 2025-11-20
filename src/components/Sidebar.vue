@@ -20,9 +20,9 @@
         </router-link>
       </li>
       <li>
-        <router-link to="/app/customers">
+        <router-link to="/app/clients">
           <i class="bi bi-people"></i>
-          <span class="menu-text">Customers</span>
+          <span class="menu-text">clients</span>
         </router-link>
       </li>
       <li>

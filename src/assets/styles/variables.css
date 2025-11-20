@@ -91,7 +91,9 @@
   padding: 20px;
   border: 1px solid var(--table-border);
   box-sizing: border-box;
+  padding-bottom: 70px;
 }
+
 
 .table-header-row {
   background: var(--table-header-bg);
