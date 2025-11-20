@@ -78,7 +78,7 @@ onBeforeUnmount(() => window.removeEventListener('resize', handleResize))
 <style scoped>
 :root {
   --sidebar-width: 250px;
-  --sidebar-bg: #1e1e2f;
+  --sidebar-bg: #190F4A;
   --sidebar-text: #fff;
   --sidebar-hover: #3a3a5a;
   --appbar-height: 60px;
@@ -89,7 +89,6 @@ onBeforeUnmount(() => window.removeEventListener('resize', handleResize))
   width: var(--sidebar-width);
   background: var(--sidebar-bg);
   color: var(--sidebar-text);
-  padding-top: var(--appbar-height);
   position: fixed;
   left: 0;
   top: 0;
