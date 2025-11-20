@@ -2,12 +2,12 @@
   <router-view />
 </template>
 
-
 <style>
-
-body, html {
-  background: #f4f6fa;
- padding-left: 0%;
-  
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #f5f7fb;
+  font-family: Inter, sans-serif;
+  height: 100%;
 }
 </style>
