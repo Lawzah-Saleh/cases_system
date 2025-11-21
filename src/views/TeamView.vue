@@ -8,7 +8,9 @@
         <p class="sub-header">Detailed overview and management of all system employees.</p>
       </div>
 
-      <button class="add-button">+ Create Employee</button>
+      <button class="add-button" @click="openCreate = true">
+        + Create Employee
+      </button>
     </div>
 
     <!-- ===== FILTERS ===== -->
@@ -19,12 +21,13 @@
         placeholder="Search..."
         v-model="search"
       />
+    <select class="select-input" v-model="status">
+    <option value="">Select Status</option>
+    <option v-for="r in roles" :key="r.id" :value="r.id">
+        {{ r.role_name }}
+     </option>
+    </select>
 
-      <select class="select-input" v-model="status">
-        <option value="">Select Status</option>
-        <option value="employee">Employee</option>
-        <option value="admin">Admin</option>
-      </select>
 
       <button class="apply-button" @click="applyFilters">Apply</button>
     </div>
@@ -33,22 +36,13 @@
     <table class="custom-table">
       <thead>
         <tr class="table-header-row">
-          <th @click="changeSort('id')" class="sortable">
-            ID <span class="sort-icon">{{ sortIcon('id') }}</span>
-          </th>
-          <th @click="changeSort('name')" class="sortable">
-            Name <span class="sort-icon">{{ sortIcon('name') }}</span>
-          </th>
-          <th @click="changeSort('email')" class="sortable">
-            Email <span class="sort-icon">{{ sortIcon('email') }}</span>
-          </th>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Email</th>
           <th>Gender</th>
-          <th @click="changeSort('phone')" class="sortable">
-            Phone <span class="sort-icon">{{ sortIcon('phone') }}</span>
-          </th>
-          <th @click="changeSort('role')" class="sortable">
-            Role <span class="sort-icon">{{ sortIcon('role') }}</span>
-          </th>
+          <th>Phone</th>
+          <th>Role</th>
+
           <th></th>
         </tr>
       </thead>
@@ -77,14 +71,15 @@
           <td>{{ emp.email }}</td>
           <td>{{ emp.gender }}</td>
           <td>{{ emp.phone }}</td>
-          <td>{{ emp.user?.role?.name ?? '—' }}</td>
+          <td>{{ emp.user?.role?.role_name ?? '—' }}</td>
 
-          <!-- ⭐ ACTION MENU -->
+
+          <!-- ACTION MENU -->
           <td class="action-cell">
             <div class="menu-trigger" @click.stop="toggleMenu(emp.id)">⋮</div>
 
             <div v-if="openMenu === emp.id" class="menu-dropdown">
-              <div class="menu-item" @click="editEmployee(emp)">Edit</div>
+              <div class="menu-item" @click="startEdit(emp)">Edit</div>
               <div class="menu-item delete" @click="deleteEmployee(emp)">Delete</div>
             </div>
           </td>
@@ -128,195 +123,162 @@
     </div>
   </div>
 
-  <!-- ===== POPUP ===== -->
-  <div v-if="showDetails" class="details-overlay">
-    <div class="details-card">
+  <!-- ===== DETAILS MODAL ===== -->
+  <EmployeeDetailsModal
+    v-if="openDetailsModal"
+    :employee="selectedEmployee"
+    @close="openDetailsModal = false"
+    @edit="startEdit"
+  />
 
-      <button class="details-close" @click="closeDetails">×</button>
+  <!-- ===== CREATE MODAL ===== -->
+  <EmployeeCreateModal
+    v-if="openCreate"
+    @close="openCreate = false"
+    @created="handleRefresh"
+  />
 
-      <h3 class="popup-title">Employee Details</h3>
-
-      <div class="details-avatar">
-        {{ selectedUser.first_name?.charAt(0) }}
-      </div>
-
-      <h2 class="details-name">
-        {{ selectedUser.first_name }} {{ selectedUser.middle_name }} {{ selectedUser.last_name }}
-      </h2>
-
-      <div class="details-grid">
-        <p><strong>ID:</strong> {{ selectedUser.id }}</p>
-        <p><strong>User ID:</strong> {{ selectedUser.user_id }}</p>
-
-        <p><strong>Email:</strong> {{ selectedUser.email }}</p>
-        <p><strong>Phone:</strong> {{ selectedUser.phone }}</p>
-
-        <p><strong>Gender:</strong> {{ selectedUser.gender }}</p>
-        <p><strong>City:</strong> {{ selectedUser.city ?? '—' }}</p>
-
-        <p><strong>Created At:</strong> {{ selectedUser.created_at }}</p>
-        <p><strong>Updated At:</strong> {{ selectedUser.updated_at }}</p>
-      </div>
-
-      <button class="edit-button-global" @click="editEmployee(selectedUser)">
-        Edit Employee
-      </button>
-
-    </div>
-  </div>
+  <!-- ===== EDIT MODAL ===== -->
+  <EmployeeEditModal
+    v-if="openEdit"
+    :employee="selectedEmployee"
+    @close="openEdit = false"
+    @updated="handleRefresh"
+  />
 </template>
+
 <script>
-import axios from "axios";
-import { useAuthStore } from "../stores/auth";
+import axios from "axios"
+import { useAuthStore } from "@/stores/auth"
+
+import EmployeeCreateModal from "@/components/employees/EmployeeCreateModal.vue"
+import EmployeeEditModal from "@/components/employees/EmployeeEditModal.vue"
+import EmployeeDetailsModal from "@/components/employees/EmployeeDetailsModal.vue"
 
 export default {
+  components: {
+    EmployeeCreateModal,
+    EmployeeEditModal,
+    EmployeeDetailsModal
+  },
+
   data() {
     return {
-      // Filters
       search: "",
       status: "",
+      roles: [],
+      isLoading: false,
 
-      // Popup
-      showDetails: false,
-      selectedUser: null,
-
-      // Menu
-      openMenu: null,
-
-      // Data & pagination
       employees: [],
+      selectedEmployee: null,
+
       currentPage: 1,
       lastPage: 1,
       total: 0,
-
-      // Sorting
-      sortBy: "id",
-      sortDirection: "asc", // or "desc"
-
-      // Loading
-      isLoading: false,
-
-      // debounce timer
-      searchTimeout: null,
-    };
+      openMenu: null,
+      openCreate: false,
+      openEdit: false,
+      openDetailsModal: false,
+    }
   },
 
   methods: {
-    openDetails(user) {
-      this.selectedUser = user;
-      this.showDetails = true;
-    },
-
-    closeDetails() {
-      this.showDetails = false;
-    },
-
-    editEmployee(emp) {
-      console.log("Edit employee:", emp);
-      // هنا مستقبلاً يمكنك الانتقال لصفحة تعديل الموظف
-    },
-
-    deleteEmployee(emp) {
-      console.log("Delete employee:", emp);
-      // هنا يمكنك استدعاء API للحذف مع تأكيد
-    },
-
+ 
     toggleMenu(id) {
-      this.openMenu = this.openMenu === id ? null : id;
+      this.openMenu = this.openMenu === id ? null : id
     },
 
-    closeAllMenus() {
-      this.openMenu = null;
+    closeMenu() {
+      this.openMenu = null
     },
 
-    sortIcon(column) {
-      if (this.sortBy !== column) return "";
-      return this.sortDirection === "asc" ? "▲" : "▼";
+    openDetails(emp) {
+      this.selectedEmployee = emp
+      this.openDetailsModal = true
     },
 
-    changeSort(column) {
-      if (this.sortBy === column) {
-        // عكس الاتجاه إذا ضغط على نفس العمود
-        this.sortDirection = this.sortDirection === "asc" ? "desc" : "asc";
-      } else {
-        this.sortBy = column;
-        this.sortDirection = "asc";
+    startEdit(emp) {
+      this.selectedEmployee = emp
+      this.openEdit = true
+    },
+
+    async deleteEmployee(emp) {
+      if (!confirm("Delete this employee?")) return
+
+      try {
+        const token = useAuthStore().token
+        await axios.delete(`http://localhost:8000/api/employees/${emp.id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+
+        this.handleRefresh()
+      } catch (e) {
+        console.error(e)
       }
-      this.fetchEmployees(1);
     },
 
     applyFilters() {
-      this.fetchEmployees(1);
+      this.fetchEmployees(1)
     },
+    async loadRoles() {
+      const token = useAuthStore().token;
+      const res = await axios.get("http://localhost:8000/api/roles", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    this.roles = res.data.roles;
+},
 
     async fetchEmployees(page = 1) {
       try {
-        this.isLoading = true;
-
-        const authStore = useAuthStore();
-        const token = authStore.token || localStorage.getItem("token");
+        this.isLoading = true
+        const token = useAuthStore().token
 
         const res = await axios.get("http://localhost:8000/api/employees", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
           params: {
             page,
-            search: this.search || undefined,
-            role: this.status || undefined,
-            sort_by: this.sortBy,
-            sort_direction: this.sortDirection,
+            search: this.search,
+            role: this.status,
           },
-        });
+        })
 
-        // Laravel style pagination:
-        // data, current_page, last_page, total, per_page...
-        this.employees = res.data.data || [];
-        this.currentPage = res.data.current_page || page;
-        this.lastPage = res.data.last_page || 1;
-        this.total = res.data.total || this.employees.length;
+        this.employees = res.data.data
+        this.currentPage = res.data.current_page
+        this.lastPage = res.data.last_page
+        this.total = res.data.total
 
       } catch (err) {
-        console.error("Error fetching employees:", err);
+        console.error("Error loading employees:", err)
       } finally {
-        this.isLoading = false;
+        this.isLoading = false
       }
     },
 
-    changePage(page) {
-      if (page < 1 || page > this.lastPage || this.isLoading) return;
-      this.fetchEmployees(page);
-    },
-  },
-
-  watch: {
-    // بحث حي مع debounce
-    search() {
-      if (this.searchTimeout) clearTimeout(this.searchTimeout);
-      this.searchTimeout = setTimeout(() => {
-        this.fetchEmployees(1);
-      }, 500);
+    changePage(p) {
+      if (p < 1 || p > this.lastPage) return
+      this.fetchEmployees(p)
     },
 
-    // تغيير الدور يحدّث النتائج مباشرة
-    status() {
-      this.fetchEmployees(1);
-    },
+    handleRefresh() {
+      this.fetchEmployees(this.currentPage)
+    }
   },
 
   mounted() {
-    this.fetchEmployees();
-    document.addEventListener("click", this.closeAllMenus);
+    this.fetchEmployees()
+    this.loadRoles();
+
+    document.addEventListener("click", this.closeMenu)
   },
 
   beforeUnmount() {
-    document.removeEventListener("click", this.closeAllMenus);
-  },
-};
-</script>
-<style scoped>
+    document.removeEventListener("click", this.closeMenu)
+  }
 
-/* ========== PAGE HEADER ========== */
+}
+</script>
+
+<style scoped>
 .header-row {
   display: flex;
   justify-content: space-between;
@@ -341,7 +303,6 @@ export default {
   margin-top: 4px;
 }
 
-/* ========== FILTERS ========== */
 .filters-wrapper {
   display: flex;
   align-items: center;
@@ -351,7 +312,7 @@ export default {
 
 .search-input,
 .select-input {
-  padding: 10px 14px;
+  padding: 10px;
   border: 1px solid var(--table-border);
   border-radius: var(--radius-md);
   background: #fff;
@@ -367,14 +328,13 @@ export default {
   cursor: pointer;
 }
 
-/* ========== TABLE ========== */
 .custom-table {
   width: 100%;
   border-collapse: collapse;
 }
 
 .table-header-row th {
-  background: #F5F4FA;
+  background: var(--table-header-bg);
   font-size: 15px;
   padding: 12px 16px;
 }
@@ -388,150 +348,30 @@ export default {
   background: #fafafa;
 }
 
-/* Sortable headers */
-.sortable {
-  cursor: pointer;
-  user-select: none;
-}
-
-.sort-icon {
-  font-size: 10px;
-  margin-left: 4px;
-  color: #999;
-}
-
-/* Name link */
 .user-link {
   color: var(--primary-color);
   cursor: pointer;
   font-weight: 600;
-  position: relative;
 }
 
-.user-link:hover {
-  color: var(--primary-hover);
-}
-
-.user-link::after {
-  content: "";
-  position: absolute;
-  height: 2px;
-  width: 0;
-  background: var(--primary-color);
-  bottom: -3px;
-  left: 0;
-  transition: 0.25s ease;
-}
-
-.user-link:hover::after {
-  width: 100%;
-}
-
-/* Results */
 .results-count {
   font-size: 13px;
   color: #666;
-  margin-top: 10px;
 }
 
-/* ========== POPUP ========== */
-.details-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
-
-.details-card {
-  width: 460px;
-  background: white;
-  padding: 30px;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--table-border);
-  box-shadow: 0 10px 35px rgba(0,0,0,0.1);
-  position: relative;
-  animation: popIn 0.25s ease;
-}
-
-.popup-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 12px;
-  text-align: center;
-  color: var(--primary-color);
-}
-
-.details-close {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: none;
-  font-size: 24px;
-  border: none;
+.page-btn {
+  padding: 5px 20px;
+  border-radius: 6px;
+  border: 1px solid gray;
+  background-color: white;
   cursor: pointer;
 }
 
-.details-avatar {
-  width: 85px;
-  height: 85px;
-  background: var(--primary-color);
-  border-radius: 50%;
-  color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 36px;
-  margin: 0 auto 10px;
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
-
-.details-name {
-  text-align: center;
-  font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 5px;
-}
-
-.details-role {
-  text-align: center;
-  color: #777;
-  margin-bottom: 20px;
-}
-
-.details-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  font-size: 15px;
-}
-
-/* Popup animation */
-@keyframes popIn {
-  from { opacity: 0; transform: scale(0.92); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.edit-button-global {
-  display: block;
-  margin: 20px auto 0 auto;
-  padding: 10px 20px;
-  background: var(--primary-color);
-  color: #fff;
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: 0.25s ease;
-}
-
-.edit-button-global:hover {
-  background: var(--primary-hover);
-}
-
-/* ========== ACTION MENU ========== */
+/* ========== ACTION MENU (same design as clients) ========== */
 .action-cell {
   position: relative;
 }
@@ -545,81 +385,28 @@ export default {
 
 .menu-dropdown {
   position: absolute;
-  right: 5px;
-  top: 24px;
+  top: 80%;
+  right: 0;
   background: white;
-  border: 1px solid #e5e5e5;
-  border-radius: 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
   width: 120px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-  animation: fadeIn 0.18s ease;
-  z-index: 50;
+  box-shadow: 0 4px 10px rgba(0,0,0,.15);
+  z-index: 9999;
 }
 
 .menu-item {
-  padding: 10px 14px;
-  font-size: 14px;
+  padding: 10px;
   cursor: pointer;
-  transition: 0.15s ease;
+  font-size: 14px;
 }
 
 .menu-item:hover {
-  background: #f5f4fa;
-  color: var(--primary-color);
+  background: #f4f4f4;
 }
 
-.delete {
+.menu-item.delete {
   color: red;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* ========== PAGINATION (نفس أسلوب صفحة clients) ========== */
-.pagination-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 1rem;
-}
-
-.page-btn {
-  padding: 5px 20px;
-  border-radius: 6px;
-  border: 1px solid gray;
-  background-color: white;
-  cursor: pointer;
-  margin-left: 5px;
-}
-
-.page-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Flex helpers (لو لم تكن معرفة مسبقاً) */
-.flex { display: flex; }
-.items-center { align-items: center; }
-.justify-between { justify-content: space-between; }
-
-/* ========== LOADER ========== */
-.skeleton-row td {
-  padding: 16px;
-}
-
-.skeleton-bar {
-  height: 12px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #f2f2f2, #e6e6e6, #f2f2f2);
-  background-size: 200% 100%;
-  animation: skeletonPulse 1.2s infinite;
-}
-
-@keyframes skeletonPulse {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
 }
 
 </style>

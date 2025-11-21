@@ -23,15 +23,6 @@ const toggleSidebar = () => { isOpen.value = !isOpen.value }
 </script>
 
 <style scoped>
-:root {
-  --sidebar-width: 250px;
-  --appbar-height: 60px;
-}
-
-
-
-
-/* Sidebar ثابت */
 .sidebar {
   position: fixed;
   top: 0;
@@ -41,21 +32,16 @@ const toggleSidebar = () => { isOpen.value = !isOpen.value }
   z-index: 1000;
 }
 
-/* AppBar ثابت مثل Sidebar */
 .appbar {
   position: fixed;
   top: 0;
-  left: var(--sidebar-width); /* يبدأ عند نهاية Sidebar */
+  left: var(--sidebar-width);
   width: calc(100% - var(--sidebar-width));
   height: var(--appbar-height);
   z-index: 900;
 }
 
 
-
-
-
-/* Responsive: على الموبايل Sidebar يغطي الشاشة */
 @media (max-width: 768px) {
   .appbar {
     left: 0;

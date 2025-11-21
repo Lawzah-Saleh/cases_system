@@ -8,8 +8,16 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap'
 import './assets/styles/variables.css'
 
+// Toastify
+import Toast from "vue3-toastify";
+import "vue3-toastify/dist/index.css";
+
+
 const app = createApp(App)
 
-app.use(router).use(createPinia())
+
+app.use(router)
+app.use(createPinia())
+app.use(Toast)
 
 app.mount('#app')
