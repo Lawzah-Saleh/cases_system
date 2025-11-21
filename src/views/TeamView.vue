@@ -14,23 +14,23 @@
     </div>
 
     <!-- ===== FILTERS ===== -->
-    <div class="filters-wrapper">
-      <input
-        type="text"
-        class="search-input"
-        placeholder="Search..."
-        v-model="search"
-      />
-    <select class="select-input" v-model="status">
+     <div class="filters-wrapper">
+  <input
+    type="text"
+    class="search-input"
+    placeholder="Search..."
+    v-model="search"
+  />
+
+  <select class="select-input" v-model="status">
     <option value="">Select Status</option>
     <option v-for="r in roles" :key="r.id" :value="r.id">
-        {{ r.role_name }}
-     </option>
-    </select>
+      {{ r.role_name }}
+    </option>
+  </select>
+</div>
 
 
-      <button class="apply-button" @click="applyFilters">Apply</button>
-    </div>
 
     <!-- ===== EMPLOYEES TABLE ===== -->
     <table class="custom-table">
@@ -181,8 +181,18 @@ export default {
       openDetailsModal: false,
     }
   },
+  watch: {
+  search() {
+    this.debounceSearch();
+  },
+  status() {
+    this.fetchEmployees(1);
+  }
+},
+
 
   methods: {
+
  
     toggleMenu(id) {
       this.openMenu = this.openMenu === id ? null : id
@@ -201,6 +211,15 @@ export default {
       this.selectedEmployee = emp
       this.openEdit = true
     },
+    debounceTimer: null,
+
+debounceSearch() {
+  clearTimeout(this.debounceTimer);
+  this.debounceTimer = setTimeout(() => {
+    this.fetchEmployees(1);
+  }, 400);
+},
+
 
     async deleteEmployee(emp) {
       if (!confirm("Delete this employee?")) return
@@ -217,9 +236,6 @@ export default {
       }
     },
 
-    applyFilters() {
-      this.fetchEmployees(1)
-    },
     async loadRoles() {
       const token = useAuthStore().token;
       const res = await axios.get("http://localhost:8000/api/roles", {
@@ -263,6 +279,7 @@ export default {
       this.fetchEmployees(this.currentPage)
     }
   },
+
 
   mounted() {
     this.fetchEmployees()
