@@ -3,13 +3,14 @@ import MainLayout from '@/layouts/MainLayout.vue'
 import { useAuthStore } from '@/stores/auth'
 import LoginView from '@/views/LoginView.vue'
 import DashboardView from '@/views/DashboardView.vue'
-import TeamView from '@/views/TeamView.vue'
+import EmployeeView from '@/views/EmployeeView.vue'
 import UsersView from '@/views/UsersView.vue'
 import StatisticsView from '@/views/StatisticsView.vue'
 import ReportView from '@/views/ReportView.vue'
 import ClientView from '@/views/ClientView.vue'
 import SupportView from '@/views/SupportView.vue'
-
+import SettingView from '@/views/SettingView.vue'
+import PermissionView from '@/views/PermissionView.vue'
 
 const routes = [
   {
@@ -32,12 +33,33 @@ const routes = [
        { path: 'dashboard', component: DashboardView },
       { path: 'supports', component: SupportView },
       { path: 'clients', component: ClientView },
-      { path: 'team', component: TeamView },
+      { path: 'employees', component: EmployeeView },
       { path: 'users', component: UsersView },
       { path: 'statistics', component: StatisticsView },
-      { path: 'reports', component: ReportView }
+      { path: 'reports', component: ReportView },
+      {
+   path: 'settings',
+  component: SettingView,
+  },
     ]
-  }
+  },
+  
+  {
+  path: '/app/settings/permission',
+  component: PermissionView,
+},
+// {
+//   path: '/app/settings/role',
+//   component: () => import('@/views/settings/RoleView.vue'),
+// },
+// {
+//   path: '/app/settings/account',
+//   component: () => import('@/views/settings/AccountView.vue'),
+// },
+// {
+//   path: '/app/settings/complaints',
+//   component: () => import('@/views/settings/ComplaintsDelayView.vue'),
+// },
 ]
 
 const router = createRouter({

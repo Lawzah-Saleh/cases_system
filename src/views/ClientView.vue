@@ -5,36 +5,69 @@
       <button class="add-button">Create Clients</button>
     </div>
 
+
+     <!-- ===== FILTERS ===== -->
+     <div class="filters-wrapper">
+  <input
+    type="text"
+    class="search-input"
+    placeholder="Search..."
+    v-model="search"
+  />
+
+
+</div>
+
+
+    <button class="filter-button" @click="showFilter = !showFilter">
+      Show / Hide columns
+    </button>
+
+    <!-- Dropdown -->
+   <div v-if="showFilter" class="filter-dropdown">
+
+  <div class="filter-grid">
+    <div v-for="col in columns" :key="col.key" class="filter-item">
+      <input type="checkbox" v-model="col.visible" />
+      <label>{{ col.label }}</label>
+    </div>
+  </div>
+
+  <button class="add-button" @click="applyFilters">Apply</button>
+</div>
+
     <table class="custom-table">
       <thead>
-        <tr class="table-header-row">
-          <th>ID</th>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Profile</th>
-          <th>Address</th>
-          <th></th>
-        </tr>
-      </thead>
+  <tr class="table-header-row">
+    <th v-for="col in visibleColumns" :key="col.key">
+      {{ col.label }}
+    </th>
+    <th></th>
+  </tr>
+</thead>
       <tbody>
-        <tr v-for="item in clients" :key="item.id">
-          <td>{{ item.id }}</td>
-          <td>{{ item.client_name }}</td>
-          <td>{{ item.email }}</td>
-          <td>
-            <img class="client-logo"v-if="item.logo_url" :src="item.logo_url" alt="Logo" width="30" />
-            <span v-else>●</span>
-          </td>
-          <td>{{ item.address }}</td>
-          <td class="action-cell">
-            <div class="menu-trigger" @click="toggleMenu(item.id)">⋮</div>
-            <div v-if="openMenu === item.id" class="menu-dropdown">
-              <div class="menu-item" @click="editItem(item)">Edit</div>
-              <div class="menu-item delete" @click="deleteItem(item)">Delete</div>
-            </div>
-          </td>
-        </tr>
-      </tbody>
+  <tr v-for="item in clients" :key="item.id">
+    <td v-if="isVisible('id')">{{ item.id }}</td>
+    <td v-if="isVisible('client_name')">{{ item.client_name }}</td>
+    <td v-if="isVisible('email')">{{ item.email }}</td>
+
+    <td v-if="isVisible('logo_url')">
+      <img class="client-logo" v-if="item.logo_url" :src="item.logo_url" alt="Logo" />
+      <span v-else>●</span>
+    </td>
+
+    <td v-if="isVisible('address')">{{ item.address }}</td>
+
+    <td class="action-cell">
+      <!-- menu still works -->
+      <div class="menu-trigger" @click="toggleMenu(item.id)">⋮</div>
+      <div v-if="openMenu === item.id" class="menu-dropdown">
+        <div class="menu-item" @click="editItem(item)">Edit</div>
+        <div class="menu-item delete" @click="deleteItem(item)">Delete</div>
+      </div>
+    </td>
+  </tr>
+</tbody>
     </table>
 
     <div class="pagination-container flex items-center justify-between mt-4">
@@ -69,13 +102,28 @@ import { useAuthStore } from '../stores/auth';
 export default {
   data() {
     return {
+      search: null,
       clients: [],
       openMenu: null,
       currentPage: 1,
       lastPage: 1,
+      showFilter: false,
+  columns: [
+    { key: "id", label: "ID", visible: true },
+    { key: "client_name", label: "Name", visible: true },
+    { key: "email", label: "Email", visible: true },
+    { key: "logo_url", label: "Profile", visible: true },
+    { key: "address", label: "Address", visible: true },
+  ],
     };
   },
   methods: {
+    applyFilters() {
+  this.showFilter = false;
+},
+isVisible(key) {
+  return this.columns.find(col => col.key === key)?.visible;
+},
     toggleMenu(id) {
       this.openMenu = this.openMenu === id ? null : id;
     },
@@ -125,12 +173,58 @@ export default {
   beforeUnmount() {
     document.removeEventListener('click', this.handleClickOutside);
   },
+  computed: {
+  visibleColumns() {
+    return this.columns.filter(col => col.visible);
+  }
+}
 };
 </script>
 
 
 
 <style scoped>
+.filter-button {
+  padding-bottom: 20px;
+  cursor: pointer;
+  color: var( --primary-color);
+  border: none;
+  background-color: transparent;
+   text-decoration: underline;
+   font-size: 18px;
+ 
+}
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);  
+  column-gap: 40px;
+  row-gap: 20px;
+  margin-bottom: 30px;
+
+}
+
+.filter-dropdown {
+  position: fixed;            
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  box-shadow: 0 4px 15px rgba(0,0,0,.15);
+  padding: 50px;
+  border-radius: 8px;
+  width: 600px;
+  z-index: 2000;
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+  font-size: 18px;
+}
+
+
 
 .model{
   background-color: white;
@@ -189,5 +283,22 @@ export default {
 
 .text-result {
   font-weight: bold;
+}
+
+
+
+.filters-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.search-input{
+  padding: 10px;
+  border: 1px solid var(--table-border);
+  border-radius: var(--radius-md);
+  background: #fff;
+  width: 200px;
 }
 </style>

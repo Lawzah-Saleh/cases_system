@@ -26,7 +26,7 @@
         </router-link>
       </li>
       <li>
-        <router-link to="/app/team">
+        <router-link to="/app/employees">
           <i class="bi bi-person-badge"></i>
           <span class="menu-text">Employee</span>
         </router-link>
@@ -47,6 +47,13 @@
         <router-link to="/app/reports">
           <i class="bi bi-file-earmark-text"></i>
           <span class="menu-text">Reports</span>
+        </router-link>
+      </li>
+
+      <li>
+        <router-link to="/app/settings">
+          <i class="bi bi-gear-fill"></i>
+          <span class="menu-text">Setting</span>
         </router-link>
       </li>
     </ul>
