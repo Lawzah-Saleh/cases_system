@@ -2,7 +2,6 @@
   <div class="modal-overlay" @click.self="close">
     <div class="modal-content modal-small">
 
-      <!-- HEADER -->
       <div class="modal-header">
         <h3>Reset Password</h3>
         <button class="close-btn" @click="close">×</button>
@@ -12,17 +11,14 @@
         Reset password for user <strong>{{ user.username }}</strong>.
       </p>
 
-      <!-- FORM -->
       <form @submit.prevent="submit" class="form-grid">
 
-        <!-- New Password -->
         <div class="form-group full">
           <label>New Password</label>
           <input type="password" v-model="form.password" required />
           <p v-if="errors.password" class="error-text">{{ errors.password[0] }}</p>
         </div>
 
-        <!-- Confirm -->
         <div class="form-group full">
           <label>Confirm Password</label>
           <input
@@ -38,7 +34,6 @@
           </p>
         </div>
 
-        <!-- BUTTONS -->
         <div class="btn-row full">
           <button class="btn-primary" type="submit" :disabled="loading">
             {{ loading ? "Resetting…" : "Reset Password" }}
@@ -112,7 +107,6 @@ async function submit() {
 </script>
 
 <style scoped>
-/* Same style as other modals */
 .modal-overlay {
   position: fixed;
   inset: 0;

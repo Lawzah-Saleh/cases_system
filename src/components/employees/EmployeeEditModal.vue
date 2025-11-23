@@ -2,7 +2,6 @@
   <div class="modal-overlay" @click.self="close">
     <div class="modal-content modal-large">
 
-      <!-- Header -->
       <div class="modal-header">
         <h3>Edit Employee</h3>
         <button class="close-btn" @click="close">×</button>
@@ -10,38 +9,32 @@
 
       <p class="modal-subtitle">Modify the employee information below.</p>
 
-      <!-- FORM -->
       <form @submit.prevent="submit" class="form-grid">
 
-        <!-- First Name -->
         <div class="form-group">
           <label>First Name</label>
           <input v-model="form.first_name" required />
           <p v-if="errors.first_name" class="error-text">{{ errors.first_name[0] }}</p>
         </div>
 
-        <!-- Middle Name -->
         <div class="form-group">
           <label>Middle Name</label>
           <input v-model="form.middle_name" />
           <p v-if="errors.middle_name" class="error-text">{{ errors.middle_name[0] }}</p>
         </div>
 
-        <!-- Last Name -->
         <div class="form-group">
           <label>Last Name</label>
           <input v-model="form.last_name" required />
           <p v-if="errors.last_name" class="error-text">{{ errors.last_name[0] }}</p>
         </div>
 
-        <!-- Email -->
         <div class="form-group full">
           <label>Email</label>
           <input type="email" v-model="form.email" required />
           <p v-if="errors.email" class="error-text">{{ errors.email[0] }}</p>
         </div>
 
-        <!-- Gender -->
         <div class="form-group">
           <label>Gender</label>
           <select v-model="form.gender" required>
@@ -52,14 +45,12 @@
           <p v-if="errors.gender" class="error-text">{{ errors.gender[0] }}</p>
         </div>
 
-        <!-- Phone -->
         <div class="form-group">
           <label>Phone</label>
           <input v-model="form.phone" required />
           <p v-if="errors.phone" class="error-text">{{ errors.phone[0] }}</p>
         </div>
 
-        <!-- Role -->
         <div class="form-group full">
           <label>Role</label>
           <select v-model="form.role_id" required>
@@ -71,7 +62,6 @@
           <p v-if="errors.role_id" class="error-text">{{ errors.role_id[0] }}</p>
         </div>
 
-        <!-- BUTTONS -->
         <div class="btn-row full">
           <button class="btn-primary" type="submit" :disabled="loading">
             {{ loading ? "Updating…" : "Update Employee" }}
@@ -115,7 +105,6 @@ const form = reactive({
   role_id: "",
 });
 
-// Sync employee data
 watch(
   () => props.employee,
   (emp) => {
@@ -131,7 +120,6 @@ watch(
   { immediate: true }
 );
 
-// Load roles
 async function loadRoles() {
   const res = await axios.get("http://localhost:8000/api/roles", {
     headers: { Authorization: `Bearer ${auth.token}` },
@@ -177,7 +165,6 @@ onMounted(loadRoles);
 
 
 <style scoped>
-/* SAME STYLE AS CREATE */
 .modal-overlay {
   position: fixed;
   inset: 0;

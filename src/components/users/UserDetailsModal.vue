@@ -3,69 +3,64 @@
     <div class="modal-content modal-large">
 
       <div class="modal-header">
-        <h3>Employee Details</h3>
+        <h3>User Details</h3>
         <button class="close-btn" @click="close">×</button>
       </div>
 
-      <p class="modal-subtitle">Here are the full details of the employee.</p>
+      <p class="modal-subtitle">Full information about the selected user.</p>
 
       <div class="avatar-wrapper">
-        <img
-          :src="employeeAvatar"
-          alt="avatar"
-          class="avatar-img"
-        />
+        <img :src="userAvatar" alt="avatar" class="avatar-img" />
       </div>
 
       <h2 class="emp-name">
-        {{ employee.first_name }}
-        {{ employee.middle_name }}
-        {{ employee.last_name }}
+        {{ user.username }}
       </h2>
 
       <p class="emp-role">
-        {{ employee.user?.role?.role_name || '—' }}
+        {{ user.role?.role_name || "—" }}
       </p>
 
       <div class="details-grid">
 
         <div class="row">
           <label>ID</label>
-          <p>{{ employee.id }}</p>
+          <p>{{ user.id }}</p>
         </div>
 
+        <div class="row">
+          <label>Status</label>
+          <p class="capitalize">{{ user.status }}</p>
+        </div>
 
+        <div class="row">
+          <label>Employee Name</label>
+          <p>
+            {{ user.employee?.first_name }} 
+            {{ user.employee?.middle_name }} 
+            {{ user.employee?.last_name }}
+          </p>
+        </div>
 
         <div class="row">
           <label>Email</label>
-          <p>{{ employee.email }}</p>
+          <p>{{ user.employee?.email || "—" }}</p>
         </div>
 
         <div class="row">
           <label>Phone</label>
-          <p>{{ employee.phone }}</p>
+          <p>{{ user.employee?.phone || "—" }}</p>
         </div>
 
         <div class="row">
           <label>Gender</label>
-          <p class="capitalize">{{ employee.gender }}</p>
-        </div>
-
-        <div class="row">
-          <label>Username</label>
-          <p>{{ employee.user?.username || "—" }}</p>
+          <p class="capitalize">{{ user.employee?.gender || "—" }}</p>
         </div>
 
       </div>
 
       <div class="btn-row">
-        <button class="btn-primary" @click="edit">
-          Edit Employee
-        </button>
-
-        <button class="btn-secondary" @click="close">
-          Close
-        </button>
+        <button class="btn-secondary" @click="close">Close</button>
       </div>
 
     </div>
@@ -74,20 +69,16 @@
 
 <script setup>
 const props = defineProps({
-  employee: { type: Object, required: true },
+  user: { type: Object, required: true }
 });
 
-const emit = defineEmits(["close", "edit"]);
+const emit = defineEmits(["close"]);
 
 function close() {
   emit("close");
 }
 
-function edit() {
-  emit("edit", props.employee);
-}
-
-const employeeAvatar = "/images/avatar.png";
+const userAvatar = "/images/avatar.png";
 </script>
 
 <style scoped>
@@ -197,25 +188,12 @@ const employeeAvatar = "/images/avatar.png";
   margin-top: 10px;
 }
 
-.btn-primary {
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  padding: 10px 22px;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-}
-
 .btn-secondary {
   background: #e4e4e4;
   border: none;
   padding: 10px 22px;
   border-radius: var(--radius-md);
   cursor: pointer;
-}
-
-.btn-primary:hover {
-  background: var(--primary-hover);
 }
 
 @keyframes popIn {

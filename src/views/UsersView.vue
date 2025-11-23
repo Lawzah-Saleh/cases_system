@@ -9,12 +9,14 @@
       </div>
 
       <button class="add-button" @click="openCreate = true">
-        + Create User
+        + Create Employee
       </button>
     </div>
 
     <!-- ===== FILTERS ===== -->
     <div class="filters-wrapper">
+
+      <!-- Search -->
       <input
         type="text"
         class="search-input"
@@ -22,12 +24,21 @@
         v-model="search"
       />
 
+      <!-- Filter by Role -->
       <select class="select-input" v-model="roleFilter">
         <option value="">Select Role</option>
         <option v-for="r in roles" :key="r.id" :value="r.id">
           {{ r.role_name }}
         </option>
       </select>
+
+      <!-- Filter by Status -->
+      <select class="select-input" v-model="statusFilter">
+        <option value="">Select Status</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+
     </div>
 
     <!-- ===== USERS TABLE ===== -->
@@ -45,17 +56,17 @@
 
       <tbody>
 
-        <!-- ===== LOADING SKELETON ===== -->
+        <!-- Loading Skeleton -->
         <tr v-if="isLoading" v-for="n in 5" :key="n" class="skeleton-row">
-          <td colspan="6">
-            <div class="skeleton-bar"></div>
-          </td>
+          <td colspan="6"><div class="skeleton-bar"></div></td>
         </tr>
 
-        <!-- ===== DATA ROWS ===== -->
+        <!-- Data rows -->
         <tr v-else v-for="u in users" :key="u.id" class="table-row-hover">
+
           <td>{{ u.id }}</td>
-          <td class="user-link" @click="openDetails(u)">
+
+            <td class="user-link" @click="openDetails(u)">
             {{ u.username }}
           </td>
 
@@ -65,25 +76,24 @@
 
           <td>{{ u.role?.role_name ?? "—" }}</td>
 
+          <!-- Status badge -->
           <td>
             <span :class="u.status === 'active' ? 'active-badge' : 'inactive-badge'">
               {{ u.status }}
             </span>
           </td>
 
-          <!-- ACTION MENU -->
+          <!-- Action menu -->
           <td class="action-cell">
             <div class="menu-trigger" @click.stop="toggleMenu(u.id)">⋮</div>
 
             <div v-if="openMenu === u.id" class="menu-dropdown">
               <div class="menu-item" @click="startEdit(u)">Edit</div>
-              <div class="menu-item" @click="resetPassword(u)">Reset Password</div>
-              <div class="menu-item delete" @click="deleteUser(u)">Delete</div>
+              <div class="menu-item" @click="openResetPassword(u)">Reset Password</div>
             </div>
           </td>
         </tr>
 
-        <!-- ===== NO DATA ===== -->
         <tr v-if="!isLoading && users.length === 0">
           <td colspan="6" style="text-align:center; padding:20px; color:#777;">
             No users found.
@@ -95,40 +105,42 @@
 
     <!-- ===== PAGINATION ===== -->
     <div class="pagination-container flex items-center justify-between mt-4">
+
       <p class="results-count">
         {{ total }} results
-        <span v-if="lastPage > 1">
-          — Page {{ currentPage }} of {{ lastPage }}
-        </span>
+        <span v-if="lastPage > 1"> — Page {{ currentPage }} of {{ lastPage }} </span>
       </p>
 
       <div>
-        <button
-          @click="changePage(currentPage - 1)"
-          :disabled="currentPage === 1 || isLoading"
-          class="page-btn"
-        >
+        <button @click="changePage(currentPage - 1)"
+                :disabled="currentPage === 1 || isLoading"
+                class="page-btn">
           &lt; Prev
         </button>
 
-        <button
-          @click="changePage(currentPage + 1)"
-          :disabled="currentPage === lastPage || isLoading"
-          class="page-btn"
-        >
+        <button @click="changePage(currentPage + 1)"
+                :disabled="currentPage === lastPage || isLoading"
+                class="page-btn">
           Next &gt;
         </button>
       </div>
+
     </div>
 
   </div>
 
   <!-- ===== MODALS ===== -->
-  <UserCreateModal
+  <EmployeeCreateModal
     v-if="openCreate"
     @close="openCreate = false"
     @created="refresh"
   />
+  <UserDetailsModal
+  v-if="openDetailsModal"
+  :user="selectedUser"
+  @close="openDetailsModal = false"
+  />
+
 
   <UserEditModal
     v-if="openEdit"
@@ -143,20 +155,23 @@
     @close="openReset = false"
   />
 </template>
-
 <script>
 import axios from "axios"
 import { useAuthStore } from "@/stores/auth"
 
-import UserCreateModal from "@/components/users/UserCreateModal.vue"
+import EmployeeCreateModal from "@/components/employees/EmployeeCreateModal.vue"
+import UserDetailsModal from "@/components/users/UserDetailsModal.vue"
+
 import UserEditModal from "@/components/users/UserEditModal.vue"
 import UserResetPasswordModal from "@/components/users/UserResetPasswordModal.vue"
 
 export default {
   components: {
-    UserCreateModal,
+    EmployeeCreateModal,
     UserEditModal,
     UserResetPasswordModal,
+    UserDetailsModal,
+
   },
 
   data() {
@@ -165,6 +180,7 @@ export default {
       roles: [],
       search: "",
       roleFilter: "",
+      statusFilter: "",
       isLoading: false,
 
       openMenu: null,
@@ -177,7 +193,7 @@ export default {
       openCreate: false,
       openEdit: false,
       openReset: false,
-
+      openDetailsModal: false,
       debounceTimer: null,
     }
   },
@@ -187,6 +203,9 @@ export default {
       this.debounceSearch()
     },
     roleFilter() {
+      this.fetchUsers(1)
+    },
+    statusFilter() {
       this.fetchUsers(1)
     }
   },
@@ -198,14 +217,24 @@ export default {
         this.fetchUsers(1)
       }, 400)
     },
+    openDetails(user) {
+  this.selectedUser = user;
+  this.openDetailsModal = true;
+},
+
 
     toggleMenu(id) {
       this.openMenu = this.openMenu === id ? null : id
     },
 
-    openDetails(user) {
+    startEdit(user) {
       this.selectedUser = user
       this.openEdit = true
+    },
+
+    openResetPassword(user) {
+      this.selectedUser = user
+      this.openReset = true
     },
 
     async fetchUsers(page = 1) {
@@ -219,7 +248,8 @@ export default {
             page,
             search: this.search,
             role: this.roleFilter,
-          }
+            status: this.statusFilter,
+          },
         })
 
         this.users = res.data.data
@@ -237,40 +267,20 @@ export default {
     async loadRoles() {
       const token = useAuthStore().token
       const res = await axios.get("http://localhost:8000/api/roles", {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       })
       this.roles = res.data.roles
+    },
+
+
+
+    refresh() {
+      this.fetchUsers(this.currentPage)
     },
 
     changePage(p) {
       if (p < 1 || p > this.lastPage) return
       this.fetchUsers(p)
-    },
-
-    startEdit(user) {
-      this.selectedUser = user
-      this.openEdit = true
-    },
-
-    resetPassword(user) {
-      this.selectedUser = user
-      this.openReset = true
-    },
-
-    async deleteUser(user) {
-      if (!confirm("Delete this user?")) return
-
-      const token = useAuthStore().token
-
-      await axios.delete(`http://localhost:8000/api/users/${user.id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-
-      this.refresh()
-    },
-
-    refresh() {
-      this.fetchUsers(this.currentPage)
     }
   },
 
@@ -281,9 +291,7 @@ export default {
   }
 }
 </script>
-
 <style scoped>
-/* نفس ستايل employee */
 .header-row {
   display: flex;
   justify-content: space-between;
@@ -350,6 +358,20 @@ export default {
   font-weight: 600;
 }
 
+.active-badge {
+  background: #d6f5da;
+  color: #1e7b1e;
+  padding: 4px 10px;
+  border-radius: var(--radius-md);
+}
+
+.inactive-badge {
+  background: #ffe0e0;
+  color: #b30000;
+  padding: 4px 10px;
+  border-radius: var(--radius-md);
+}
+
 .action-cell {
   position: relative;
 }
@@ -369,7 +391,7 @@ export default {
   border-radius: 6px;
   width: 140px;
   box-shadow: 0 4px 10px rgba(0,0,0,.15);
-  z-index: 99;
+  z-index: 999;
 }
 
 .menu-item {
@@ -381,21 +403,18 @@ export default {
   background: #f4f4f4;
 }
 
-.menu-item.delete {
-  color: red;
+
+.skeleton-bar {
+  width: 100%;
+  height: 18px;
+  background: linear-gradient(90deg, #eee, #ddd, #eee);
+  border-radius: 4px;
+  animation: pulse 1.5s infinite ease-in-out;
 }
 
-.active-badge {
-  background: #d4f7d4;
-  color: #1a7b1a;
-  padding: 4px 10px;
-  border-radius: var(--radius-md);
-}
-
-.inactive-badge {
-  background: #ffe5e5;
-  color: #b30000;
-  padding: 4px 10px;
-  border-radius: var(--radius-md);
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
 }
 </style>

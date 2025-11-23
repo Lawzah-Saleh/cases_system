@@ -2,25 +2,21 @@
   <div class="modal-overlay" @click.self="close">
     <div class="modal-content modal-large">
 
-      <!-- Header -->
       <div class="modal-header">
         <h3>Edit User</h3>
         <button class="close-btn" @click="close">×</button>
       </div>
 
-      <p class="modal-subtitle">Update the user's account information below.</p>
+      <p class="modal-subtitle">Modify the user’s information below.</p>
 
-      <!-- FORM -->
       <form @submit.prevent="submit" class="form-grid">
 
-        <!-- Username -->
         <div class="form-group full">
           <label>Username</label>
           <input v-model="form.username" required />
           <p v-if="errors.username" class="error-text">{{ errors.username[0] }}</p>
         </div>
 
-        <!-- Role -->
         <div class="form-group full">
           <label>Role</label>
           <select v-model="form.role_id" required>
@@ -32,30 +28,18 @@
           <p v-if="errors.role_id" class="error-text">{{ errors.role_id[0] }}</p>
         </div>
 
-        <!-- Employee -->
-        <div class="form-group full">
-          <label>Assign Employee</label>
-          <select v-model="form.employee_id">
-            <option value="">No Employee</option>
-            <option v-for="e in employees" :key="e.id" :value="e.id">
-              {{ e.first_name }} {{ e.last_name }}
-            </option>
-          </select>
-        </div>
-
-        <!-- Status -->
         <div class="form-group full">
           <label>Status</label>
           <select v-model="form.status" required>
             <option value="active">Active</option>
-            <option value="disabled">Disabled</option>
+            <option value="inactive">Inactive</option>
           </select>
+          <p v-if="errors.status" class="error-text">{{ errors.status[0] }}</p>
         </div>
 
-        <!-- BUTTONS -->
         <div class="btn-row full">
           <button class="btn-primary" type="submit" :disabled="loading">
-            {{ loading ? "Updating…" : "Update User" }}
+            {{ loading ? "Saving…" : "Save Changes" }}
           </button>
 
           <button type="button" class="btn-secondary" @click="close">
@@ -70,13 +54,13 @@
 </template>
 
 <script setup>
-import { reactive, ref, watch, onMounted } from "vue";
+import { reactive, ref, onMounted, watch } from "vue";
 import axios from "axios";
 import { useAuthStore } from "@/stores/auth";
 import { toast } from "vue3-toastify";
 
 const props = defineProps({
-  user: { type: Object, required: true }
+  user: { type: Object, required: true },
 });
 
 const emit = defineEmits(["close", "updated"]);
@@ -84,32 +68,26 @@ const auth = useAuthStore();
 
 const loading = ref(false);
 const roles = ref([]);
-const employees = ref([]);
 const errors = reactive({});
 
-// form data
 const form = reactive({
   username: "",
   role_id: "",
-  employee_id: "",
-  status: "active",
+  status: "",
 });
 
-// Sync props → form
 watch(
   () => props.user,
   (u) => {
-    if (!u) return;
-
-    form.username = u.username ?? "";
-    form.role_id = u.role_id ?? "";
-    form.employee_id = u.employee_id ?? "";
-    form.status = u.status ?? "active";
+    if (u) {
+      form.username = u.username;
+      form.role_id = u.role_id;
+      form.status = u.status;
+    }
   },
   { immediate: true }
 );
 
-// Load roles
 async function loadRoles() {
   const res = await axios.get("http://localhost:8000/api/roles", {
     headers: { Authorization: `Bearer ${auth.token}` },
@@ -117,16 +95,14 @@ async function loadRoles() {
   roles.value = res.data.roles;
 }
 
-// Load employees
-async function loadEmployees() {
-  const res = await axios.get("http://localhost:8000/api/employees", {
-    headers: { Authorization: `Bearer ${auth.token}` },
-  });
-  employees.value = res.data.data;
+function close() {
+  emit("close");
 }
 
 async function submit() {
-  Object.keys(errors).forEach((k) => (errors[k] = null));
+  errors.username = null;
+  errors.role_id = null;
+  errors.status = null;
 
   try {
     loading.value = true;
@@ -137,37 +113,27 @@ async function submit() {
       { headers: { Authorization: `Bearer ${auth.token}` } }
     );
 
-    toast.success("User updated successfully!");
+    toast.success("User updated successfully!", { autoClose: 2000 });
+
     emit("updated");
     close();
-
   } catch (err) {
-    console.error(err.response?.data);
-
     if (err.response?.status === 422) {
-      Object.assign(errors, err.response.data.errors || {});
-      toast.error("Validation error. Please check the fields.");
+      Object.assign(errors, err.response.data.errors);
+      const firstError = Object.values(err.response.data.errors)[0][0];
+      toast.error(firstError, { autoClose: 2500 });
     } else {
-      toast.error("Failed to update user.");
+      toast.error("Server error. Try again later.", { autoClose: 2500 });
     }
-
   } finally {
     loading.value = false;
   }
 }
 
-function close() {
-  emit("close");
-}
-
-onMounted(() => {
-  loadRoles();
-  loadEmployees();
-});
+onMounted(loadRoles);
 </script>
 
 <style scoped>
-/* SAME STYLE AS CREATE */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -179,7 +145,7 @@ onMounted(() => {
 }
 
 .modal-large {
-  width: 550px;
+  width: 520px;
 }
 
 .modal-content {
@@ -198,8 +164,8 @@ onMounted(() => {
 
 .modal-header h3 {
   font-size: 22px;
-  font-weight: 700;
   color: var(--primary-color);
+  font-weight: 700;
 }
 
 .close-btn {
@@ -218,12 +184,12 @@ onMounted(() => {
 
 .form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 14px;
 }
 
 .full {
-  grid-column: span 2;
+  grid-column: span 1;
 }
 
 .form-group {
@@ -247,6 +213,7 @@ select {
 
 .btn-row {
   display: flex;
+  justify-content: flex-start;
   gap: 12px;
   margin-top: 10px;
 }
@@ -254,16 +221,22 @@ select {
 .btn-primary {
   background: var(--primary-color);
   color: white;
-  padding: 10px 22px;
   border: none;
+  padding: 10px 22px;
   border-radius: var(--radius-md);
+  cursor: pointer;
 }
 
 .btn-secondary {
   background: #e4e4e4;
-  padding: 10px 22px;
   border: none;
+  padding: 10px 22px;
   border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
 }
 
 .error-text {
