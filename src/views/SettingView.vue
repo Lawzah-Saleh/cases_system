@@ -1,40 +1,27 @@
 <template>
   <div class="table-container">
-     
     <h2 class="main-header">Settings</h2>
 
     <div class="settings-grid">
-      <SettingCard
-        title="Permission"
-        @click="goTo('/app/settings/permission')"
-      >
+      <SettingCard title="Permission" @click="goTo('/app/permission')">
         <template #icon>
           <i class="bi bi-shield-lock"></i>
         </template>
       </SettingCard>
 
-      <SettingCard
-        title="Role"
-        @click="goTo('/app/settings/role')"
-      >
+      <SettingCard title="Role" @click="goTo('/app/settings/role')">
         <template #icon>
           <i class="bi bi-people"></i>
         </template>
       </SettingCard>
 
-      <SettingCard
-        title="Personal account"
-        @click="goTo('/app/settings/account')"
-      >
+      <SettingCard title="Personal account" @click="goTo('/app/settings/account')">
         <template #icon>
           <i class="bi bi-person-circle"></i>
         </template>
       </SettingCard>
 
-      <SettingCard
-        title="Complaints delays time"
-        @click="goTo('/app/settings/complaints')"
-      >
+      <SettingCard title="Complaints delays time" @click="goTo('/app/settings/complaints')">
         <template #icon>
           <i class="bi bi-clock-history"></i>
         </template>

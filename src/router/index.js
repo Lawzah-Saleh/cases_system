@@ -30,7 +30,7 @@ const routes = [
     component: MainLayout,
     meta: { requiresAuth: true },
     children: [
-       { path: 'dashboard', component: DashboardView },
+      { path: 'dashboard', component: DashboardView },
       { path: 'supports', component: SupportView },
       { path: 'clients', component: ClientView },
       { path: 'employees', component: EmployeeView },
@@ -38,28 +38,28 @@ const routes = [
       { path: 'statistics', component: StatisticsView },
       { path: 'reports', component: ReportView },
       {
-   path: 'settings',
-  component: SettingView,
-  },
+        path: 'settings',
+        component: SettingView
+      },
+      {
+        path: 'permission',
+        component: PermissionView
+      }
     ]
-  },
-  
-  {
-  path: '/app/settings/permission',
-  component: PermissionView,
-},
-// {
-//   path: '/app/settings/role',
-//   component: () => import('@/views/settings/RoleView.vue'),
-// },
-// {
-//   path: '/app/settings/account',
-//   component: () => import('@/views/settings/AccountView.vue'),
-// },
-// {
-//   path: '/app/settings/complaints',
-//   component: () => import('@/views/settings/ComplaintsDelayView.vue'),
-// },
+  }
+
+  // {
+  //   path: '/app/settings/role',
+  //   component: () => import('@/views/settings/RoleView.vue'),
+  // },
+  // {
+  //   path: '/app/settings/account',
+  //   component: () => import('@/views/settings/AccountView.vue'),
+  // },
+  // {
+  //   path: '/app/settings/complaints',
+  //   component: () => import('@/views/settings/ComplaintsDelayView.vue'),
+  // },
 ]
 
 const router = createRouter({
@@ -67,11 +67,9 @@ const router = createRouter({
   routes
 })
 
-
 router.beforeEach((to) => {
   const auth = useAuthStore()
 
- 
   if (to.meta.requiresAuth && !auth.token) {
     return '/login'
   }

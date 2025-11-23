@@ -1,17 +1,13 @@
 <template>
   <div class="table-container">
-
     <div class="header-row">
       <div class="header-title-container">
         <h2 class="main-header">Employees</h2>
         <p class="sub-header">Detailed overview and management of all system employees.</p>
       </div>
 
-      <button class="add-button" @click="openCreate = true">
-        + Create Employee
-      </button>
+      <button class="add-button" @click="openCreate = true">+ Create Employee</button>
     </div>
-
     <div class="filters-wrapper">
 
       <input
@@ -22,7 +18,7 @@
       />
 
       <select class="select-input" v-model="status">
-        <option value="">Select Status</option>
+        <option value="">Select Role</option>
         <option v-for="r in roles" :key="r.id" :value="r.id">
           {{ r.role_name }}
         </option>
@@ -61,6 +57,7 @@
     </div>
 
 
+
     <table class="custom-table">
       <thead>
         <tr class="table-header-row">
@@ -82,12 +79,8 @@
           <td colspan="7"><div class="skeleton-bar"></div></td>
         </tr>
 
-        <tr
-          v-else
-          v-for="emp in employees"
-          :key="emp.id"
-          class="table-row-hover"
-        >
+        <!-- ===== DATA ROWS ===== -->
+        <tr v-else v-for="emp in employees" :key="emp.id" class="table-row-hover">
 
           <td v-if="isVisible('id')">{{ emp.id }}</td>
 
@@ -105,6 +98,7 @@
             {{ emp.user?.role?.role_name ?? '—' }}
           </td>
 
+          <!-- ACTION MENU -->
           <td class="action-cell">
             <div class="menu-trigger" @click.stop="toggleMenu(emp.id)">⋮</div>
 
@@ -117,7 +111,7 @@
         </tr>
 
         <tr v-if="!isLoading && employees.length === 0">
-          <td colspan="7" style="text-align:center; padding:20px; color:#777;">
+          <td colspan="7" style="text-align: center; padding: 20px; color: #777">
             No employees found.
           </td>
         </tr>
@@ -125,9 +119,8 @@
       </tbody>
     </table>
 
-
-    <!-- PAGINATION -->
-    <div class="pagination-container flex items-center justify-between mt-4">
+    <!-- ===== PAGINATION ===== -->
+    <div class="pagination-container mt-4 flex items-center justify-between">
       <p class="results-count">
         {{ total }} results
         <span v-if="lastPage > 1"> — Page {{ currentPage }} of {{ lastPage }} </span>
@@ -161,11 +154,8 @@
     @edit="startEdit"
   />
 
-  <EmployeeCreateModal
-    v-if="openCreate"
-    @close="openCreate = false"
-    @created="handleRefresh"
-  />
+  <!-- ===== CREATE MODAL ===== -->
+  <EmployeeCreateModal v-if="openCreate" @close="openCreate = false" @created="handleRefresh" />
 
   <EmployeeEditModal
     v-if="openEdit"
@@ -183,6 +173,7 @@ import EmployeeCreateModal from "@/components/employees/EmployeeCreateModal.vue"
 import EmployeeEditModal from "@/components/employees/EmployeeEditModal.vue";
 import EmployeeDetailsModal from "@/components/employees/EmployeeDetailsModal.vue";
 
+
 export default {
   components: {
     EmployeeCreateModal,
@@ -192,8 +183,8 @@ export default {
 
   data() {
     return {
-      search: "",
-      status: "",
+      search: '',
+      status: '',
       roles: [],
 
       employees: [],
@@ -256,6 +247,7 @@ export default {
       return this.columns.find(col => col.key === key)?.visible;
     },
 
+
     toggleMenu(id) {
       this.openMenu = this.openMenu === id ? null : id;
     },
@@ -284,6 +276,7 @@ export default {
     async deleteEmployee(emp) {
       if (!confirm("Delete this employee?")) return;
 
+
       try {
         const token = useAuthStore().token;
 
@@ -304,6 +297,7 @@ export default {
       });
 
       this.roles = res.data.roles;
+
     },
 
     async fetchEmployees(page = 1) {
@@ -312,7 +306,7 @@ export default {
 
         const token = useAuthStore().token;
 
-        const res = await axios.get("http://localhost:8000/api/employees", {
+        const res = await axios.get('http://localhost:8000/api/employees', {
           headers: { Authorization: `Bearer ${token}` },
           params: {
             page,
@@ -327,6 +321,7 @@ export default {
         this.total = res.data.total;
       } catch (err) {
         console.error("Error loading employees:", err);
+
       } finally {
         this.isLoading = false;
       }
@@ -353,6 +348,7 @@ export default {
     document.removeEventListener("click", this.closeMenu);
   },
 };
+
 </script>
 <style scoped>
 .header-row {
@@ -528,7 +524,7 @@ export default {
   border: 1px solid #ddd;
   border-radius: 6px;
   width: 120px;
-  box-shadow: 0 4px 10px rgba(0,0,0,.15);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   z-index: 9999;
 }
 
@@ -578,4 +574,5 @@ export default {
   50% { opacity: 1; }
   100% { opacity: 0.6; }
 }
+
 </style>
