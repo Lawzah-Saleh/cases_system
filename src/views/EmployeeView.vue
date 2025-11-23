@@ -1,6 +1,5 @@
 <template>
   <div class="table-container">
-
     <!-- ===== PAGE HEADER ===== -->
     <div class="header-row">
       <div class="header-title-container">
@@ -8,29 +7,20 @@
         <p class="sub-header">Detailed overview and management of all system employees.</p>
       </div>
 
-      <button class="add-button" @click="openCreate = true">
-        + Create Employee
-      </button>
+      <button class="add-button" @click="openCreate = true">+ Create Employee</button>
     </div>
 
     <!-- ===== FILTERS ===== -->
-     <div class="filters-wrapper">
-  <input
-    type="text"
-    class="search-input"
-    placeholder="Search..."
-    v-model="search"
-  />
+    <div class="filters-wrapper">
+      <input type="text" class="search-input" placeholder="Search..." v-model="search" />
 
-  <select class="select-input" v-model="status">
-    <option value="">Select Status</option>
-    <option v-for="r in roles" :key="r.id" :value="r.id">
-      {{ r.role_name }}
-    </option>
-  </select>
-</div>
-
-
+      <select class="select-input" v-model="status">
+        <option value="">Select Status</option>
+        <option v-for="r in roles" :key="r.id" :value="r.id">
+          {{ r.role_name }}
+        </option>
+      </select>
+    </div>
 
     <!-- ===== EMPLOYEES TABLE ===== -->
     <table class="custom-table">
@@ -56,12 +46,7 @@
         </tr>
 
         <!-- ===== DATA ROWS ===== -->
-        <tr
-          v-else
-          v-for="emp in employees"
-          :key="emp.id"
-          class="table-row-hover"
-        >
+        <tr v-else v-for="emp in employees" :key="emp.id" class="table-row-hover">
           <td>{{ emp.id }}</td>
 
           <td class="user-link" @click="openDetails(emp)">
@@ -72,7 +57,6 @@
           <td>{{ emp.gender }}</td>
           <td>{{ emp.phone }}</td>
           <td>{{ emp.user?.role?.role_name ?? '—' }}</td>
-
 
           <!-- ACTION MENU -->
           <td class="action-cell">
@@ -87,7 +71,7 @@
 
         <!-- ===== NO DATA STATE ===== -->
         <tr v-if="!isLoading && employees.length === 0">
-          <td colspan="7" style="text-align:center; padding: 20px; color:#777;">
+          <td colspan="7" style="text-align: center; padding: 20px; color: #777">
             No employees found.
           </td>
         </tr>
@@ -95,12 +79,10 @@
     </table>
 
     <!-- ===== PAGINATION ===== -->
-    <div class="pagination-container flex items-center justify-between mt-4">
+    <div class="pagination-container mt-4 flex items-center justify-between">
       <p class="results-count">
         {{ total }} results
-        <span v-if="lastPage > 1">
-          — Page {{ currentPage }} of {{ lastPage }}
-        </span>
+        <span v-if="lastPage > 1"> — Page {{ currentPage }} of {{ lastPage }} </span>
       </p>
 
       <div>
@@ -132,11 +114,7 @@
   />
 
   <!-- ===== CREATE MODAL ===== -->
-  <EmployeeCreateModal
-    v-if="openCreate"
-    @close="openCreate = false"
-    @created="handleRefresh"
-  />
+  <EmployeeCreateModal v-if="openCreate" @close="openCreate = false" @created="handleRefresh" />
 
   <!-- ===== EDIT MODAL ===== -->
   <EmployeeEditModal
@@ -148,12 +126,12 @@
 </template>
 
 <script>
-import axios from "axios"
-import { useAuthStore } from "@/stores/auth"
+import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
 
-import EmployeeCreateModal from "@/components/employees/EmployeeCreateModal.vue"
-import EmployeeEditModal from "@/components/employees/EmployeeEditModal.vue"
-import EmployeeDetailsModal from "@/components/employees/EmployeeDetailsModal.vue"
+import EmployeeCreateModal from '@/components/employees/EmployeeCreateModal.vue'
+import EmployeeEditModal from '@/components/employees/EmployeeEditModal.vue'
+import EmployeeDetailsModal from '@/components/employees/EmployeeDetailsModal.vue'
 
 export default {
   components: {
@@ -164,8 +142,8 @@ export default {
 
   data() {
     return {
-      search: "",
-      status: "",
+      search: '',
+      status: '',
       roles: [],
       isLoading: false,
 
@@ -178,22 +156,19 @@ export default {
       openMenu: null,
       openCreate: false,
       openEdit: false,
-      openDetailsModal: false,
+      openDetailsModal: false
     }
   },
   watch: {
-  search() {
-    this.debounceSearch();
+    search() {
+      this.debounceSearch()
+    },
+    status() {
+      this.fetchEmployees(1)
+    }
   },
-  status() {
-    this.fetchEmployees(1);
-  }
-},
-
 
   methods: {
-
- 
     toggleMenu(id) {
       this.openMenu = this.openMenu === id ? null : id
     },
@@ -213,16 +188,15 @@ export default {
     },
     debounceTimer: null,
 
-debounceSearch() {
-  clearTimeout(this.debounceTimer);
-  this.debounceTimer = setTimeout(() => {
-    this.fetchEmployees(1);
-  }, 400);
-},
-
+    debounceSearch() {
+      clearTimeout(this.debounceTimer)
+      this.debounceTimer = setTimeout(() => {
+        this.fetchEmployees(1)
+      }, 400)
+    },
 
     async deleteEmployee(emp) {
-      if (!confirm("Delete this employee?")) return
+      if (!confirm('Delete this employee?')) return
 
       try {
         const token = useAuthStore().token
@@ -237,34 +211,33 @@ debounceSearch() {
     },
 
     async loadRoles() {
-      const token = useAuthStore().token;
-      const res = await axios.get("http://localhost:8000/api/roles", {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    this.roles = res.data.roles;
-},
+      const token = useAuthStore().token
+      const res = await axios.get('http://localhost:8000/api/roles', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      this.roles = res.data.roles
+    },
 
     async fetchEmployees(page = 1) {
       try {
         this.isLoading = true
         const token = useAuthStore().token
 
-        const res = await axios.get("http://localhost:8000/api/employees", {
+        const res = await axios.get('http://localhost:8000/api/employees', {
           headers: { Authorization: `Bearer ${token}` },
           params: {
             page,
             search: this.search,
-            role: this.status,
-          },
+            role: this.status
+          }
         })
 
         this.employees = res.data.data
         this.currentPage = res.data.current_page
         this.lastPage = res.data.last_page
         this.total = res.data.total
-
       } catch (err) {
-        console.error("Error loading employees:", err)
+        console.error('Error loading employees:', err)
       } finally {
         this.isLoading = false
       }
@@ -280,18 +253,16 @@ debounceSearch() {
     }
   },
 
-
   mounted() {
     this.fetchEmployees()
-    this.loadRoles();
+    this.loadRoles()
 
-    document.addEventListener("click", this.closeMenu)
+    document.addEventListener('click', this.closeMenu)
   },
 
   beforeUnmount() {
-    document.removeEventListener("click", this.closeMenu)
+    document.removeEventListener('click', this.closeMenu)
   }
-
 }
 </script>
 
@@ -408,7 +379,7 @@ debounceSearch() {
   border: 1px solid #ddd;
   border-radius: 6px;
   width: 120px;
-  box-shadow: 0 4px 10px rgba(0,0,0,.15);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   z-index: 9999;
 }
 
@@ -425,5 +396,4 @@ debounceSearch() {
 .menu-item.delete {
   color: red;
 }
-
 </style>
