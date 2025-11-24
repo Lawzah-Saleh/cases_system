@@ -10,26 +10,41 @@
       <input type="text" class="search-input" placeholder="Search..." v-model="search" />
     </div>
 
-    <button class="filter-button" @click="showFilter = !showFilter">Show / Hide columns</button>
+    <!-- ===== FILTERS Columns ===== -->
+    <button class="filter-button" @click="showFilter = true">Show / Hide Columns</button>
 
-    <!-- Dropdown -->
-    <div v-if="showFilter" class="filter-dropdown">
-      <div class="filter-grid">
-        <div v-for="col in columns" :key="col.key" class="filter-item">
-          <input type="checkbox" v-model="col.visible" />
-          <label>{{ col.label }}</label>
+    <div v-if="showFilter" class="filter-overlay" @click.self="closeFilter">
+      <div class="filter-modal">
+        <div class="filter-header">
+          <h2>Show/Hide Columns</h2>
+
+          <button class="select-all-btn" @click="selectAllColumns">All</button>
+        </div>
+
+        <div class="filter-grid">
+          <div v-for="col in columns" :key="col.key" class="filter-item">
+            <input type="checkbox" v-model="col.visible" />
+            <label>{{ col.label }}</label>
+          </div>
+        </div>
+
+        <div class="filter-footer">
+          <button class="cancel-btn" @click="closeFilter">Cancel</button>
+          <button class="apply-btn" @click="applyFilters">Apply</button>
         </div>
       </div>
-
-      <button class="add-button" @click="applyFilters">Apply</button>
     </div>
+
+    <!-- table -->
 
     <table class="custom-table">
       <thead>
         <tr class="table-header-row">
-          <th v-for="col in visibleColumns" :key="col.key">
-            {{ col.label }}
-          </th>
+          <th v-if="isVisible('id')">ID</th>
+          <th v-if="isVisible('client_name')">Client Name</th>
+          <th v-if="isVisible('email')">Email</th>
+          <th v-if="isVisible('logo_url')">Logo</th>
+          <th v-if="isVisible('address')">Address</th>
           <th></th>
         </tr>
       </thead>
@@ -145,15 +160,27 @@ export default {
         this.fetchClients(1)
       }, 400)
     },
-    handleRefresh() {
-      this.fetchClients(this.currentPage)
+
+    closeFilter() {
+      this.showFilter = false
     },
+
     applyFilters() {
       this.showFilter = false
     },
+
+    selectAllColumns() {
+      this.columns.forEach((col) => (col.visible = true))
+    },
+
     isVisible(key) {
       return this.columns.find((col) => col.key === key)?.visible
     },
+
+    handleRefresh() {
+      this.fetchClients(this.currentPage)
+    },
+
     toggleMenu(id) {
       this.openMenu = this.openMenu === id ? null : id
     },
@@ -363,5 +390,84 @@ export default {
   border-radius: var(--radius-md);
   background: #fff;
   width: 200px;
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 35px;
+}
+
+.filter-header h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.select-all-btn {
+  font-size: 20px;
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  row-gap: 24px;
+  column-gap: 60px;
+  margin-bottom: 40px;
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 18px;
+}
+
+.filter-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+}
+
+.cancel-btn {
+  background: #e5e5e5;
+  padding: 12px 32px;
+  border-radius: 8px;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+}
+.apply-btn {
+  background: var(--primary-color);
+  color: white;
+  padding: 12px 32px;
+  border-radius: 8px;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.filter-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.filter-modal {
+  width: 750px;
+  background: white;
+  border-radius: 16px;
+  padding: 40px 50px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
 }
 </style>

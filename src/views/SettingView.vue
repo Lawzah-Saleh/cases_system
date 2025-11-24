@@ -9,7 +9,7 @@
         </template>
       </SettingCard>
 
-      <SettingCard title="Role" @click="goTo('/app/settings/role')">
+      <SettingCard title="Role" @click="goTo('/app/role')">
         <template #icon>
           <i class="bi bi-people"></i>
         </template>
