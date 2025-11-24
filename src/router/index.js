@@ -11,6 +11,7 @@ import ClientView from '@/views/ClientView.vue'
 import SupportView from '@/views/SupportView.vue'
 import SettingView from '@/views/SettingView.vue'
 import PermissionView from '@/views/PermissionView.vue'
+import RoleView from '@/views/RoleView.vue'
 
 const routes = [
   {
@@ -44,6 +45,10 @@ const routes = [
       {
         path: 'permission',
         component: PermissionView
+      },
+      {
+        path: 'role',
+        component: RoleView
       }
     ]
   }

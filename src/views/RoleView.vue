@@ -1,8 +1,8 @@
 <template>
   <div class="table-container">
     <div class="mb-4 flex items-center justify-between">
-      <h2 class="main-header">Setting / Permissions</h2>
-      <button class="add-button" @click="openCreate = true">+ Create permissions</button>
+      <h2 class="main-header">Setting / Roles</h2>
+      <button class="add-button" @click="openCreate = true">+ Create Role</button>
     </div>
 
     <!-- ===== FILTERS ===== -->
@@ -14,36 +14,38 @@
       <thead>
         <tr class="table-header-row">
           <th>id</th>
-          <th>permission Name</th>
+          <th>Role Name</th>
+          <th>Role's Permissions</th>
           <th></th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(per, index) in permissions" :key="per.id">
+        <tr v-for="(role, index) in roles" :key="role.id">
           <td>{{ index + 1 }}</td>
 
-          <td>{{ per.permission_name }}</td>
+          <td>{{ role.role_name }}</td>
+          <td class="user-link" @click="openDetails(role)">Show permissions</td>
 
           <td class="action-cell">
-            <div class="menu-trigger" @click="toggleMenu(per.id)">⋮</div>
-            <div v-if="openMenu === per.id" class="menu-dropdown">
-              <div class="menu-item" @click="startEdit(per)">Edit</div>
-              <div class="menu-item delete" @click="deletepermission(per)">Delete</div>
+            <div class="menu-trigger" @click="toggleMenu(role.id)">⋮</div>
+            <div v-if="openMenu === role.id" class="menu-dropdown">
+              <div class="menu-item" @click="startEdit(role)">Edit</div>
+              <div class="menu-item delete" @click="deleterole(role)">Delete</div>
             </div>
           </td>
         </tr>
 
         <!-- ===== NO DATA STATE ===== -->
-        <tr v-if="!isLoading && permissions.length === 0">
+        <tr v-if="!isLoading && roles.length === 0">
           <td colspan="7" style="text-align: center; padding: 20px; color: #777">
-            No permissions found.
+            No roles found.
           </td>
         </tr>
       </tbody>
     </table>
 
     <div class="pagination-container mt-4 flex items-center justify-between">
-      <p class="text-result">{{ permissions.length }} results</p>
+      <p class="text-result">{{ roles.length }} results</p>
 
       <div>
         <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1" class="page-btn">
@@ -61,15 +63,19 @@
     </div>
   </div>
 
-  <!-- ===== CREATE MODAL ===== -->
-  <PermissionCreateModel v-if="openCreate" @close="openCreate = false" @created="handleRefresh" />
+  <RoleCreateModel v-if="openCreate" @close="openCreate = false" @created="handleRefresh" />
 
-  <!-- ===== EDIT MODAL ===== -->
-  <PermissionEditModel
+  <RoleEditModel
     v-if="openEdit"
-    :permission="selectedPermission"
+    :role="selectedRole"
     @close="openEdit = false"
     @updated="handleRefresh"
+  />
+
+  <RoleDetailsModel
+    v-if="openRoleDetailsModal"
+    :role="selectedRole"
+    @close="openRoleDetailsModal = false"
   />
 </template>
 
@@ -77,11 +83,12 @@
 import axios from 'axios'
 import { useAuthStore } from '../stores/auth'
 import { toast } from 'vue3-toastify'
-import PermissionCreateModel from '@/components/permissions/PermissionCreateModel.vue'
-import PermissionEditModel from '@/components/permissions/PermissionEditModel.vue'
+import RoleDetailsModel from '@/components/roles/RoleDetailsModel.vue'
+import RoleCreateModel from '@/components/roles/RoleCreateModel.vue'
+import RoleEditModel from '@/components/roles/RoleEditModel.vue'
 
 export default {
-  components: { PermissionCreateModel, PermissionEditModel },
+  components: { RoleDetailsModel, RoleCreateModel, RoleEditModel },
   watch: {
     search() {
       this.debounceSearch()
@@ -90,45 +97,51 @@ export default {
   data() {
     return {
       search: '',
-      permissions: [],
+      roles: [],
       openMenu: null,
       currentPage: 1,
       lastPage: 1,
       openCreate: false,
       openEdit: false,
-      selectedPermission: null
+      selectedRole: null,
+      openRoleDetailsModal: false
     }
   },
   methods: {
-    startEdit(permission) {
-      this.selectedPermission = JSON.parse(JSON.stringify(permission))
+    openDetails(role) {
+      this.selectedRole = role
+      this.openRoleDetailsModal = true
+    },
+
+    startEdit(role) {
+      this.selectedRole = JSON.parse(JSON.stringify(role))
       this.openEdit = true
     },
 
     debounceSearch() {
       clearTimeout(this.debounceTimer)
       this.debounceTimer = setTimeout(() => {
-        this.fetchPermissions(1)
+        this.fetchroles(1)
       }, 400)
     },
     handleRefresh() {
-      this.fetchPermissions(this.currentPage)
+      this.fetchroles(this.currentPage)
     },
     toggleMenu(id) {
       this.openMenu = this.openMenu === id ? null : id
     },
 
-    async deletepermission(permission) {
-      if (!confirm('Delete this permission?')) return
+    async deleterole(role) {
+      if (!confirm('Delete this role?')) return
 
       try {
         const token = useAuthStore().token
 
-        await axios.delete(`http://localhost:8000/api/permissions/${permission.id}`, {
+        await axios.delete(`http://localhost:8000/api/roles/${role.id}`, {
           headers: { Authorization: `Bearer ${token}` }
         })
 
-        toast.success('Permission deleted successfully!', {
+        toast.success('Role deleted successfully!', {
           autoClose: 1500
         })
 
@@ -137,15 +150,15 @@ export default {
         this.handleRefresh()
       } catch (e) {
         console.error(e)
-        toast.error('Failed to delete permission.', { autoClose: 2000 })
+        toast.error('Failed to delete role.', { autoClose: 2000 })
       }
     },
 
-    async fetchPermissions(page = 1) {
+    async fetchroles(page = 1) {
       try {
         const authStore = useAuthStore()
         const token = authStore.token || localStorage.getItem('token')
-        const res = await axios.get('http://localhost:8000/api/permissions', {
+        const res = await axios.get('http://localhost:8000/api/roles', {
           headers: { Authorization: `Bearer ${token}` },
           params: {
             page,
@@ -153,17 +166,17 @@ export default {
           }
         })
 
-        this.permissions = res.data.data
+        this.roles = res.data.data
         this.currentPage = res.data.current_page
         this.lastPage = res.data.last_page
       } catch (err) {
-        console.error('Error fetching permissions:', err)
+        console.error('Error fetching roles:', err)
       }
     },
 
     changePage(page) {
       if (page < 1 || page > this.lastPage) return
-      this.fetchPermissions(page)
+      this.fetchroles(page)
     },
 
     handleClickOutside(event) {
@@ -176,7 +189,7 @@ export default {
     }
   },
   mounted() {
-    this.fetchPermissions()
+    this.fetchroles()
     document.addEventListener('click', this.handleClickOutside)
   },
   beforeUnmount() {
@@ -232,6 +245,13 @@ export default {
 .action-cell {
   position: relative;
 }
+
+.user-link {
+  color: var(--primary-color);
+  cursor: pointer;
+  font-weight: 600;
+}
+
 .menu-trigger {
   cursor: pointer;
   font-size: 20px;
