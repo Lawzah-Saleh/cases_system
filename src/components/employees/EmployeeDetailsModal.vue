@@ -6,8 +6,6 @@
         <h3>Employee Details</h3>
         <button class="close-btn" @click="close">×</button>
       </div>
-
-
       <h3 class="section-title">Personal Information</h3>
 
       <div class="form-grid">
@@ -45,7 +43,6 @@
       </div>
 
       <h3 class="section-title">Account Information</h3>
-
       <div class="form-grid">
 
         <div class="form-group">
@@ -130,8 +127,6 @@ function edit() {
   cursor: pointer;
   color: #444;
 }
-
-
 
 .section-title {
   font-weight: 600;

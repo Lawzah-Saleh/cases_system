@@ -37,9 +37,7 @@
             </span>
           </div>
         </div>
-
       </div>
-
       <h3 class="section-title">Personal Information</h3>
 
       <div class="form-grid">
@@ -205,8 +203,6 @@ function edit() {
   background: #f9eded;
   color: #bd4a4a;
 }
-
-
 
 .btn-row {
   display: flex;

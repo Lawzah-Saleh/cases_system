@@ -1,31 +1,24 @@
 <template>
   <div class="filter-area">
 
-    <!-- ROW 1 -->
     <div class="filter-grid">
-      <!-- Search -->
       <input
         v-model="filters.search"
         class="filter-input"
         placeholder="Search cases..."
       />
 
-      <!-- Date From -->
       <input type="date" v-model="filters.date_from" class="filter-input" />
 
-      <!-- Date To -->
       <input type="date" v-model="filters.date_to" class="filter-input" />
     </div>
 
-    <!-- ROW 2 -->
     <div class="filter-grid">
-      <!-- Status -->
       <select v-model="filters.status" class="filter-select">
         <option value="">Select Status</option>
         <option v-for="s in statusOptions" :key="s">{{ s }}</option>
       </select>
 
-      <!-- Client -->
       <select v-model="filters.client_id" class="filter-select">
         <option value="">Select Customer</option>
         <option
@@ -37,36 +30,30 @@
         </option>
       </select>
 
-      <!-- Type -->
       <select v-model="filters.type" class="filter-select">
         <option value="">Select Type</option>
         <option v-for="t in typeOptions" :key="t">{{ t }}</option>
       </select>
     </div>
 
-    <!-- ROW 3 -->
     <div class="filter-grid">
-      <!-- Priority -->
       <select v-model="filters.priority" class="filter-select">
         <option value="">Select Priority</option>
         <option v-for="p in priorityOptions" :key="p">{{ p }}</option>
       </select>
 
-      <!-- Way Entry -->
       <select v-model="filters.way_entry" class="filter-select">
         <option value="">Way Entry</option>
         <option value="email">Email</option>
         <option value="manual">Manual</option>
       </select>
 
-      <!-- Apply Button -->
       <button class="apply-btn" @click="apply">Apply</button>
     </div>
 
     <button class="reset-btn" @click="reset">Reset Filters</button>
   </div>
 
-  <!-- TAGS BAR -->
   <ActiveFiltersBar
     :filters="tags"
     @remove="removeTag"

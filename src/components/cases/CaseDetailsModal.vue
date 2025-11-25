@@ -38,8 +38,6 @@
           <div class="readonly capitalize">{{ caseData.way_entry }}</div>
         </div>
 
-
-
         <div class="form-group">
           <h3 class="section-title">Status</h3>
           <div class="readonly badge-box">
@@ -57,7 +55,6 @@
             </span>
           </div>
         </div>
-
       </div>
 
       <h3 class="section-title">Internal Note</h3>
@@ -90,8 +87,6 @@
         <button class="btn-secondary" @click="close">Close</button>
         <button class="btn-primary" @click="edit">Edit Case</button>
       </div>
-
-
     </div>
   </div>
 </template>
