@@ -1,7 +1,9 @@
 <template>
   <div class="table-container">
     <div class="mb-4 flex items-center justify-between">
-      <h2 class="main-header">Setting / Roles</h2>
+      <h2 class="main-header">
+        <span class="link-back" @click="$router.back()">Setting</span> / Roles
+      </h2>
       <button class="add-button" @click="openCreate = true">+ Create Role</button>
     </div>
 
@@ -158,7 +160,7 @@ export default {
       try {
         const authStore = useAuthStore()
         const token = authStore.token || localStorage.getItem('token')
-        const res = await axios.get('http://localhost:8000/api/roles', {
+        const res = await axios.get('http://localhost:8000/api/roles/paginations', {
           headers: { Authorization: `Bearer ${token}` },
           params: {
             page,
@@ -311,6 +313,15 @@ export default {
   background-color: white;
   cursor: pointer;
   margin-left: 5px;
+}
+
+.link-back {
+  cursor: pointer;
+  color: gray;
+  font-weight: 700;
+}
+.link-back:hover {
+  text-decoration: underline;
 }
 
 .page-btn:disabled {

@@ -3,28 +3,47 @@
     <div class="modal-content modal-large">
       <!-- Header -->
       <div class="modal-header">
-        <h3>Edit Client</h3>
+        <h3>Edit Permission Category</h3>
         <button class="close-btn" @click="close">×</button>
       </div>
 
-      <p class="modal-subtitle">Modify the information below to edit the permission.</p>
+      <p class="modal-subtitle">Update the category and its permissions.</p>
 
       <!-- FORM -->
       <form @submit.prevent="submit" class="form-grid">
-        <div class="form-group">
-          <label>Permission Name</label>
-          <input
-            v-model="form.permission_name"
-            required
-            placeholder="Leave empty to keep old name"
-          />
-          <p v-if="errors.permission_name" class="error-text">{{ errors.permission_name[0] }}</p>
+        <!-- CATEGORY NAME -->
+        <div class="form-group full">
+          <label>Category Name</label>
+          <input v-model="form.category_name" required placeholder="Enter category name" />
+          <p v-if="errors.category_name" class="error-text">{{ errors.category_name[0] }}</p>
+        </div>
+
+        <!-- PERMISSIONS DYNAMIC LIST -->
+        <div class="full">
+          <label>Permissions</label>
+
+          <div v-for="(perm, index) in form.permissions" :key="index" class="perm-input-row">
+            <input v-model="form.permissions[index]" placeholder="Permission name" required />
+
+            <button
+              type="button"
+              class="remove-btn"
+              v-if="form.permissions.length > 1"
+              @click="removePermission(index)"
+            >
+              ×
+            </button>
+          </div>
+
+          <button type="button" class="add-permission-btn" @click="addPermission">
+            + Add another permission
+          </button>
         </div>
 
         <!-- BUTTONS -->
         <div class="btn-row full">
           <button class="btn-primary" type="submit" :disabled="loading">
-            {{ loading ? 'Updating…' : 'Update Permission' }}
+            {{ loading ? 'Updating…' : 'Update Category' }}
           </button>
 
           <button type="button" class="btn-secondary" @click="close">Cancel</button>
@@ -47,18 +66,27 @@ const props = defineProps({
 const emit = defineEmits(['close', 'updated'])
 
 const auth = useAuthStore()
-
 const loading = ref(false)
-
 const errors = reactive({})
 
 const form = reactive({
-  permission_name: ''
+  category_name: '',
+  permissions: []
 })
 
+// Fill form with existing data
 onMounted(() => {
-  form.permission_name = props.permission.permission_name
+  form.category_name = props.permission.category_name
+  form.permissions = props.permission.permissions?.map((p) => p.permission_name) || ['']
 })
+
+function addPermission() {
+  form.permissions.push('')
+}
+
+function removePermission(index) {
+  form.permissions.splice(index, 1)
+}
 
 async function submit() {
   Object.keys(errors).forEach((k) => (errors[k] = null))
@@ -66,16 +94,18 @@ async function submit() {
   try {
     loading.value = true
 
-    const fd = new FormData()
+    const payload = {
+      category_name: form.category_name,
+      permissions: form.permissions
+    }
 
-    if (form.permission_name) fd.append('permission_name', form.permission_name)
-    fd.append('_method', 'PUT')
+    await axios.post(
+      `http://localhost:8000/api/permission-categories/${props.permission.id}`,
+      { ...payload, _method: 'PUT' },
+      { headers: { Authorization: `Bearer ${auth.token}` } }
+    )
 
-    await axios.post(`http://localhost:8000/api/permissions/${props.permission.id}`, fd, {
-      headers: { Authorization: `Bearer ${auth.token}` }
-    })
-
-    toast.success('Permission updated successfully!')
+    toast.success('Permission category updated successfully!')
     emit('updated')
     close()
   } catch (err) {
@@ -83,7 +113,7 @@ async function submit() {
       Object.assign(errors, err.response.data.errors)
       toast.error('Validation error.')
     } else {
-      toast.error('Error updating permission.')
+      toast.error('Error updating category.')
     }
   } finally {
     loading.value = false
@@ -138,12 +168,6 @@ function close() {
   cursor: pointer;
 }
 
-.modal-subtitle {
-  font-size: 14px;
-  color: #777;
-  margin-bottom: 20px;
-}
-
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -159,18 +183,33 @@ function close() {
   flex-direction: column;
 }
 
-label {
-  margin-bottom: 6px;
-  font-size: 14px;
-  font-weight: 500;
+.perm-input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
 }
 
-input,
-select {
-  padding: 10px;
-  border: 1px solid var(--table-border);
+.add-permission-btn {
+  margin-top: 8px;
+  background: var(--primary-color);
+  color: white;
+  padding: 6px 12px;
   border-radius: var(--radius-md);
   font-size: 14px;
+  cursor: pointer;
+  border: none;
+}
+
+.remove-btn {
+  background: red;
+  color: white;
+  border: none;
+  font-size: 18px;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
 .btn-row {
@@ -194,8 +233,23 @@ select {
   border-radius: var(--radius-md);
 }
 
-.btn-primary:hover {
-  background: var(--primary-hover);
+.error-text {
+  color: red;
+  font-size: 13px;
+}
+
+label {
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+input,
+select {
+  padding: 10px;
+  border: 1px solid var(--table-border);
+  border-radius: var(--radius-md);
+  font-size: 14px;
 }
 
 @keyframes popIn {
@@ -207,12 +261,5 @@ select {
     opacity: 1;
     transform: scale(1);
   }
-}
-
-.preview-logo {
-  width: 120px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  margin-bottom: 10px;
 }
 </style>

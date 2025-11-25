@@ -1,44 +1,32 @@
 <template>
   <div class="modal-overlay" @click.self="close">
     <div class="modal-content modal-large">
-      <!-- Header -->
       <div class="modal-header">
-        <h3>Role Details</h3>
+        <h3>Permission Details</h3>
         <button class="close-btn" @click="close">×</button>
       </div>
 
-      <p class="modal-subtitle">Here are the full details of this role.</p>
+      <p class="modal-subtitle">Here are the full details of this permission.</p>
 
-      <!-- BASIC INFO -->
       <div class="details-grid">
         <div class="row">
-          <label>Role Name</label>
-          <p>{{ role.role_name }}</p>
+          <label>Permission Category Name </label>
+          <p>{{ permission.category_name }}</p>
         </div>
 
         <div class="row">
-          <label>Total Permissions</label>
-          <p>{{ role.permissions?.length || 0 }}</p>
+          <label>Total Permissions: </label>
+          <p>{{ permission.permissions?.length || 0 }}</p>
         </div>
       </div>
 
-      <!-- PERMISSIONS BY CATEGORY -->
-      <h3 class="permissions-title">Permissions by Category</h3>
+      <h3 class="permissions-title">Permissions</h3>
 
-      <div class="category-box" v-for="cat in grouped" :key="cat.name">
-        <!-- CATEGORY HEADER (CLICK TO EXPAND) -->
-        <div class="category-header" @click="toggle(cat.name)">
-          <span class="category-title">{{ cat.name }}</span>
-          <span class="count-badge">{{ cat.permissions.length }}</span>
-        </div>
-
-        <!-- PERMISSIONS -->
-        <div class="permissions-list" v-if="openCategory === cat.name">
-          <div v-for="perm in cat.permissions" :key="perm.id" class="perm-item">
-            {{ perm.permission_name }}
-          </div>
-        </div>
-      </div>
+      <ul class="permissions-list">
+        <li v-for="perm in permission.permissions" :key="perm.id" class="perm-item">
+          {{ perm.permission_name }}
+        </li>
+      </ul>
 
       <div class="btn-row">
         <button class="btn-secondary" @click="close">Close</button>
@@ -48,10 +36,8 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
-
 const props = defineProps({
-  role: { type: Object, required: true }
+  permission: { type: Object, required: true }
 })
 
 const emit = defineEmits(['close'])
@@ -59,31 +45,6 @@ const emit = defineEmits(['close'])
 function close() {
   emit('close')
 }
-
-/* WHICH CATEGORY IS OPEN */
-const openCategory = ref(null)
-
-function toggle(name) {
-  openCategory.value = openCategory.value === name ? null : name
-}
-
-/* GROUP PERMISSIONS BY CATEGORY */
-const grouped = computed(() => {
-  if (!props.role.permissions) return []
-
-  const map = {}
-
-  props.role.permissions.forEach((perm) => {
-    const name = perm.category?.category_name || 'Uncategorized'
-    if (!map[name]) map[name] = []
-    map[name].push(perm)
-  })
-
-  return Object.keys(map).map((key) => ({
-    name: key,
-    permissions: map[key]
-  }))
-})
 </script>
 
 <style scoped>
@@ -135,6 +96,33 @@ const grouped = computed(() => {
   margin-bottom: 18px;
 }
 
+.avatar-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.avatar-img {
+  width: 95px;
+  height: 95px;
+  border-radius: 50%;
+  border: 3px solid var(--primary-color);
+  object-fit: cover;
+}
+
+.emp-name {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.emp-role {
+  text-align: center;
+  color: #777;
+  margin-bottom: 22px;
+}
+
 .details-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -143,9 +131,9 @@ const grouped = computed(() => {
 }
 
 .row label {
+  display: block;
   font-size: 13px;
   color: #666;
-  display: block;
   margin-bottom: 4px;
 }
 
@@ -155,7 +143,6 @@ const grouped = computed(() => {
   font-weight: 500;
 }
 
-/* CATEGORY UI */
 .permissions-title {
   font-size: 18px;
   font-weight: 600;
@@ -163,35 +150,10 @@ const grouped = computed(() => {
   color: var(--primary-color);
 }
 
-.category-box {
-  border: 1px solid var(--table-border);
-  border-radius: var(--radius-md);
-  margin-bottom: 14px;
-  background: #fff;
-}
-
-.category-header {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 14px;
-  background: #f8f8f8;
-}
-
-.category-title {
-  font-weight: 600;
-  font-size: 15px;
-}
-
-.count-badge {
-  background: var(--primary-color);
-  color: white;
-  padding: 4px 10px;
-  font-size: 13px;
-  border-radius: 12px;
-}
-
 .permissions-list {
-  padding: 12px 16px;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 22px 0;
 }
 
 .perm-item {
@@ -206,8 +168,18 @@ const grouped = computed(() => {
 
 .btn-row {
   display: flex;
+  justify-content: flex-start;
   gap: 12px;
-  margin-top: 12px;
+  margin-top: 10px;
+}
+
+.btn-primary {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 10px 22px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
 }
 
 .btn-secondary {
@@ -216,6 +188,10 @@ const grouped = computed(() => {
   padding: 10px 22px;
   border-radius: var(--radius-md);
   cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
 }
 
 @keyframes popIn {
