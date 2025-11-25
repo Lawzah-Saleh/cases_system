@@ -7,74 +7,75 @@
         <button class="close-btn" @click="close">×</button>
       </div>
 
-      <p class="modal-subtitle">Here are the full details of the employee.</p>
 
-      <div class="avatar-wrapper">
-        <img
-          :src="employeeAvatar"
-          alt="avatar"
-          class="avatar-img"
-        />
-      </div>
+      <h3 class="section-title">Personal Information</h3>
 
-      <h2 class="emp-name">
-        {{ employee.first_name }}
-        {{ employee.middle_name }}
-        {{ employee.last_name }}
-      </h2>
+      <div class="form-grid">
 
-      <p class="emp-role">
-        {{ employee.user?.role?.role_name || '—' }}
-      </p>
-
-      <div class="details-grid">
-
-        <div class="row">
-          <label>ID</label>
-          <p>{{ employee.id }}</p>
+        <div class="form-group">
+          <label>First Name</label>
+          <div class="readonly">{{ employee.first_name }}</div>
         </div>
 
+        <div class="form-group">
+          <label>Middle Name</label>
+          <div class="readonly">{{ employee.middle_name || "—" }}</div>
+        </div>
 
+        <div class="form-group">
+          <label>Last Name</label>
+          <div class="readonly">{{ employee.last_name }}</div>
+        </div>
 
-        <div class="row">
+        <div class="form-group full">
           <label>Email</label>
-          <p>{{ employee.email }}</p>
+          <div class="readonly">{{ employee.email }}</div>
         </div>
 
-        <div class="row">
-          <label>Phone</label>
-          <p>{{ employee.phone }}</p>
-        </div>
-
-        <div class="row">
+        <div class="form-group">
           <label>Gender</label>
-          <p class="capitalize">{{ employee.gender }}</p>
+          <div class="readonly capitalize">{{ employee.gender }}</div>
         </div>
 
-        <div class="row">
-          <label>Username</label>
-          <p>{{ employee.user?.username || "—" }}</p>
+        <div class="form-group">
+          <label>Phone Number</label>
+          <div class="readonly">{{ employee.phone }}</div>
         </div>
 
       </div>
 
-      <div class="btn-row">
-        <button class="btn-primary" @click="edit">
-          Edit Employee
-        </button>
+      <h3 class="section-title">Account Information</h3>
 
-        <button class="btn-secondary" @click="close">
-          Close
-        </button>
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label>Employee ID</label>
+          <div class="readonly">{{ employee.id }}</div>
+        </div>
+
+        <div class="form-group">
+          <label>Username</label>
+          <div class="readonly">{{ employee.user?.username || "—" }}</div>
+        </div>
+
+        <div class="form-group full">
+          <label>Role</label>
+          <div class="readonly">{{ employee.user?.role?.role_name || "—" }}</div>
+        </div>
+
+      </div>
+
+      <div class="btn-row full">
+        <button class="btn-secondary" @click="close">Close</button>
+        <button class="btn-primary" @click="edit">Edit Employee</button>
       </div>
 
     </div>
   </div>
 </template>
-
 <script setup>
 const props = defineProps({
-  employee: { type: Object, required: true },
+  employee: { type: Object, required: true }
 });
 
 const emit = defineEmits(["close", "edit"]);
@@ -86,10 +87,7 @@ function close() {
 function edit() {
   emit("edit", props.employee);
 }
-
-const employeeAvatar = "/images/avatar.png";
 </script>
-
 <style scoped>
 .modal-overlay {
   position: fixed;
@@ -102,16 +100,15 @@ const employeeAvatar = "/images/avatar.png";
 }
 
 .modal-large {
-  width: 550px;
+  width: 560px;
 }
 
 .modal-content {
   background: white;
-  padding: 28px;
+  padding: 30px;
   border-radius: var(--radius-lg);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-  animation: popIn .25s ease;
-  position: relative;
+  box-shadow: 0 12px 42px rgba(0,0,0,0.15);
+  animation: popIn 0.25s ease;
 }
 
 .modal-header {
@@ -122,8 +119,8 @@ const employeeAvatar = "/images/avatar.png";
 
 .modal-header h3 {
   font-size: 22px;
-  color: var(--primary-color);
   font-weight: 700;
+  color: var(--primary-color);
 }
 
 .close-btn {
@@ -131,59 +128,44 @@ const employeeAvatar = "/images/avatar.png";
   border: none;
   font-size: 26px;
   cursor: pointer;
+  color: #444;
 }
 
-.modal-subtitle {
-  font-size: 14px;
-  color: #777;
-  margin-bottom: 18px;
-}
 
-.avatar-wrapper {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 12px;
-}
 
-.avatar-img {
-  width: 95px;
-  height: 95px;
-  border-radius: 50%;
-  border: 3px solid var(--primary-color);
-  object-fit: cover;
-}
-
-.emp-name {
-  text-align: center;
-  font-size: 22px;
+.section-title {
   font-weight: 600;
-  margin-bottom: 4px;
+  margin-bottom: 12px;
+  margin-top: 16px;
+  color: var(--primary-color);
+  font-size: 15px;
 }
 
-.emp-role {
-  text-align: center;
-  color: #777;
-  margin-bottom: 22px;
-}
-
-.details-grid {
+.form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px 20px;
-  margin-bottom: 20px;
+  gap: 14px;
+  margin-bottom: 6px;
 }
 
-.row label {
-  display: block;
+.full {
+  grid-column: span 2;
+}
+
+.form-group label {
   font-size: 13px;
-  color: #666;
-  margin-bottom: 4px;
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 5px;
 }
 
-.row p {
-  font-size: 15px;
-  color: #222;
-  font-weight: 500;
+.readonly {
+  padding: 10px;
+  background: #fafafa;
+  border: 1px solid var(--table-border);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  color: #333;
 }
 
 .capitalize {
@@ -192,22 +174,22 @@ const employeeAvatar = "/images/avatar.png";
 
 .btn-row {
   display: flex;
-  justify-content: flex-start;
   gap: 12px;
-  margin-top: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
 }
 
 .btn-primary {
   background: var(--primary-color);
   color: white;
   border: none;
-  padding: 10px 22px;
+  padding: 10px 24px;
   border-radius: var(--radius-md);
   cursor: pointer;
 }
 
 .btn-secondary {
-  background: #e4e4e4;
+  background: #efefef;
   border: none;
   padding: 10px 22px;
   border-radius: var(--radius-md);

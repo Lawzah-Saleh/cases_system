@@ -7,80 +7,94 @@
         <button class="close-btn" @click="close">×</button>
       </div>
 
-      <p class="modal-subtitle">Full information about the selected user.</p>
+      <h3 class="section-title">Account Information</h3>
 
-      <div class="avatar-wrapper">
-        <img :src="userAvatar" alt="avatar" class="avatar-img" />
-      </div>
+      <div class="form-grid">
 
-      <h2 class="emp-name">
-        {{ user.username }}
-      </h2>
-
-      <p class="emp-role">
-        {{ user.role?.role_name || "—" }}
-      </p>
-
-      <div class="details-grid">
-
-        <div class="row">
-          <label>ID</label>
-          <p>{{ user.id }}</p>
+        <div class="form-group">
+          <label>User ID</label>
+          <div class="readonly">{{ user.id }}</div>
         </div>
 
-        <div class="row">
+        <div class="form-group">
+          <label>Username</label>
+          <div class="readonly">{{ user.username }}</div>
+        </div>
+
+        <div class="form-group">
+          <label>Role</label>
+          <div class="readonly">{{ user.role?.role_name || "—" }}</div>
+        </div>
+
+        <div class="form-group">
           <label>Status</label>
-          <p class="capitalize">{{ user.status }}</p>
-        </div>
-
-        <div class="row">
-          <label>Employee Name</label>
-          <p>
-            {{ user.employee?.first_name }} 
-            {{ user.employee?.middle_name }} 
-            {{ user.employee?.last_name }}
-          </p>
-        </div>
-
-        <div class="row">
-          <label>Email</label>
-          <p>{{ user.employee?.email || "—" }}</p>
-        </div>
-
-        <div class="row">
-          <label>Phone</label>
-          <p>{{ user.employee?.phone || "—" }}</p>
-        </div>
-
-        <div class="row">
-          <label>Gender</label>
-          <p class="capitalize">{{ user.employee?.gender || "—" }}</p>
+          <div class="readonly">
+            <span 
+              class="status-badge" 
+              :class="user.status === 'active' ? 'active' : 'inactive'"
+            >
+              {{ user.status }}
+            </span>
+          </div>
         </div>
 
       </div>
 
-      <div class="btn-row">
+      <h3 class="section-title">Personal Information</h3>
+
+      <div class="form-grid">
+
+        <div class="form-group full">
+          <label>Employee Name</label>
+          <div class="readonly">
+            {{ user.employee?.first_name }}
+            {{ user.employee?.middle_name }}
+            {{ user.employee?.last_name }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Email</label>
+          <div class="readonly">{{ user.employee?.email || "—" }}</div>
+        </div>
+
+        <div class="form-group">
+          <label>Phone</label>
+          <div class="readonly">{{ user.employee?.phone || "—" }}</div>
+        </div>
+
+        <div class="form-group">
+          <label>Gender</label>
+          <div class="readonly capitalize">
+            {{ user.employee?.gender || "—" }}
+          </div>
+        </div>
+
+      </div>
+
+      <div class="btn-row full">
         <button class="btn-secondary" @click="close">Close</button>
+        <button class="btn-primary" @click="edit">Edit User</button>
       </div>
 
     </div>
   </div>
 </template>
-
 <script setup>
 const props = defineProps({
   user: { type: Object, required: true }
 });
 
-const emit = defineEmits(["close"]);
+const emit = defineEmits(["close", "edit"]);
 
 function close() {
   emit("close");
 }
 
-const userAvatar = "/images/avatar.png";
+function edit() {
+  emit("edit", props.user);
+}
 </script>
-
 <style scoped>
 .modal-overlay {
   position: fixed;
@@ -93,16 +107,15 @@ const userAvatar = "/images/avatar.png";
 }
 
 .modal-large {
-  width: 550px;
+  width: 560px;
 }
 
 .modal-content {
   background: white;
-  padding: 28px;
+  padding: 30px;
   border-radius: var(--radius-lg);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+  box-shadow: 0 12px 42px rgba(0,0,0,0.15);
   animation: popIn .25s ease;
-  position: relative;
 }
 
 .modal-header {
@@ -113,8 +126,8 @@ const userAvatar = "/images/avatar.png";
 
 .modal-header h3 {
   font-size: 22px;
-  color: var(--primary-color);
   font-weight: 700;
+  color: var(--primary-color);
 }
 
 .close-btn {
@@ -122,78 +135,105 @@ const userAvatar = "/images/avatar.png";
   border: none;
   font-size: 26px;
   cursor: pointer;
+  color: #444;
 }
 
-.modal-subtitle {
-  font-size: 14px;
-  color: #777;
-  margin-bottom: 18px;
-}
-
-.avatar-wrapper {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 12px;
-}
-
-.avatar-img {
-  width: 95px;
-  height: 95px;
-  border-radius: 50%;
-  border: 3px solid var(--primary-color);
-  object-fit: cover;
-}
-
-.emp-name {
-  text-align: center;
-  font-size: 22px;
+.section-title {
   font-weight: 600;
-  margin-bottom: 4px;
+  margin-bottom: 12px;
+  margin-top: 16px;
+  color: var(--primary-color);
+  font-size: 15px;
 }
 
-.emp-role {
-  text-align: center;
-  color: #777;
-  margin-bottom: 22px;
-}
-
-.details-grid {
+.form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px 20px;
-  margin-bottom: 20px;
+  gap: 14px;
+  margin-bottom: 6px;
 }
 
-.row label {
-  display: block;
+.full {
+  grid-column: span 2;
+}
+
+.form-group label {
   font-size: 13px;
-  color: #666;
-  margin-bottom: 4px;
-}
-
-.row p {
-  font-size: 15px;
-  color: #222;
   font-weight: 500;
+  color: #555;
+  margin-bottom: 5px;
 }
 
-.capitalize {
-  text-transform: capitalize;
+.readonly {
+  padding: 10px;
+  background: #fafafa;
+  border: 1px solid #e0e0e0;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  color: #333;
+  cursor: default;
+  user-select: text;
 }
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  text-transform: capitalize;
+  background: #f2f7f3;
+  color: #2d8a4f;
+}
+
+.status-badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status-badge.active {
+  background: #edf7ef;
+  color: #2e8b57;
+}
+
+.status-badge.inactive {
+  background: #f9eded;
+  color: #bd4a4a;
+}
+
+
 
 .btn-row {
   display: flex;
-  justify-content: flex-start;
+  justify-content: flex-end;
   gap: 12px;
-  margin-top: 10px;
+  margin-top: 20px;
 }
 
-.btn-secondary {
-  background: #e4e4e4;
-  border: none;
+.btn-primary {
+  background: var(--primary-color);
+  color: white;
   padding: 10px 22px;
   border-radius: var(--radius-md);
   cursor: pointer;
+  border: none;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+}
+
+.btn-secondary {
+  background: #efefef;
+  padding: 10px 22px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  border: none;
 }
 
 @keyframes popIn {

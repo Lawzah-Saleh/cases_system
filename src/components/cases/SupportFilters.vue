@@ -170,7 +170,7 @@ onMounted(async () => {
 
 /* BUTTONS */
 .apply-btn {
-  background: #4b32c3;
+  background: var(--primary-color);
   color: white;
   padding: 12px 26px;
   border-radius: 10px;

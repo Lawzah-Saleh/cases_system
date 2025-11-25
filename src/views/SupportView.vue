@@ -61,13 +61,14 @@
 
           <th v-if="isVisible('id')">ID</th>
           <th v-if="isVisible('title')">Title</th>
-          <th v-if="isVisible('description')">Description</th>
           <th v-if="isVisible('type')">Type</th>
           <th v-if="isVisible('way_entry')">Way Entry</th>
           <th v-if="isVisible('status')">Status</th>
           <th v-if="isVisible('priority')">Priority</th>
-          <th v-if="isVisible('client')">Client</th>
-          <th v-if="isVisible('employees')">Employees</th>
+          <th v-if="isVisible('client')">Customer</th>
+          <th v-if="isVisible('employees')">Team Members</th>
+          <th></th>
+
 
         </tr>
       </thead>
@@ -91,17 +92,13 @@
           <td v-if="isVisible('id')">
             {{ c.id }}
           </td>
-
-          <td v-if="isVisible('title')" class="title-cell">
+          <td
+            v-if="isVisible('title')"
+            class="title-cell clickable-title"
+            @click="openDetails(c)"
+          >
             {{ c.title }}
           </td>
-
-          <td v-if="isVisible('description')" class="desc-cell">
-            {{ c.description }}
-          </td>
-
-
-
           <td v-if="isVisible('type')">
             <span class="badge badge-soft">
               {{ c.type }}
@@ -144,6 +141,14 @@
             </div>
             <span v-if="!c.employees || !c.employees.length">—</span>
           </td>
+                    <td class="action-cell">
+            <div class="menu-trigger" @click.stop="toggleMenu(c.id)">⋮</div>
+
+            <div v-if="openMenu === c.id" class="menu-dropdown">
+              <div class="menu-item" @click="startEdit(c)">Edit</div>
+              <div class="menu-item delete" @click="deleteCase(c)">Delete</div>
+            </div>
+          </td>
 
         </tr>
 
@@ -185,17 +190,37 @@
     </div>
 
   </div>
+<CaseDetailsModal
+  v-if="openDetailsModal"
+  :caseData="selectedCase"
+  @close="openDetailsModal = false"
+/>
+
 </template>
 
 <script setup>
 import { ref } from "vue";
 import axios from "axios";
 import { useAuthStore } from "@/stores/auth";
+import { onMounted, onBeforeUnmount } from "vue";
+
 
 import SupportFilters from "@/components/cases/SupportFilters.vue";
+import CaseDetailsModal from "@/components/cases/CaseDetailsModal.vue";
+
 
 const cases = ref([]);
 const isLoading = ref(false);
+
+const openDetailsModal = ref(false);
+const selectedCase = ref(null);
+
+function openDetails(c) {
+  selectedCase.value = c;
+  openDetailsModal.value = true;
+}
+
+
 
 const currentPage = ref(1);
 const lastPage = ref(1);
@@ -209,7 +234,6 @@ const columns = ref([
   { key: "id",          label: "ID",          visible: true },
   { key: "title",       label: "Title",       visible: true },
   { key: "description", label: "Description", visible: true },
-  { key: "attachment",  label: "Attachment",  visible: true },
   { key: "type",        label: "Type",        visible: true },
   { key: "way_entry",   label: "Way Entry",   visible: true },
   { key: "status",      label: "Status",      visible: true },
@@ -273,6 +297,44 @@ function closeFilter() {
 function applyColumnFilters() {
   showFilter.value = false;
 }
+/* ========== ACTION MENU STATE ========== */
+const openMenu = ref(null);
+
+function toggleMenu(id) {
+  openMenu.value = openMenu.value === id ? null : id;
+}
+
+function closeAllMenus() {
+  openMenu.value = null;
+}
+
+onMounted(() => {
+  document.addEventListener("click", closeAllMenus);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener("click", closeAllMenus);
+});
+
+/* ========== ACTION FUNCTIONS ========== */
+function startEdit(c) {
+  alert("Edit case: " + c.id);
+}
+
+async function deleteCase(c) {
+  if (!confirm(`Delete case #${c.id}?`)) return;
+
+  const token = useAuthStore().token;
+
+  await axios.delete(`http://localhost:8000/api/cases/${c.id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  fetchCases(currentPage.value);
+}
+/* ========== FETCH DATA ========== */
+
+
 
 // ====== BADGE STYLES ======
 function statusBadgeClass(status) {
@@ -557,17 +619,15 @@ fetchCases();
 }
 
 .page-btn {
-  padding: 6px 18px;
-  border-radius: 999px;
-  border: 1px solid #ccc;
+  padding: 5px 20px;
+  border-radius: 6px;
+  border: 1px solid gray;
   background: white;
   cursor: pointer;
-  font-size: 13px;
 }
 
 .page-btn:disabled {
   opacity: 0.5;
-  cursor: default;
 }
 
 /* SKELETON */
@@ -583,5 +643,45 @@ fetchCases();
   0% { opacity: 0.6; }
   50% { opacity: 1; }
   100% { opacity: 0.6; }
+}
+/* ACTION MENU */
+.action-cell {
+  position: relative;
+}
+
+.menu-trigger {
+  cursor: pointer;
+  font-size: 20px;
+  padding: 5px;
+}
+
+.menu-dropdown {
+  position: absolute;
+  top: 80%;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  width: 120px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  z-index: 9999;
+}
+
+.menu-item {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.menu-item.delete {
+  color: red;
+}
+
+.menu-item:hover {
+  background: #f4f4f4;
+}
+.clickable-title {
+  cursor: pointer;
+  color: var(--primary-color);
+  font-weight: 600;
 }
 </style>

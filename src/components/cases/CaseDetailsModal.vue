@@ -2,117 +2,135 @@
   <div class="modal-overlay" @click.self="close">
     <div class="modal-content modal-large">
 
-      <!-- Header -->
       <div class="modal-header">
         <h3>Case Details</h3>
         <button class="close-btn" @click="close">×</button>
       </div>
 
-      <p class="modal-subtitle">Full information about this support case.</p>
+      <div class="form-grid">
 
-      <!-- Avatar -->
-      <div class="avatar-wrapper">
-        <img :src="clientAvatar" class="avatar-img" alt="client" />
-      </div>
-
-      <!-- Case Title -->
-      <h2 class="case-title">{{ caseItem.title }}</h2>
-
-      <!-- Client Name -->
-      <p class="case-client">Client: {{ caseItem.client?.client_name ?? '—' }}</p>
-
-      <!-- Badges -->
-      <div class="badges-row">
-        <span class="badge type">{{ caseItem.type }}</span>
-        <span class="badge status" :class="caseItem.status">{{ caseItem.status }}</span>
-        <span class="badge priority" :class="caseItem.priority">{{ caseItem.priority }}</span>
-      </div>
-
-      <!-- DETAILS GRID -->
-      <div class="details-grid">
-
-        <div class="row">
-          <label>ID</label>
-          <p>{{ caseItem.id }}</p>
+        <div class="form-group">
+            <h3 class="section-title">Case ID</h3>
+          <div class="readonly">{{ caseData.id }}</div>
         </div>
 
-        <div class="row">
-          <label>Entry Way</label>
-          <p>{{ caseItem.way_entry }}</p>
+        <div class="form-group">
+            <h3 class="section-title">Case Nane</h3>
+          <div class="readonly">{{ caseData.title }}</div>
+        </div>
+        <div class="form-group full">
+            <h3 class="section-title">Description</h3>
+          <div class="readonly">{{ caseData.description || "—" }}</div>
         </div>
 
-        <div class="row">
-          <label>Description</label>
-          <p>{{ caseItem.description }}</p>
+        <div class="form-group">
+          <h3 class="section-title">Client Name</h3>
+          <div class="readonly">{{ caseData.client?.client_name || "—" }}</div>
         </div>
 
-        <div class="row">
-          <label>Created At</label>
-          <p>{{ caseItem.created_at }}</p>
+        <div class="form-group">
+          <h3 class="section-title">Type</h3>
+          <div class="readonly capitalize">{{ caseData.type }}</div>
         </div>
 
-        <div class="row">
-          <label>Updated At</label>
-          <p>{{ caseItem.updated_at }}</p>
+        <div class="form-group">
+          <h3 class="section-title">Way Entry</h3>
+          <div class="readonly capitalize">{{ caseData.way_entry }}</div>
+        </div>
+
+
+
+        <div class="form-group">
+          <h3 class="section-title">Status</h3>
+          <div class="readonly badge-box">
+            <span class="micro-badge" :class="statusClass(caseData.status)">
+              {{ caseData.status }}
+            </span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <h3 class="section-title">Priority</h3>
+          <div class="readonly badge-box">
+            <span class="micro-badge" :class="priorityClass(caseData.priority)">
+              {{ caseData.priority }}
+            </span>
+          </div>
         </div>
 
       </div>
 
-      <!-- Notes -->
-      <div class="notes-box" v-if="caseItem.note">
-        <label>Notes</label>
-        <p>{{ caseItem.note }}</p>
+      <h3 class="section-title">Internal Note</h3>
+      <div class="field-box">
+        {{ caseData.internal_note || "—" }}
       </div>
 
-      <!-- Attachment -->
-      <div class="attachment-box" v-if="caseItem.attachment">
-        <label>Attachment</label>
-        <a :href="caseItem.attachment" target="_blank" class="attach-link">View Attachment</a>
+      <h3 class="section-title">Assigned Employees</h3>
+      <div class="field-box employees-list">
+        <p v-for="e in caseData.employees" :key="e.id">
+          • {{ e.first_name }} {{ e.last_name }}
+        </p>
+        <p v-if="!caseData.employees?.length">—</p>
       </div>
 
-      <!-- TEAM MEMBERS -->
-      <div class="team-box">
-        <label>Team Members</label>
-
-        <div class="team-list">
-          <span v-for="emp in caseItem.employees" :key="emp.id" class="team-chip">
-            {{ emp.first_name.charAt(0) }}{{ emp.last_name.charAt(0) }}
-          </span>
-        </div>
-
-        <button class="assign-btn" @click="assign">Assign Employees</button>
+      <h3 class="section-title">Attachment</h3>
+      <div class="field-box">
+        <a
+          v-if="caseData.attachment_url"
+          :href="caseData.attachment_url"
+          target="_blank"
+          class="attach-link"
+        >
+          📎 View Attachment
+        </a>
+        <span v-else>—</span>
       </div>
 
-      <!-- Buttons -->
-      <div class="btn-row">
-        <button class="btn-primary" @click="edit">Edit Case</button>
+      <div class="btn-row full">
         <button class="btn-secondary" @click="close">Close</button>
+        <button class="btn-primary" @click="edit">Edit Case</button>
       </div>
+
 
     </div>
   </div>
 </template>
+
 <script setup>
 const props = defineProps({
-  caseItem: { type: Object, required: true }
+  caseData: { type: Object, required: true }
 });
 
-const emit = defineEmits(["close", "edit", "assign"]);
+const emit = defineEmits(["close", "edit"]);
+
+function edit() {
+  emit("edit", props.caseData);
+}
 
 function close() {
   emit("close");
 }
 
-function edit() {
-  emit("edit", props.caseItem);
+function statusClass(status) {
+  return {
+    opened: "badge-open",
+    assigned: "badge-assigned",
+    in_progress: "badge-progress",
+    reassigned: "badge-reassigned",
+    closed: "badge-closed",
+  }[status] || "";
 }
 
-function assign() {
-  emit("assign", props.caseItem);
+function priorityClass(priority) {
+  return {
+    high: "badge-high",
+    middle: "badge-middle",
+    low: "badge-low",
+    normal: "badge-normal",
+  }[priority] || "";
 }
-
-const clientAvatar = "/images/avatar.png";
 </script>
+
 <style scoped>
 .modal-overlay {
   position: fixed;
@@ -125,19 +143,19 @@ const clientAvatar = "/images/avatar.png";
 }
 
 .modal-large {
-  width: 650px;
+  width: 750px;
 }
 
 .modal-content {
   background: white;
-  padding: 28px;
+  padding: 32px;
   border-radius: var(--radius-lg);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-  animation: popIn .25s ease;
-  position: relative;
+  box-shadow: 0 12px 42px rgba(0,0,0,0.15);
+  animation: popIn 0.25s ease;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
-/* Header */
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -155,150 +173,122 @@ const clientAvatar = "/images/avatar.png";
   border: none;
   font-size: 26px;
   cursor: pointer;
+  color: #444;
 }
 
-.modal-subtitle {
-  font-size: 14px;
-  color: #777;
-  margin-bottom: 18px;
-}
-
-/* Avatar */
-.avatar-wrapper {
-  display: flex;
-  justify-content: center;
-}
-
-.avatar-img {
-  width: 95px;
-  height: 95px;
-  border-radius: 50%;
-  border: 3px solid var(--primary-color);
-  object-fit: cover;
-  margin-bottom: 15px;
-}
-
-/* Case Title */
-.case-title {
-  text-align: center;
-  font-size: 22px;
+.section-title {
   font-weight: 600;
+  margin-top: 16px;
+  margin-bottom: 8px;
+  color: var(--primary-color);
+  font-size: 15px;
 }
 
-.case-client {
-  text-align: center;
-  color: #555;
-  margin-bottom: 18px;
-}
-
-/* Badges */
-.badges-row {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 25px;
-}
-
-.badge {
-  padding: 5px 14px;
-  border-radius: 18px;
-  font-size: 13px;
-  font-weight: 600;
-  text-transform: capitalize;
-  color: white;
-}
-
-.badge.type { background: #5b6dff; }
-.badge.priority.high { background: red; }
-.badge.priority.middle { background: orange; }
-.badge.priority.low { background: green; }
-.badge.priority.normal { background: gray; }
-
-.badge.status.opened { background: #666; }
-.badge.status.assigned { background: #007bff; }
-.badge.status.in_progress { background: #ff9800; }
-.badge.status.reassigned { background: #9c27b0; }
-.badge.status.closed { background: #2e7d32; }
-
-/* Details grid */
-.details-grid {
+.form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px 20px;
-  margin-bottom: 20px;
+  gap: 14px;
+  margin-bottom: 6px;
 }
 
-.row label {
-  display: block;
+.full {
+  grid-column: span 2;
+}
+
+.form-group label {
   font-size: 13px;
-  color: #666;
-  margin-bottom: 4px;
-}
-
-.row p {
-  font-size: 15px;
   font-weight: 500;
-  color: #222;
+  color: #555;
+  margin-bottom: 5px;
 }
 
-/* Notes */
-.notes-box, .attachment-box {
-  margin-bottom: 20px;
+.readonly {
+  padding: 10px;
+  background: #fafafa;
+  border: 1px solid var(--table-border);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  color: #333;
+  user-select: text;
+}
+
+.field-box {
+  background: #fafafa;
+  padding: 10px 14px;
+  border: 1px solid var(--table-border);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 6px;
+}
+
+.micro-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  text-transform: capitalize;
+}
+
+.micro-badge::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.badge-open { background: #fff4e5; color: #b45b00; }
+.badge-assigned { background: #e7f5ff; color: #0b6fb8; }
+.badge-progress { background: #fff3cd; color: #896100; }
+.badge-reassigned { background: #e0e7ff; color: #3b3bb3; }
+.badge-closed { background: #e6ffed; color: #1e7a3b; }
+
+.badge-high { background: #ffe5e5; color: #b3261e; }
+.badge-middle { background: #fff4e5; color: #b45b00; }
+.badge-low { background: #e5f6ff; color: #006395; }
+.badge-normal { background: #edf2ff; color: #364fc7; }
+
+.employees-list p {
+  margin: 3px 0;
 }
 
 .attach-link {
   color: var(--primary-color);
-}
-
-/* Team Members */
-.team-box {
-  margin-bottom: 25px;
-}
-
-.team-list {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin: 10px 0;
-}
-
-.team-chip {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: var(--primary-color);
-  color: white;
   font-weight: 600;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.assign-btn {
-  background: #f3f3f3;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-/* Buttons */
-.btn-row {
-  display: flex;
-  gap: 12px;
 }
 
 .btn-primary {
-  padding: 10px 22px;
   background: var(--primary-color);
-  border-radius: var(--radius-md);
   color: white;
+  padding: 10px 22px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  border: none;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
 }
 
 .btn-secondary {
+  background: #efefef;
   padding: 10px 22px;
-  background: #eaeaea;
   border-radius: var(--radius-md);
+  cursor: pointer;
+  border: none;
+  font-weight: 600;
+}
+
+.btn-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
 }
 
 @keyframes popIn {
