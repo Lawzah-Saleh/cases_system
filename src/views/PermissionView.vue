@@ -1,7 +1,10 @@
 <template>
   <div class="table-container">
     <div class="mb-4 flex items-center justify-between">
-      <h2 class="main-header">Setting / Permissions</h2>
+      <h2 class="main-header">
+        <span class="link-back" @click="$router.back()">Setting</span> / Permissions
+      </h2>
+
       <button class="add-button" @click="openCreate = true">+ Create permissions</button>
     </div>
 
@@ -14,7 +17,8 @@
       <thead>
         <tr class="table-header-row">
           <th>id</th>
-          <th>permission Name</th>
+          <th>permission category Name</th>
+          <th>permissions</th>
           <th></th>
         </tr>
       </thead>
@@ -22,7 +26,8 @@
         <tr v-for="(per, index) in permissions" :key="per.id">
           <td>{{ index + 1 }}</td>
 
-          <td>{{ per.permission_name }}</td>
+          <td>{{ per.category_name }}</td>
+          <td class="user-link" @click="openDetails(per)">Show permissions</td>
 
           <td class="action-cell">
             <div class="menu-trigger" @click="toggleMenu(per.id)">⋮</div>
@@ -71,6 +76,12 @@
     @close="openEdit = false"
     @updated="handleRefresh"
   />
+
+  <PermissionDetailsModel
+    v-if="openPermissionDetailsModal"
+    :permission="selectedPermission"
+    @close="openPermissionDetailsModal = false"
+  />
 </template>
 
 <script>
@@ -79,9 +90,10 @@ import { useAuthStore } from '../stores/auth'
 import { toast } from 'vue3-toastify'
 import PermissionCreateModel from '@/components/permissions/PermissionCreateModel.vue'
 import PermissionEditModel from '@/components/permissions/PermissionEditModel.vue'
+import PermissionDetailsModel from '@/components/permissions/PermissionDetailsModel.vue'
 
 export default {
-  components: { PermissionCreateModel, PermissionEditModel },
+  components: { PermissionCreateModel, PermissionEditModel, PermissionDetailsModel },
   watch: {
     search() {
       this.debounceSearch()
@@ -96,10 +108,15 @@ export default {
       lastPage: 1,
       openCreate: false,
       openEdit: false,
-      selectedPermission: null
+      selectedPermission: null,
+      openPermissionDetailsModal: false
     }
   },
   methods: {
+    openDetails(permission) {
+      this.selectedPermission = permission
+      this.openPermissionDetailsModal = true
+    },
     startEdit(permission) {
       this.selectedPermission = JSON.parse(JSON.stringify(permission))
       this.openEdit = true
@@ -124,7 +141,7 @@ export default {
       try {
         const token = useAuthStore().token
 
-        await axios.delete(`http://localhost:8000/api/permissions/${permission.id}`, {
+        await axios.delete(`http://localhost:8000/api/permission-categories/${permission.id}`, {
           headers: { Authorization: `Bearer ${token}` }
         })
 
@@ -145,7 +162,7 @@ export default {
       try {
         const authStore = useAuthStore()
         const token = authStore.token || localStorage.getItem('token')
-        const res = await axios.get('http://localhost:8000/api/permissions', {
+        const res = await axios.get('http://localhost:8000/api/permission-categories', {
           headers: { Authorization: `Bearer ${token}` },
           params: {
             page,
@@ -229,6 +246,11 @@ export default {
   display: block;
 }
 
+.user-link {
+  color: var(--primary-color);
+  cursor: pointer;
+  font-weight: 600;
+}
 .action-cell {
   position: relative;
 }
@@ -259,6 +281,15 @@ export default {
 }
 .delete {
   color: red;
+}
+
+.link-back {
+  cursor: pointer;
+  color: gray;
+  font-weight: 700;
+}
+.link-back:hover {
+  text-decoration: underline;
 }
 
 /* Flex helpers */
