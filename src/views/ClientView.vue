@@ -67,7 +67,7 @@
             <div class="menu-trigger" @click="toggleMenu(item.id)">⋮</div>
             <div v-if="openMenu === item.id" class="menu-dropdown">
               <div class="menu-item" @click="startEdit(item)">Edit</div>
-              <div class="menu-item delete" @click="deleteclient(item)">Delete</div>
+              <div class="menu-item delete" @click="openDeleteModal(item)">Delete</div>
             </div>
           </td>
         </tr>
@@ -109,6 +109,14 @@
     @close="openEdit = false"
     @updated="handleRefresh"
   />
+
+  <ConfirmDeleteModal
+    v-if="showDeleteModal && deleteTarget"
+    title="Delete Client"
+    :message="`Are you sure you want to delete ${deleteTarget.client_name}?`"
+    @close="showDeleteModal = false"
+    @confirm="confirmDelete"
+  />
 </template>
 
 <script>
@@ -117,11 +125,13 @@ import { useAuthStore } from '../stores/auth'
 import ClientCreateModel from '@/components/clients/ClientCreateModel.vue'
 import ClientEditModel from '@/components/clients/ClientEditModel.vue'
 import { toast } from 'vue3-toastify'
+import ConfirmDeleteModal from '@/components/ConfirmDeleteModal.vue'
 
 export default {
   components: {
     ClientCreateModel,
-    ClientEditModel
+    ClientEditModel,
+    ConfirmDeleteModal
   },
   watch: {
     search() {
@@ -139,6 +149,8 @@ export default {
       openCreate: false,
       openEdit: false,
       selectedClient: null,
+      showDeleteModal: false,
+      deleteTarget: null,
       columns: [
         { key: 'id', label: 'ID', visible: true },
         { key: 'client_name', label: 'Name', visible: true },
@@ -188,26 +200,28 @@ export default {
       console.log('Edit:', item)
     },
 
-    async deleteclient(client) {
-      if (!confirm('Delete this client?')) return
-
+    openDeleteModal(client) {
+      this.deleteTarget = client
+      this.showDeleteModal = true
+      this.openMenu = null
+    },
+    async confirmDelete(finish) {
       try {
         const token = useAuthStore().token
 
-        await axios.delete(`http://localhost:8000/api/clients/${client.id}`, {
+        await axios.delete(`http://localhost:8000/api/clients/${this.deleteTarget.id}`, {
           headers: { Authorization: `Bearer ${token}` }
         })
 
-        toast.success('Client deleted successfully!', {
-          autoClose: 1500
-        })
+        toast.success('Client deleted successfully!', { autoClose: 1500 })
 
-        await new Promise((resolve) => setTimeout(resolve, 500))
-
+        finish()
+        this.showDeleteModal = false
         this.handleRefresh()
-      } catch (e) {
-        console.error(e)
+      } catch (err) {
+        finish()
         toast.error('Failed to delete client.', { autoClose: 2000 })
+        console.error(err)
       }
     },
 

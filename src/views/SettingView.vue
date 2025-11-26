@@ -15,13 +15,13 @@
         </template>
       </SettingCard>
 
-      <SettingCard title="Personal account" @click="goTo('/app/settings/account')">
+      <SettingCard title="Personal account" @click="goTo('/app/personalAccount')">
         <template #icon>
           <i class="bi bi-person-circle"></i>
         </template>
       </SettingCard>
 
-      <SettingCard title="Complaints delays time" @click="goTo('/app/settings/complaints')">
+      <SettingCard title="Cases delays time" @click="goTo('/app/cases_delay_time')">
         <template #icon>
           <i class="bi bi-clock-history"></i>
         </template>
@@ -53,7 +53,7 @@ h2 {
 
 .settings-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 20px;
 }
 </style>

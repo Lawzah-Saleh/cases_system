@@ -12,6 +12,9 @@ import SupportView from '@/views/SupportView.vue'
 import SettingView from '@/views/SettingView.vue'
 import PermissionView from '@/views/PermissionView.vue'
 import RoleView from '@/views/RoleView.vue'
+import PriorityDelayTimeView from '@/views/PriorityDelayTimeView.vue'
+import PersonalAccount from '@/views/PersonalAccountView.vue'
+import PersonalAccountView from '@/views/PersonalAccountView.vue'
 
 const routes = [
   {
@@ -49,6 +52,14 @@ const routes = [
       {
         path: 'role',
         component: RoleView
+      },
+      {
+        path: 'cases_delay_time',
+        component: PriorityDelayTimeView
+      },
+      {
+        path: 'personalAccount',
+        component: PersonalAccountView
       }
     ]
   }
