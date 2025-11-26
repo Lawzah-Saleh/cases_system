@@ -195,6 +195,11 @@
   :caseData="selectedCase"
   @close="openDetailsModal = false"
 />
+<CaseCreateModal
+  v-if="openCreate"
+  @close="openCreate = false"
+  @created="fetchCases(currentPage)"
+/>
 
 </template>
 
@@ -208,6 +213,9 @@ import { onMounted, onBeforeUnmount } from "vue";
 import SupportFilters from "@/components/cases/SupportFilters.vue";
 import CaseDetailsModal from "@/components/cases/CaseDetailsModal.vue";
 
+import CaseCreateModal from "@/components/cases/CaseCreateModal.vue";
+
+const openCreate = ref(false);
 
 const cases = ref([]);
 const isLoading = ref(false);
@@ -406,7 +414,7 @@ fetchCases();
   color: #fff;
   border: none;
   padding: 10px 20px;
-  border-radius: 999px;
+  border-radius: var(--radius-lg);
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
