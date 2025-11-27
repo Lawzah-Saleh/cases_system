@@ -1,46 +1,32 @@
 <template>
   <div class="table-container">
-
     <!-- ===================== HEADER ===================== -->
     <div class="header-row">
       <div class="header-title-container">
         <h2 class="main-header">Support Cases</h2>
-        <p class="sub-header">
-          Detailed overview and management of all customer support cases.
-        </p>
+        <p class="sub-header">Detailed overview and management of all customer support cases.</p>
       </div>
 
-      <button class="add-button" @click="openCreate = true">
-        + Create Support
-      </button>
+      <button class="add-button" @click="openCreate = true">+ Create Support</button>
     </div>
 
     <!-- ===================== FILTERS (ADVANCED) ===================== -->
     <SupportFilters @applyFilters="handleFilters" />
 
     <!-- ===================== SHOW / HIDE COLUMNS BUTTON ===================== -->
-    <button class="filter-button" @click="showFilter = true">
-      Show / Hide Columns
-    </button>
+    <button class="filter-button" @click="showFilter = true">Show / Hide Columns</button>
 
     <!-- ===================== COLUMNS MODAL ===================== -->
     <div v-if="showFilter" class="filter-overlay" @click.self="closeFilter">
       <div class="filter-modal">
-
         <div class="filter-header">
           <h2>Show/Hide Columns</h2>
 
-          <button class="select-all-btn" @click="selectAllColumns">
-            All
-          </button>
+          <button class="select-all-btn" @click="selectAllColumns">All</button>
         </div>
 
         <div class="filter-grid">
-          <div
-            v-for="col in columns"
-            :key="col.key"
-            class="filter-item"
-          >
+          <div v-for="col in columns" :key="col.key" class="filter-item">
             <input type="checkbox" v-model="col.visible" />
             <label>{{ col.label }}</label>
           </div>
@@ -50,7 +36,6 @@
           <button class="cancel-btn" @click="closeFilter">Cancel</button>
           <button class="apply-btn" @click="applyColumnFilters">Apply</button>
         </div>
-
       </div>
     </div>
 
@@ -58,7 +43,6 @@
     <table class="custom-table">
       <thead>
         <tr class="table-header-row">
-
           <th v-if="isVisible('id')">ID</th>
           <th v-if="isVisible('title')">Title</th>
           <th v-if="isVisible('type')">Type</th>
@@ -68,13 +52,10 @@
           <th v-if="isVisible('client')">Customer</th>
           <th v-if="isVisible('employees')">Team Members</th>
           <th></th>
-
-
         </tr>
       </thead>
 
       <tbody>
-
         <!-- ===== SKELETON ROWS ===== -->
         <tr v-if="isLoading" v-for="n in 5" :key="n" class="skeleton-row">
           <td colspan="10">
@@ -83,20 +64,11 @@
         </tr>
 
         <!-- ===== DATA ROWS ===== -->
-        <tr
-          v-else
-          v-for="c in cases"
-          :key="c.id"
-          class="table-row-hover"
-        >
+        <tr v-else v-for="(c, index) in cases" :key="c.id" class="table-row-hover">
           <td v-if="isVisible('id')">
-            {{ c.id }}
+            {{ index + 1 }}
           </td>
-          <td
-            v-if="isVisible('title')"
-            class="title-cell clickable-title"
-            @click="openDetails(c)"
-          >
+          <td v-if="isVisible('title')" class="title-cell clickable-title" @click="openDetails(c)">
             {{ c.title }}
           </td>
           <td v-if="isVisible('type')">
@@ -110,38 +82,28 @@
           </td>
 
           <td v-if="isVisible('status')">
-            <span
-              class="badge"
-              :class="statusBadgeClass(c.status)"
-            >
+            <span class="badge" :class="statusBadgeClass(c.status)">
               {{ c.status }}
             </span>
           </td>
 
           <td v-if="isVisible('priority')">
-            <span
-              class="badge"
-              :class="priorityBadgeClass(c.priority)"
-            >
-              {{ c.priority }}
+            <span class="badge" :class="priorityBadgeClass(c.priority.priority_name)">
+              {{ c.priority.priority_name }}
             </span>
           </td>
 
           <td v-if="isVisible('client')">
-            {{ c.client?.client_name ?? "—" }}
+            {{ c.client?.client_name ?? '—' }}
           </td>
 
           <td v-if="isVisible('employees')">
-            <div
-              v-for="e in c.employees"
-              :key="e.id"
-              class="employee-line"
-            >
+            <div v-for="e in c.employees" :key="e.id" class="employee-line">
               • {{ e.first_name }} {{ e.last_name }}
             </div>
             <span v-if="!c.employees || !c.employees.length">—</span>
           </td>
-                    <td class="action-cell">
+          <td class="action-cell">
             <div class="menu-trigger" @click.stop="toggleMenu(c.id)">⋮</div>
 
             <div v-if="openMenu === c.id" class="menu-dropdown">
@@ -149,7 +111,6 @@
               <div class="menu-item delete" @click="deleteCase(c)">Delete</div>
             </div>
           </td>
-
         </tr>
 
         <tr v-if="!isLoading && cases.length === 0">
@@ -157,18 +118,12 @@
             No cases found.
           </td>
         </tr>
-
       </tbody>
     </table>
 
     <!-- ===== PAGINATION ===== -->
     <div class="pagination-container mt-4">
-      <p class="results-count">
-        {{ total }} results
-        <span v-if="lastPage > 1">
-          — Page {{ currentPage }} of {{ lastPage }}
-        </span>
-      </p>
+      <p class="results-count">{{ cases.length }} results</p>
 
       <div>
         <button
@@ -188,197 +143,188 @@
         </button>
       </div>
     </div>
-
   </div>
-<CaseDetailsModal
-  v-if="openDetailsModal"
-  :caseData="selectedCase"
-  @close="openDetailsModal = false"
-/>
-<CaseCreateModal
-  v-if="openCreate"
-  @close="openCreate = false"
-  @created="fetchCases(currentPage)"
-/>
-
+  <CaseDetailsModal
+    v-if="openDetailsModal"
+    :caseData="selectedCase"
+    @close="openDetailsModal = false"
+  />
+  <CaseCreateModal
+    v-if="openCreate"
+    @close="openCreate = false"
+    @created="fetchCases(currentPage)"
+  />
 </template>
 
 <script setup>
-import { ref } from "vue";
-import axios from "axios";
-import { useAuthStore } from "@/stores/auth";
-import { onMounted, onBeforeUnmount } from "vue";
+import { ref } from 'vue'
+import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
+import { onMounted, onBeforeUnmount } from 'vue'
 
+import SupportFilters from '@/components/cases/SupportFilters.vue'
+import CaseDetailsModal from '@/components/cases/CaseDetailsModal.vue'
 
-import SupportFilters from "@/components/cases/SupportFilters.vue";
-import CaseDetailsModal from "@/components/cases/CaseDetailsModal.vue";
+import CaseCreateModal from '@/components/cases/CaseCreateModal.vue'
 
-import CaseCreateModal from "@/components/cases/CaseCreateModal.vue";
+const openCreate = ref(false)
 
-const openCreate = ref(false);
+const cases = ref([])
+const isLoading = ref(false)
 
-const cases = ref([]);
-const isLoading = ref(false);
-
-const openDetailsModal = ref(false);
-const selectedCase = ref(null);
+const openDetailsModal = ref(false)
+const selectedCase = ref(null)
 
 function openDetails(c) {
-  selectedCase.value = c;
-  openDetailsModal.value = true;
+  selectedCase.value = c
+  openDetailsModal.value = true
 }
 
+const currentPage = ref(1)
+const lastPage = ref(1)
+const total = ref(0)
 
-
-const currentPage = ref(1);
-const lastPage = ref(1);
-const total = ref(0);
-
-const filterParams = ref({});
+const filterParams = ref({})
 
 // ====== SHOW / HIDE COLUMNS STATE ======
-const showFilter = ref(false);
+const showFilter = ref(false)
 const columns = ref([
-  { key: "id",          label: "ID",          visible: true },
-  { key: "title",       label: "Title",       visible: true },
-  { key: "description", label: "Description", visible: true },
-  { key: "type",        label: "Type",        visible: true },
-  { key: "way_entry",   label: "Way Entry",   visible: true },
-  { key: "status",      label: "Status",      visible: true },
-  { key: "priority",    label: "Priority",    visible: true },
-  { key: "client",      label: "Client",      visible: true },
-  { key: "employees",   label: "Employees",   visible: true },
-]);
+  { key: 'id', label: 'ID', visible: true },
+  { key: 'title', label: 'Title', visible: true },
+  { key: 'description', label: 'Description', visible: true },
+  { key: 'type', label: 'Type', visible: true },
+  { key: 'way_entry', label: 'Way Entry', visible: true },
+  { key: 'status', label: 'Status', visible: true },
+  { key: 'priority', label: 'Priority', visible: true },
+  { key: 'client', label: 'Client', visible: true },
+  { key: 'employees', label: 'Employees', visible: true }
+])
 
 // ====== HANDLERS ======
 function handleFilters(f) {
-  filterParams.value = { ...f };
-  fetchCases(1);
+  filterParams.value = { ...f }
+  fetchCases(1)
 }
 
 async function fetchCases(page = 1) {
   try {
-    isLoading.value = true;
-    currentPage.value = page;
+    isLoading.value = true
+    currentPage.value = page
 
-    const token = useAuthStore().token;
+    const token = useAuthStore().token
 
-    const res = await axios.get("http://localhost:8000/api/cases", {
+    const res = await axios.get('http://localhost:8000/api/cases', {
       headers: {
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${token}`
       },
       params: {
         page,
-        ...filterParams.value,
-      },
-    });
+        ...filterParams.value
+      }
+    })
 
-    cases.value = res.data.data;
-    lastPage.value = res.data.last_page;
-    total.value = res.data.total;
+    cases.value = res.data.data
+    lastPage.value = res.data.last_page
+    total.value = res.data.total
   } catch (e) {
-    console.error("Error fetching cases:", e);
+    console.error('Error fetching cases:', e)
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
 }
 
 function changePage(p) {
-  if (p < 1 || p > lastPage.value) return;
-  fetchCases(p);
+  if (p < 1 || p > lastPage.value) return
+  fetchCases(p)
 }
 
 // ====== COLUMNS LOGIC ======
 function isVisible(key) {
-  const col = columns.value.find((c) => c.key === key);
-  return col ? col.visible : false;
+  const col = columns.value.find((c) => c.key === key)
+  return col ? col.visible : false
 }
 
 function selectAllColumns() {
-  columns.value.forEach((c) => (c.visible = true));
+  columns.value.forEach((c) => (c.visible = true))
 }
 
 function closeFilter() {
-  showFilter.value = false;
+  showFilter.value = false
 }
 
 function applyColumnFilters() {
-  showFilter.value = false;
+  showFilter.value = false
 }
 /* ========== ACTION MENU STATE ========== */
-const openMenu = ref(null);
+const openMenu = ref(null)
 
 function toggleMenu(id) {
-  openMenu.value = openMenu.value === id ? null : id;
+  openMenu.value = openMenu.value === id ? null : id
 }
 
 function closeAllMenus() {
-  openMenu.value = null;
+  openMenu.value = null
 }
 
 onMounted(() => {
-  document.addEventListener("click", closeAllMenus);
-});
+  document.addEventListener('click', closeAllMenus)
+})
 
 onBeforeUnmount(() => {
-  document.removeEventListener("click", closeAllMenus);
-});
+  document.removeEventListener('click', closeAllMenus)
+})
 
 /* ========== ACTION FUNCTIONS ========== */
 function startEdit(c) {
-  alert("Edit case: " + c.id);
+  alert('Edit case: ' + c.id)
 }
 
 async function deleteCase(c) {
-  if (!confirm(`Delete case #${c.id}?`)) return;
+  if (!confirm(`Delete case #${c.id}?`)) return
 
-  const token = useAuthStore().token;
+  const token = useAuthStore().token
 
   await axios.delete(`http://localhost:8000/api/cases/${c.id}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+    headers: { Authorization: `Bearer ${token}` }
+  })
 
-  fetchCases(currentPage.value);
+  fetchCases(currentPage.value)
 }
 /* ========== FETCH DATA ========== */
-
-
 
 // ====== BADGE STYLES ======
 function statusBadgeClass(status) {
   switch (status) {
-    case "opened":
-      return "badge-status-open";
-    case "assigned":
-      return "badge-status-assigned";
-    case "in_progress":
-      return "badge-status-inprogress";
-    case "reassigned":
-      return "badge-status-reassigned";
-    case "closed":
-      return "badge-status-closed";
+    case 'opened':
+      return 'badge-status-open'
+    case 'assigned':
+      return 'badge-status-assigned'
+    case 'in_progress':
+      return 'badge-status-inprogress'
+    case 'reassigned':
+      return 'badge-status-reassigned'
+    case 'closed':
+      return 'badge-status-closed'
     default:
-      return "";
+      return ''
   }
 }
 
 function priorityBadgeClass(priority) {
-  switch (priority) {
-    case "high":
-      return "badge-priority-high";
-    case "middle":
-      return "badge-priority-middle";
-    case "low":
-      return "badge-priority-low";
-    case "normal":
-      return "badge-priority-normal";
-    default:
-      return "";
-  }
+  if (!priority) return ''
+
+  const p = priority.toLowerCase()
+
+  if (p.includes('high')) return 'badge-priority-high'
+  if (p.includes('middle')) return 'badge-priority-middle'
+  if (p.includes('low')) return 'badge-priority-low'
+  if (p.includes('normal')) return 'badge-priority-normal'
+
+  return ''
 }
 
 // ====== INIT ======
-fetchCases();
+fetchCases()
 </script>
 
 <style scoped>
@@ -387,7 +333,7 @@ fetchCases();
   background: #ffffff;
   padding: 24px 26px;
   border-radius: 20px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.04);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.04);
 }
 
 /* HEADER */
@@ -436,7 +382,7 @@ fetchCases();
 .filter-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.45);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -449,7 +395,7 @@ fetchCases();
   background: white;
   border-radius: 16px;
   padding: 32px 40px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
 }
 
 .filter-header {
@@ -648,9 +594,15 @@ fetchCases();
 }
 
 @keyframes pulse {
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
 }
 /* ACTION MENU */
 .action-cell {

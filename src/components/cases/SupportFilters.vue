@@ -1,12 +1,7 @@
 <template>
   <div class="filter-area">
-
     <div class="filter-grid">
-      <input
-        v-model="filters.search"
-        class="filter-input"
-        placeholder="Search cases..."
-      />
+      <input v-model="filters.search" class="filter-input" placeholder="Search cases..." />
 
       <input type="date" v-model="filters.date_from" class="filter-input" />
 
@@ -21,11 +16,7 @@
 
       <select v-model="filters.client_id" class="filter-select">
         <option value="">Select Customer</option>
-        <option
-          v-for="c in clients"
-          :key="c.id"
-          :value="c.id"
-        >
+        <option v-for="c in clients" :key="c.id" :value="c.id">
           {{ c.client_name }}
         </option>
       </select>
@@ -39,7 +30,9 @@
     <div class="filter-grid">
       <select v-model="filters.priority" class="filter-select">
         <option value="">Select Priority</option>
-        <option v-for="p in priorityOptions" :key="p">{{ p }}</option>
+        <option v-for="p in priorityOptions" :key="p.id" :value="p.priority_name">
+          {{ p.priority_name }}
+        </option>
       </select>
 
       <select v-model="filters.way_entry" class="filter-select">
@@ -54,70 +47,80 @@
     <button class="reset-btn" @click="reset">Reset Filters</button>
   </div>
 
-  <ActiveFiltersBar
-    :filters="tags"
-    @remove="removeTag"
-  />
+  <ActiveFiltersBar :filters="tags" @remove="removeTag" />
 </template>
 
 <script setup>
-import { reactive, watch, ref, computed, onMounted } from "vue";
-import axios from "axios";
-import { useAuthStore } from "@/stores/auth";
-import ActiveFiltersBar from "./ActiveFiltersBar.vue";
+import { reactive, watch, ref, computed, onMounted } from 'vue'
+import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
+import ActiveFiltersBar from './ActiveFiltersBar.vue'
 
-const emit = defineEmits(["applyFilters"]);
+const emit = defineEmits(['applyFilters'])
 
 const filters = reactive({
-  search: "",
-  date_from: "",
-  date_to: "",
-  status: "",
-  client_id: "",
-  type: "",
-  priority: "",
-  way_entry: "",
-});
+  search: '',
+  date_from: '',
+  date_to: '',
+  status: '',
+  client_id: '',
+  type: '',
+  priority: '',
+  way_entry: ''
+})
 
-const clients = ref([]);
+const clients = ref([])
 
 const tags = computed(() => {
-  let arr = [];
+  let arr = []
   for (let key in filters) {
     if (filters[key]) {
-      let label = `${key.replace("_", " ")}: ${filters[key]}`;
-      arr.push({ key, label });
+      let label = `${key.replace('_', ' ')}: ${filters[key]}`
+      arr.push({ key, label })
     }
   }
-  return arr;
-});
+  return arr
+})
 
 function apply() {
-  emit("applyFilters", filters);
+  emit('applyFilters', filters)
 }
 
 function reset() {
-  Object.keys(filters).forEach((k) => (filters[k] = ""));
-  emit("applyFilters", filters);
+  Object.keys(filters).forEach((k) => (filters[k] = ''))
+  emit('applyFilters', filters)
 }
 
 function removeTag(key) {
-  filters[key] = "";
-  emit("applyFilters", filters);
+  filters[key] = ''
+  emit('applyFilters', filters)
 }
 
-const statusOptions = ["opened", "assigned", "in_progress", "reassigned", "closed"];
-const typeOptions = ["technical", "service_request", "delay", "miscommunication", "enquery", "others"];
-const priorityOptions = ["high", "middle", "low", "normal"];
+const statusOptions = ['opened', 'assigned', 'in_progress', 'reassigned', 'closed']
+const typeOptions = [
+  'technical',
+  'service_request',
+  'delay',
+  'miscommunication',
+  'enquery',
+  'others'
+]
+const priorityOptions = ref([])
 
 onMounted(async () => {
-  const token = useAuthStore().token;
-  const res = await axios.get("http://localhost:8000/api/clients", {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  const token = useAuthStore().token
 
-  clients.value = res.data.data ?? res.data;
-});
+  const resClients = await axios.get('http://localhost:8000/api/clients', {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  clients.value = resClients.data.data ?? resClients.data
+
+  const resPriorities = await axios.get('http://localhost:8000/api/priorities', {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+
+  priorityOptions.value = resPriorities.data
+})
 </script>
 
 <style scoped>
@@ -126,7 +129,7 @@ onMounted(async () => {
   background: #ffffff;
   padding: 25px;
   border-radius: 18px;
-  box-shadow: 0px 2px 14px rgba(0,0,0,0.05);
+  box-shadow: 0px 2px 14px rgba(0, 0, 0, 0.05);
   margin-bottom: 20px;
 }
 
@@ -144,7 +147,7 @@ onMounted(async () => {
   width: 100%;
   padding: 12px 14px;
   font-size: 14px;
-  border: 1px solid #E2E2E2;
+  border: 1px solid #e2e2e2;
   border-radius: 10px;
   outline: none;
 }

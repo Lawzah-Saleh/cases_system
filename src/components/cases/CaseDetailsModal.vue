@@ -1,31 +1,23 @@
 <template>
   <div class="modal-overlay" @click.self="close">
     <div class="modal-content modal-large">
-
       <div class="modal-header">
         <h3>Case Details</h3>
         <button class="close-btn" @click="close">×</button>
       </div>
 
       <div class="form-grid">
-
         <div class="form-group">
-            <h3 class="section-title">Case ID</h3>
-          <div class="readonly">{{ caseData.id }}</div>
-        </div>
-
-        <div class="form-group">
-            <h3 class="section-title">Case Nane</h3>
+          <h3 class="section-title">Case Name</h3>
           <div class="readonly">{{ caseData.title }}</div>
         </div>
-        <div class="form-group full">
-            <h3 class="section-title">Description</h3>
-          <div class="readonly">{{ caseData.description || "—" }}</div>
-        </div>
-
         <div class="form-group">
           <h3 class="section-title">Client Name</h3>
-          <div class="readonly">{{ caseData.client?.client_name || "—" }}</div>
+          <div class="readonly">{{ caseData.client?.client_name || '—' }}</div>
+        </div>
+        <div class="form-group full">
+          <h3 class="section-title">Description</h3>
+          <div class="readonly">{{ caseData.description || '—' }}</div>
         </div>
 
         <div class="form-group">
@@ -51,7 +43,7 @@
           <h3 class="section-title">Priority</h3>
           <div class="readonly badge-box">
             <span class="micro-badge" :class="priorityClass(caseData.priority)">
-              {{ caseData.priority }}
+              {{ caseData.priority.priority_name }}
             </span>
           </div>
         </div>
@@ -59,14 +51,12 @@
 
       <h3 class="section-title">Internal Note</h3>
       <div class="field-box">
-        {{ caseData.internal_note || "—" }}
+        {{ caseData.note || '—' }}
       </div>
 
       <h3 class="section-title">Assigned Employees</h3>
       <div class="field-box employees-list">
-        <p v-for="e in caseData.employees" :key="e.id">
-          • {{ e.first_name }} {{ e.last_name }}
-        </p>
+        <p v-for="e in caseData.employees" :key="e.id">• {{ e.first_name }} {{ e.last_name }}</p>
         <p v-if="!caseData.employees?.length">—</p>
       </div>
 
@@ -94,35 +84,52 @@
 <script setup>
 const props = defineProps({
   caseData: { type: Object, required: true }
-});
+})
 
-const emit = defineEmits(["close", "edit"]);
+const emit = defineEmits(['close', 'edit'])
 
 function edit() {
-  emit("edit", props.caseData);
+  emit('edit', props.caseData)
 }
 
 function close() {
-  emit("close");
+  emit('close')
 }
 
 function statusClass(status) {
-  return {
-    opened: "badge-open",
-    assigned: "badge-assigned",
-    in_progress: "badge-progress",
-    reassigned: "badge-reassigned",
-    closed: "badge-closed",
-  }[status] || "";
+  return (
+    {
+      opened: 'badge-open',
+      assigned: 'badge-assigned',
+      in_progress: 'badge-progress',
+      reassigned: 'badge-reassigned',
+      closed: 'badge-closed'
+    }[status] || ''
+  )
+}
+
+function priorityBadgeClass(priority) {
+  if (!priority) return ''
+
+  const p = priority.toLowerCase()
+
+  if (p.includes('high')) return 'badge-priority-high'
+  if (p.includes('middle')) return 'badge-priority-middle'
+  if (p.includes('low')) return 'badge-priority-low'
+  if (p.includes('normal')) return 'badge-priority-normal'
+
+  return ''
 }
 
 function priorityClass(priority) {
-  return {
-    high: "badge-high",
-    middle: "badge-middle",
-    low: "badge-low",
-    normal: "badge-normal",
-  }[priority] || "";
+  return (
+    {
+      high: 'badge-high',
+      middle: 'badge-middle',
+      low: 'badge-low',
+      normal: 'badge-normal'
+    }[priority] || ''
+  )
 }
 </script>
 
@@ -130,7 +137,7 @@ function priorityClass(priority) {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.45);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -145,7 +152,7 @@ function priorityClass(priority) {
   background: white;
   padding: 32px;
   border-radius: var(--radius-lg);
-  box-shadow: 0 12px 42px rgba(0,0,0,0.15);
+  box-shadow: 0 12px 42px rgba(0, 0, 0, 0.15);
   animation: popIn 0.25s ease;
   max-height: 90vh;
   overflow-y: auto;
@@ -229,23 +236,50 @@ function priorityClass(priority) {
 }
 
 .micro-badge::before {
-  content: "";
+  content: '';
   width: 6px;
   height: 6px;
   border-radius: 50%;
   background: currentColor;
 }
 
-.badge-open { background: #fff4e5; color: #b45b00; }
-.badge-assigned { background: #e7f5ff; color: #0b6fb8; }
-.badge-progress { background: #fff3cd; color: #896100; }
-.badge-reassigned { background: #e0e7ff; color: #3b3bb3; }
-.badge-closed { background: #e6ffed; color: #1e7a3b; }
+.badge-open {
+  background: #fff4e5;
+  color: #b45b00;
+}
+.badge-assigned {
+  background: #e7f5ff;
+  color: #0b6fb8;
+}
+.badge-progress {
+  background: #fff3cd;
+  color: #896100;
+}
+.badge-reassigned {
+  background: #e0e7ff;
+  color: #3b3bb3;
+}
+.badge-closed {
+  background: #e6ffed;
+  color: #1e7a3b;
+}
 
-.badge-high { background: #ffe5e5; color: #b3261e; }
-.badge-middle { background: #fff4e5; color: #b45b00; }
-.badge-low { background: #e5f6ff; color: #006395; }
-.badge-normal { background: #edf2ff; color: #364fc7; }
+.badge-high {
+  background: #ffe5e5;
+  color: #b3261e;
+}
+.badge-middle {
+  background: #fff4e5;
+  color: #b45b00;
+}
+.badge-low {
+  background: #e5f6ff;
+  color: #006395;
+}
+.badge-normal {
+  background: #edf2ff;
+  color: #364fc7;
+}
 
 .employees-list p {
   margin: 3px 0;
@@ -287,7 +321,13 @@ function priorityClass(priority) {
 }
 
 @keyframes popIn {
-  from { opacity: 0; transform: scale(.92); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 </style>

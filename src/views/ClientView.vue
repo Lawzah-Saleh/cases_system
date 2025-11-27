@@ -1,8 +1,12 @@
 <template>
   <div class="table-container">
-    <div class="mb-4 flex items-center justify-between">
-      <h2 class="main-header">Clients</h2>
-      <button class="add-button" @click="openCreate = true">+ Create Clients</button>
+    <div class="header-row">
+      <div class="header-title-container">
+        <h2 class="main-header">Clients</h2>
+        <p class="sub-header">Detailed overview and management of all the clients.</p>
+      </div>
+
+      <button class="add-button" @click="openCreate = true">+ Create Client</button>
     </div>
 
     <!-- ===== FILTERS ===== -->
@@ -348,6 +352,23 @@ export default {
 }
 .delete {
   color: red;
+}
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.main-header {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.sub-header {
+  font-size: 13px;
+  color: #777;
 }
 
 /* Flex helpers */
