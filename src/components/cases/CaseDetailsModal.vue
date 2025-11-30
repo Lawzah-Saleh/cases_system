@@ -42,9 +42,12 @@
         <div class="form-group">
           <h3 class="section-title">Priority</h3>
           <div class="readonly badge-box">
-            <span class="micro-badge" :class="priorityClass(caseData.priority)">
-              {{ caseData.priority.priority_name }}
-            </span>
+    <span
+      class="micro-badge"
+      :class="priorityClass(caseData.priority?.priority_name?.toLowerCase())"
+    >
+      {{ caseData.priority?.priority_name ?? '—' }}
+    </span>
           </div>
         </div>
       </div>
@@ -121,16 +124,19 @@ function priorityBadgeClass(priority) {
   return ''
 }
 
-function priorityClass(priority) {
-  return (
-    {
-      high: 'badge-high',
-      middle: 'badge-middle',
-      low: 'badge-low',
-      normal: 'badge-normal'
-    }[priority] || ''
-  )
+function priorityClass(priorityName) {
+  if (!priorityName) return ''
+
+  const name = priorityName.toLowerCase()
+
+  return {
+    high: 'badge-high',
+    middle: 'badge-middle',
+    low: 'badge-low',
+    normal: 'badge-normal'
+  }[name] || ''
 }
+
 </script>
 
 <style scoped>

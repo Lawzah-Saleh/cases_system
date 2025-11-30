@@ -97,11 +97,12 @@
             </span>
           </td>
 
-          <td v-if="isVisible('priority')">
-            <span class="badge" :class="priorityBadgeClass(c.priority.priority_name)">
-              {{ c.priority.priority_name }}
+          <td v-if="isVisible('priority')" @click="setSort('priority')" class="sortable">
+            <span class="badge" :class="priorityBadgeClass(c.priority?.priority_name ?? '')">
+              {{ c.priority?.priority_name ?? '—' }}
             </span>
           </td>
+
 
           <td v-if="isVisible('client')">
             {{ c.client?.client_name ?? '—' }}
@@ -118,7 +119,7 @@
 
             <div v-if="openMenu === c.id" class="menu-dropdown">
               <div class="menu-item" @click="openEditModal(c)">Edit</div>
-              <div class="menu-item delete" @click="deleteCase(c)">Delete</div>
+              <div class="menu-item delete" @click="openDeleteModal(c)">Delete</div>
             </div>
           </td>
         </tr>
@@ -172,6 +173,12 @@
   @updated="handleRefresh"
 />
 
+<CaseDeleteModal
+  v-if="showDelete"
+  :caseData="selectedCase"
+  @close="showDelete = false"
+  @deleted="handleDelete"
+/>
 
 </template>
 
@@ -185,11 +192,28 @@ import SupportFilters from '@/components/cases/SupportFilters.vue'
 import CaseDetailsModal from '@/components/cases/CaseDetailsModal.vue'
 import CaseCreateModal from '@/components/cases/CaseCreateModal.vue'
 import CaseEditModal from '@/components/cases/CaseEditModal.vue'
+import CaseDeleteModal from '@/components/cases/CaseDeleteModal.vue'
 
 const openCreate = ref(false)
-
+const sortBy = ref(null)
+const sortDirection = ref('asc')
 const cases = ref([])
 const isLoading = ref(false)
+
+const showDelete = ref(false)
+
+
+function openDeleteModal(item) {
+  closeAllMenus()
+  selectedCase.value = item
+  showDelete.value = true
+}
+
+function handleDelete(id) {
+  cases.value = cases.value.filter(c => c.id !== id)
+  showDelete.value = false
+}
+
 
 const openDetailsModal = ref(false)
 const selectedCase = ref(null)
@@ -345,17 +369,7 @@ onBeforeUnmount(() => {
 /* ========== ACTION FUNCTIONS ========== */
 
 
-async function deleteCase(c) {
-  if (!confirm(`Delete case #${c.id}?`)) return
 
-  const token = useAuthStore().token
-
-  await axios.delete(`http://localhost:8000/api/cases/${c.id}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  })
-
-  fetchCases(currentPage.value)
-}
 /* ========== FETCH DATA ========== */
 
 // ====== BADGE STYLES ======
@@ -389,10 +403,10 @@ function priorityBadgeClass(priority) {
   return ''
 }
 
+
 // ====== INIT ======
 fetchCases()
-const sortBy = ref(null)
-const sortDirection = ref('asc')
+
 
 function setSort(column) {
   if (sortBy.value === column) {
