@@ -147,7 +147,8 @@
   <CaseDetailsModal
     v-if="openDetailsModal"
     :caseData="selectedCase"
-    @close="openDetailsModal = false"
+    @close="closeDetails"
+    @edit="openEditModal"   
   />
   <CaseCreateModal
     v-if="openCreate"
@@ -187,13 +188,18 @@ function openDetails(c) {
   selectedCase.value = c
   openDetailsModal.value = true
 }
-
+const showDetails = ref(false)
 const showEdit = ref(false)
 
 function openEditModal(item) {
   closeAllMenus()
   selectedCase.value = item
+  openDetailsModal.value = false
   showEdit.value = true
+}
+
+function closeDetails() {
+  openDetailsModal.value = false
 }
 
 function closeEditModal() {

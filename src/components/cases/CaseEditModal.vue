@@ -227,7 +227,6 @@ async function updateCase() {
 </script>
 
 <style scoped>
-/* نفس تصميم create 100% */
 .modal-overlay {
   position: fixed;
   inset: 0;
