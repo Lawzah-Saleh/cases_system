@@ -66,7 +66,7 @@
         <!-- ===== DATA ROWS ===== -->
         <tr v-else v-for="(c, index) in cases" :key="c.id" class="table-row-hover">
           <td v-if="isVisible('id')">
-            {{ index + 1 }}
+          {{ (currentPage - 1) * 10 + (index + 1) }}
           </td>
           <td v-if="isVisible('title')" class="title-cell clickable-title" @click="openDetails(c)">
             {{ c.title }}
@@ -107,7 +107,7 @@
             <div class="menu-trigger" @click.stop="toggleMenu(c.id)">⋮</div>
 
             <div v-if="openMenu === c.id" class="menu-dropdown">
-              <div class="menu-item" @click="startEdit(c)">Edit</div>
+              <div class="menu-item" @click="openEditModal(c)">Edit</div>
               <div class="menu-item delete" @click="deleteCase(c)">Delete</div>
             </div>
           </td>
@@ -154,6 +154,14 @@
     @close="openCreate = false"
     @created="fetchCases(currentPage)"
   />
+<CaseEditModal
+  v-if="showEdit"
+  :caseData="selectedCase"
+  @close="closeEditModal"
+  @updated="handleRefresh"
+/>
+
+
 </template>
 
 <script setup>
@@ -164,8 +172,8 @@ import { onMounted, onBeforeUnmount } from 'vue'
 
 import SupportFilters from '@/components/cases/SupportFilters.vue'
 import CaseDetailsModal from '@/components/cases/CaseDetailsModal.vue'
-
 import CaseCreateModal from '@/components/cases/CaseCreateModal.vue'
+import CaseEditModal from '@/components/cases/CaseEditModal.vue'
 
 const openCreate = ref(false)
 
@@ -178,6 +186,18 @@ const selectedCase = ref(null)
 function openDetails(c) {
   selectedCase.value = c
   openDetailsModal.value = true
+}
+
+const showEdit = ref(false)
+
+function openEditModal(item) {
+  closeAllMenus()
+  selectedCase.value = item
+  showEdit.value = true
+}
+
+function closeEditModal() {
+  showEdit.value = false
 }
 
 const currentPage = ref(1)
@@ -204,6 +224,12 @@ const columns = ref([
 function handleFilters(f) {
   filterParams.value = { ...f }
   fetchCases(1)
+}
+function handleRefresh() {
+  cases.value = [];
+  fetchCases(currentPage.value).then(() => {
+    selectedCase.value = null;
+  });
 }
 
 async function fetchCases(page = 1) {
@@ -275,9 +301,7 @@ onBeforeUnmount(() => {
 })
 
 /* ========== ACTION FUNCTIONS ========== */
-function startEdit(c) {
-  alert('Edit case: ' + c.id)
-}
+
 
 async function deleteCase(c) {
   if (!confirm(`Delete case #${c.id}?`)) return
