@@ -11,7 +11,11 @@
     </div>
 
     <!-- ===================== FILTERS (ADVANCED) ===================== -->
-    <SupportFilters @applyFilters="handleFilters" />
+<SupportFilters 
+    :clients="clients" 
+    :priorities="priorities" 
+    @applyFilters="handleFilters"
+/>
 
     <!-- ===================== SHOW / HIDE COLUMNS BUTTON ===================== -->
     <button class="filter-button" @click="showFilter = true">Show / Hide Columns</button>
@@ -44,11 +48,17 @@
       <thead>
         <tr class="table-header-row">
           <th v-if="isVisible('id')">ID</th>
-          <th v-if="isVisible('title')">Title</th>
+          <th v-if="isVisible('title')" @click="setSort('title')" class="sortable">
+          Title <span>{{ sortBy === 'title' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</span>
+          </th>   
           <th v-if="isVisible('type')">Type</th>
           <th v-if="isVisible('way_entry')">Way Entry</th>
-          <th v-if="isVisible('status')">Status</th>
-          <th v-if="isVisible('priority')">Priority</th>
+          <th v-if="isVisible('status')" @click="setSort('status')" class="sortable">
+            Status <span>{{ sortBy === 'status' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</span>
+          </th>
+          <th v-if="isVisible('priority')" @click="setSort('priority')" class="sortable">
+            Priority <span>{{ sortBy === 'priority' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</span>
+          </th>
           <th v-if="isVisible('client')">Customer</th>
           <th v-if="isVisible('employees')">Team Members</th>
           <th></th>
@@ -184,6 +194,29 @@ const isLoading = ref(false)
 const openDetailsModal = ref(false)
 const selectedCase = ref(null)
 
+const clients = ref([])
+const priorities = ref([])
+
+async function loadFilterData() {
+  const token = useAuthStore().token
+
+  clients.value = (await axios.get('http://localhost:8000/api/clients', {
+    headers: { Authorization: `Bearer ${token}` }
+  })).data.data
+
+  priorities.value = (await axios.get('http://localhost:8000/api/priorities', {
+    headers: { Authorization: `Bearer ${token}` }
+  })).data
+}
+
+onMounted(() => {
+  loadFilterData()
+  fetchCases()
+})
+
+
+
+
 function openDetails(c) {
   selectedCase.value = c
   openDetailsModal.value = true
@@ -249,10 +282,13 @@ async function fetchCases(page = 1) {
       headers: {
         Authorization: `Bearer ${token}`
       },
-      params: {
-        page,
-        ...filterParams.value
-      }
+params: {
+  page,
+  sort_by: sortBy.value,
+  sort_direction: sortDirection.value,
+  ...filterParams.value
+}
+
     })
 
     cases.value = res.data.data
@@ -355,6 +391,20 @@ function priorityBadgeClass(priority) {
 
 // ====== INIT ======
 fetchCases()
+const sortBy = ref(null)
+const sortDirection = ref('asc')
+
+function setSort(column) {
+  if (sortBy.value === column) {
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortBy.value = column
+    sortDirection.value = 'asc'
+  }
+
+  fetchCases(1)
+}
+
 </script>
 
 <style scoped>
@@ -674,4 +724,12 @@ fetchCases()
   color: var(--primary-color);
   font-weight: 600;
 }
+.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+.sortable:hover {
+  text-decoration: underline;
+}
+
 </style>

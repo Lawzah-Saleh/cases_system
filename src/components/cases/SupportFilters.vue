@@ -1,7 +1,8 @@
 <template>
   <div class="filter-area">
     <div class="filter-grid">
-      <input v-model="filters.search" class="filter-input" placeholder="Search cases..." />
+      
+      <input v-model="filters.search" @input="emitSearch"class="filter-input" placeholder="Search cases..."/>
 
       <input type="date" v-model="filters.date_from" class="filter-input" />
 
@@ -16,7 +17,7 @@
 
       <select v-model="filters.client_id" class="filter-select">
         <option value="">Select Customer</option>
-        <option v-for="c in clients" :key="c.id" :value="c.id">
+        <option v-for="c in props.clients" :key="c.id" :value="c.id">
           {{ c.client_name }}
         </option>
       </select>
@@ -28,12 +29,12 @@
     </div>
 
     <div class="filter-grid">
-      <select v-model="filters.priority" class="filter-select">
-        <option value="">Select Priority</option>
-        <option v-for="p in priorityOptions" :key="p.id" :value="p.priority_name">
-          {{ p.priority_name }}
-        </option>
-      </select>
+    <select v-model="filters.priority" class="filter-select">
+      <option value="">Select Priority</option>
+      <option v-for="p in props.priorities" :key="p.id" :value="p.priority_name">
+        {{ p.priority_name }}
+      </option>
+    </select>
 
       <select v-model="filters.way_entry" class="filter-select">
         <option value="">Way Entry</option>
@@ -51,12 +52,27 @@
 </template>
 
 <script setup>
-import { reactive, watch, ref, computed, onMounted } from 'vue'
-import axios from 'axios'
+import { reactive, ref, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import ActiveFiltersBar from './ActiveFiltersBar.vue'
+import debounce from 'lodash/debounce'
+
+const emitSearch = debounce(() => {
+  emit('applyFilters', filters)
+}, 400)
 
 const emit = defineEmits(['applyFilters'])
+
+const props = defineProps({
+  clients: {
+    type: Array,
+    default: () => []
+  },
+  priorities: {
+    type: Array,
+    default: () => []
+  }
+})
 
 const filters = reactive({
   search: '',
@@ -69,7 +85,6 @@ const filters = reactive({
   way_entry: ''
 })
 
-const clients = ref([])
 
 const tags = computed(() => {
   let arr = []
@@ -97,30 +112,7 @@ function removeTag(key) {
 }
 
 const statusOptions = ['opened', 'assigned', 'in_progress', 'reassigned', 'closed']
-const typeOptions = [
-  'technical',
-  'service_request',
-  'delay',
-  'miscommunication',
-  'enquery',
-  'others'
-]
-const priorityOptions = ref([])
-
-onMounted(async () => {
-  const token = useAuthStore().token
-
-  const resClients = await axios.get('http://localhost:8000/api/clients', {
-    headers: { Authorization: `Bearer ${token}` }
-  })
-  clients.value = resClients.data.data ?? resClients.data
-
-  const resPriorities = await axios.get('http://localhost:8000/api/priorities', {
-    headers: { Authorization: `Bearer ${token}` }
-  })
-
-  priorityOptions.value = resPriorities.data
-})
+const typeOptions = ['technical','service_request','delay','miscommunication','enquery','others']
 </script>
 
 <style scoped>
