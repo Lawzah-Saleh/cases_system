@@ -106,7 +106,8 @@ export default {
       openCreate: false,
       openEdit: false,
       selectedRole: null,
-      openRoleDetailsModal: false
+      openRoleDetailsModal: false,
+      isLoading: false
     }
   },
   methods: {
@@ -158,8 +159,11 @@ export default {
 
     async fetchroles(page = 1) {
       try {
+        this.isLoading = true
+
         const authStore = useAuthStore()
         const token = authStore.token || localStorage.getItem('token')
+
         const res = await axios.get('http://localhost:8000/api/roles/paginations', {
           headers: { Authorization: `Bearer ${token}` },
           params: {
@@ -171,8 +175,11 @@ export default {
         this.roles = res.data.data
         this.currentPage = res.data.current_page
         this.lastPage = res.data.last_page
+
       } catch (err) {
         console.error('Error fetching roles:', err)
+      } finally {
+        this.isLoading = false
       }
     },
 

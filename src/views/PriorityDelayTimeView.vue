@@ -81,7 +81,9 @@ export default {
       openCreate: false,
       openEdit: false,
       selectedPriority: null,
-      openPriorityDetailsModal: false
+      openPriorityDetailsModal: false,
+      isLoading: false,
+
     }
   },
   methods: {
@@ -133,6 +135,8 @@ export default {
 
     async fetchpriorities() {
       try {
+        this.isLoading = true
+
         const authStore = useAuthStore()
         const token = authStore.token || localStorage.getItem('token')
 
@@ -146,8 +150,11 @@ export default {
         this.priorities = res.data
       } catch (err) {
         console.error('Error fetching priorities:', err)
+      } finally {
+        this.isLoading = false  // ← أضف هذا دائمًا لإطفاء حالة التحميل
       }
     },
+
 
     handleClickOutside(event) {
       const menuElements = document.querySelectorAll('.menu-dropdown, .menu-trigger')

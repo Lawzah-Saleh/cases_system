@@ -155,6 +155,8 @@ export default {
       selectedClient: null,
       showDeleteModal: false,
       deleteTarget: null,
+      isLoading: false,
+
       columns: [
         { key: 'id', label: 'ID', visible: true },
         { key: 'client_name', label: 'Name', visible: true },
@@ -231,14 +233,14 @@ export default {
 
     async fetchClients(page = 1) {
       try {
+        this.isLoading = true
+
         const authStore = useAuthStore()
         const token = authStore.token || localStorage.getItem('token')
+
         const res = await axios.get('http://localhost:8000/api/clients', {
           headers: { Authorization: `Bearer ${token}` },
-          params: {
-            page,
-            search: this.search
-          }
+          params: { page, search: this.search }
         })
 
         this.clients = res.data.data
@@ -246,8 +248,11 @@ export default {
         this.lastPage = res.data.last_page
       } catch (err) {
         console.error('Error fetching clients:', err)
+      } finally {
+        this.isLoading = false
       }
     },
+
 
     changePage(page) {
       if (page < 1 || page > this.lastPage) return

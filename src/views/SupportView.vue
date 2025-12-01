@@ -11,11 +11,17 @@
     </div>
 
     <!-- ===================== FILTERS (ADVANCED) ===================== -->
+      <!--dev tools --> 
+
 <SupportFilters 
     :clients="clients" 
     :priorities="priorities" 
     @applyFilters="handleFilters"
 />
+    <!-- <Suspense>
+      <SupportFilters :clients="clients" :priorities="priorities" @applyFilters="handleFilters"/>
+    </Suspense> -->
+
 
     <!-- ===================== SHOW / HIDE COLUMNS BUTTON ===================== -->
     <button class="filter-button" @click="showFilter = true">Show / Hide Columns</button>
@@ -217,9 +223,16 @@ function handleDelete(id) {
 
 const openDetailsModal = ref(false)
 const selectedCase = ref(null)
+// dev tools
 
 const clients = ref([])
 const priorities = ref([])
+
+// import { shallowRef } from 'vue'
+
+// const clients = shallowRef([])
+// const priorities = shallowRef([])
+
 
 async function loadFilterData() {
   const token = useAuthStore().token

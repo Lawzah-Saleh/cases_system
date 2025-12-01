@@ -109,7 +109,8 @@ export default {
       openCreate: false,
       openEdit: false,
       selectedPermission: null,
-      openPermissionDetailsModal: false
+      openPermissionDetailsModal: false,
+      isLoading: false
     }
   },
   methods: {
@@ -160,8 +161,11 @@ export default {
 
     async fetchPermissions(page = 1) {
       try {
+        this.isLoading = true
+
         const authStore = useAuthStore()
         const token = authStore.token || localStorage.getItem('token')
+
         const res = await axios.get('http://localhost:8000/api/permission-categories', {
           headers: { Authorization: `Bearer ${token}` },
           params: {
@@ -173,10 +177,14 @@ export default {
         this.permissions = res.data.data
         this.currentPage = res.data.current_page
         this.lastPage = res.data.last_page
+
       } catch (err) {
         console.error('Error fetching permissions:', err)
+      } finally {
+        this.isLoading = false
       }
     },
+
 
     changePage(page) {
       if (page < 1 || page > this.lastPage) return

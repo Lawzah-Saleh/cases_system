@@ -98,6 +98,8 @@ async function submit() {
     toast.success('Account updated successfully!')
   } catch (err) {
     if (err.response?.status === 422) {
+      console.log(err.response.data)
+
       Object.assign(errors, err.response.data.errors)
       toast.error('Validation error.')
     } else {
