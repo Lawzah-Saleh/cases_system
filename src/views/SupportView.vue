@@ -115,11 +115,28 @@
           </td>
 
           <td v-if="isVisible('employees')">
-            <div v-for="e in c.employees" :key="e.id" class="employee-line">
-              • {{ e.first_name }} {{ e.last_name }}
+            <!-- إذا يوجد موظفين -->
+            <div v-if="c.employees && c.employees.length">
+              <div v-for="e in c.employees" :key="e.id" class="employee-line">
+                • {{ e.first_name }} {{ e.last_name }}
+              </div>
             </div>
-            <span v-if="!c.employees || !c.employees.length">—</span>
+
+            <!-- إذا لا يوجد موظفين -->
+            <div v-else>
+              <span>—</span>
+
+              <!-- زر الإسناد يظهر فقط لو لم تغلق المشكلة -->
+              <button 
+                class="assign-btn"
+                @click="openAssignModal(c)"
+                v-if="c.status !== 'closed'"
+              >
+                Assign
+              </button>
+            </div>
           </td>
+
           <td class="action-cell">
             <div class="menu-trigger" @click.stop="toggleMenu(c.id)">⋮</div>
 
@@ -185,6 +202,12 @@
   @close="showDelete = false"
   @deleted="handleDelete"
 />
+<CaseAssignModal
+  v-if="showAssign"
+  :caseData="selectedCase"
+  @close="closeAssignModal"
+  @assigned="handleAssigned"
+/>
 
 </template>
 
@@ -199,6 +222,22 @@ import CaseDetailsModal from '@/components/cases/CaseDetailsModal.vue'
 import CaseCreateModal from '@/components/cases/CaseCreateModal.vue'
 import CaseEditModal from '@/components/cases/CaseEditModal.vue'
 import CaseDeleteModal from '@/components/cases/CaseDeleteModal.vue'
+import CaseAssignModal from '@/components/cases/CaseAssignModal.vue'
+
+const showAssign = ref(false)
+
+function openAssignModal(item) {
+  selectedCase.value = item
+  showAssign.value = true
+}
+
+function closeAssignModal() {
+  showAssign.value = false
+}
+
+function refreshAfterAssign() {
+  fetchCases(currentPage.value)
+}
 
 const openCreate = ref(false)
 const sortBy = ref(null)
@@ -401,6 +440,9 @@ function statusBadgeClass(status) {
     default:
       return ''
   }
+}
+function handleAssigned() {
+  fetchCases(currentPage.value)
 }
 
 function priorityBadgeClass(priority) {
@@ -757,6 +799,22 @@ function setSort(column) {
 }
 .sortable:hover {
   text-decoration: underline;
+}
+.assign-btn {
+  background: var(--primary-color);
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: 0.2s;
+}
+
+.assign-btn:hover {
+  background: var(--primary-hover);
 }
 
 </style>
