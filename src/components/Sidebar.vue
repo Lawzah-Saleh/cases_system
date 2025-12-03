@@ -7,43 +7,43 @@
 
     <!-- Menu -->
     <ul class="sidebar-menu">
-      <li>
+      <li v-if="auth.can('view dashboard')">
         <router-link to="/app/dashboard">
           <i class="bi bi-speedometer2"></i>
           <span class="menu-text">Dashboard</span>
         </router-link>
       </li>
-      <li>
+      <li v-if="auth.can('view support')">
         <router-link to="/app/supports">
           <i class="bi bi-life-preserver"></i>
           <span class="menu-text">Supports</span>
         </router-link>
       </li>
-      <li>
+      <li v-if="auth.can('view client')">
         <router-link to="/app/clients">
           <i class="bi bi-people"></i>
           <span class="menu-text">clients</span>
         </router-link>
       </li>
-      <li>
+      <li v-if="auth.can('view employee')">
         <router-link to="/app/employees">
           <i class="bi bi-person-badge"></i>
           <span class="menu-text">Employee</span>
         </router-link>
       </li>
-      <li>
+      <li v-if="auth.can('view user')">
         <router-link to="/app/users">
           <i class="bi bi-person"></i>
           <span class="menu-text">Users</span>
         </router-link>
       </li>
-      <li>
+      <li v-if="auth.can('view statistic')">
         <router-link to="/app/statistics">
           <i class="bi bi-bar-chart"></i>
           <span class="menu-text">Statistics</span>
         </router-link>
       </li>
-      <li>
+      <li v-if="auth.can('view report')">
         <router-link to="/app/reports">
           <i class="bi bi-file-earmark-text"></i>
           <span class="menu-text">Reports</span>
@@ -65,6 +65,9 @@
 
 <script setup>
 import { onMounted, onBeforeUnmount } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+
+const auth = useAuthStore()
 
 const props = defineProps({
   isOpen: Boolean
@@ -85,7 +88,7 @@ onBeforeUnmount(() => window.removeEventListener('resize', handleResize))
 <style scoped>
 :root {
   --sidebar-width: 250px;
-  --sidebar-bg: #190F4A;
+  --sidebar-bg: #190f4a;
   --sidebar-text: #fff;
   --sidebar-hover: #3a3a5a;
   --appbar-height: 60px;
@@ -100,7 +103,9 @@ onBeforeUnmount(() => window.removeEventListener('resize', handleResize))
   left: 0;
   top: 0;
   bottom: 0;
-  transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
+  transition:
+    transform 0.3s ease-in-out,
+    width 0.3s ease-in-out;
   z-index: 2000;
   overflow-y: auto;
   box-shadow: 2px 0 12px rgba(0, 0, 0, 0.2);

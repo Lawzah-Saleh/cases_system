@@ -1,24 +1,22 @@
 :root {
-  --sidebar-bg: #190F4A;
-  --sidebar-hover: #2E2677;
+  --sidebar-bg: #190f4a;
+  --sidebar-hover: #2e2677;
   --sidebar-text: #ffffff;
   --sidebar-width: 240px;
 
   --appbar-height: 70px;
   --appbar-bg: #ffffff;
-  --appbar-text: #190F4A;
+  --appbar-text: #190f4a;
 
-   --primary-color: #190F4A;
-  --primary-hover: #2E2677;
+  --primary-color: #190f4a;
+  --primary-hover: #2e2677;
 
-  --table-header-bg: #F5F4FA;
-  --table-border: #E3E3E3;
+  --table-header-bg: #f5f4fa;
+  --table-border: #e3e3e3;
   --radius-md: 8px;
   --radius-lg: 12px;
   --transition: 0.2s ease;
 }
-
-
 
 .main-layout {
   width: 100%;
@@ -28,7 +26,6 @@
   padding-left: 270px;
   overflow: hidden;
 }
-
 
 /* Tablets */
 @media (max-width: 1024px) {
@@ -74,6 +71,16 @@
   background-color: var(--primary-hover);
 }
 
+.add-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none !important;
+}
+
+.add-button:disabled:hover {
+  background-color: inherit !important;
+  color: inherit !important;
+}
 
 .main-header {
   font-style: bold;
@@ -93,7 +100,6 @@
   box-sizing: border-box;
   padding-bottom: 70px;
 }
-
 
 .table-header-row {
   background: var(--table-header-bg);
@@ -140,5 +146,3 @@
 .edit-button-global:hover {
   background-color: var(--primary-hover);
 }
-
-
