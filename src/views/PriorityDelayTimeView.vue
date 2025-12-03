@@ -4,7 +4,6 @@
       <h2 class="main-header">
         <span class="link-back" @click="$router.back()">Setting</span> / Cases Delay Time
       </h2>
-      <button class="add-button" @click="openCreate = true">+ Create Priority</button>
     </div>
 
     <!-- ===== FILTERS ===== -->
@@ -51,7 +50,6 @@
     </div>
   </div>
 
-  <PriorityCreateModal v-if="openCreate" @close="openCreate = false" @created="handleRefresh" />
   <PriorityEditModal
     v-if="openEdit"
     :priority="selectedPriority"
@@ -64,10 +62,9 @@
 import axios from 'axios'
 import { useAuthStore } from '../stores/auth'
 import { toast } from 'vue3-toastify'
-import PriorityCreateModal from '@/components/priorities/PriorityCreateModal.vue'
 import PriorityEditModal from '@/components/priorities/PriorityEditModal.vue'
 export default {
-  components: { PriorityCreateModal, PriorityEditModal },
+  components: { PriorityEditModal },
   watch: {
     search() {
       this.debounceSearch()
@@ -82,8 +79,7 @@ export default {
       openEdit: false,
       selectedPriority: null,
       openPriorityDetailsModal: false,
-      isLoading: false,
-
+      isLoading: false
     }
   },
   methods: {
@@ -151,10 +147,9 @@ export default {
       } catch (err) {
         console.error('Error fetching priorities:', err)
       } finally {
-        this.isLoading = false  // ← أضف هذا دائمًا لإطفاء حالة التحميل
+        this.isLoading = false // ← أضف هذا دائمًا لإطفاء حالة التحميل
       }
     },
-
 
     handleClickOutside(event) {
       const menuElements = document.querySelectorAll('.menu-dropdown, .menu-trigger')

@@ -5,7 +5,6 @@ import LoginView from '@/views/LoginView.vue'
 import DashboardView from '@/views/DashboardView.vue'
 import EmployeeView from '@/views/EmployeeView.vue'
 import UsersView from '@/views/UsersView.vue'
-import StatisticsView from '@/views/StatisticsView.vue'
 import ReportView from '@/views/ReportView.vue'
 import ClientView from '@/views/ClientView.vue'
 import SupportView from '@/views/SupportView.vue'
@@ -13,7 +12,6 @@ import SettingView from '@/views/SettingView.vue'
 import PermissionView from '@/views/PermissionView.vue'
 import RoleView from '@/views/RoleView.vue'
 import PriorityDelayTimeView from '@/views/PriorityDelayTimeView.vue'
-import PersonalAccount from '@/views/PersonalAccountView.vue'
 import PersonalAccountView from '@/views/PersonalAccountView.vue'
 
 const routes = [
@@ -39,7 +37,6 @@ const routes = [
       { path: 'clients', component: ClientView },
       { path: 'employees', component: EmployeeView },
       { path: 'users', component: UsersView },
-      { path: 'statistics', component: StatisticsView },
       { path: 'reports', component: ReportView },
       {
         path: 'settings',

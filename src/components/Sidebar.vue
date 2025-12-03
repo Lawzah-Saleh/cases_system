@@ -2,7 +2,7 @@
   <aside :class="['sidebar', { 'sidebar--open': isOpen }]">
     <!-- Logo -->
     <div class="sidebar-header">
-      <img src="@/assets/temmamLogo.png" alt="Logo" class="logo" />
+      <img src="@/assets/temmam.svg" alt="Logo" class="logo" />
     </div>
 
     <!-- Menu -->
@@ -35,12 +35,6 @@
         <router-link to="/app/users">
           <i class="bi bi-person"></i>
           <span class="menu-text">Users</span>
-        </router-link>
-      </li>
-      <li v-if="auth.can('view statistic')">
-        <router-link to="/app/statistics">
-          <i class="bi bi-bar-chart"></i>
-          <span class="menu-text">Statistics</span>
         </router-link>
       </li>
       <li v-if="auth.can('view report')">
@@ -132,13 +126,13 @@ onBeforeUnmount(() => window.removeEventListener('resize', handleResize))
 
 /* Logo */
 .sidebar-header {
-  padding: 20px;
+  padding: 0px;
   text-align: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .logo {
-  max-width: 150px;
+  max-width: 300px;
   height: auto;
   display: block;
   margin: 0 auto;
