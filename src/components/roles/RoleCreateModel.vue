@@ -98,11 +98,11 @@ function close() {
 /* ========== LOAD PERMISSIONS GROUPED BY CATEGORY ========== */
 async function loadPermissions() {
   try {
-    const res = await axios.get('http://localhost:8000/api/permission-categories', {
+    const res = await axios.get('http://localhost:8000/api/permission-categories/loadAll', {
       headers: { Authorization: `Bearer ${auth.token}` }
     })
 
-    permissionCategories.value = res.data.data.data ?? res.data.data ?? [] // depends on your paginator structure
+    permissionCategories.value = res.data.categories ?? []
   } catch (err) {
     console.error(err)
     toast.error('Failed to load permissions.')

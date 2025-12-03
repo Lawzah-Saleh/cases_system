@@ -1,6 +1,5 @@
 <template>
   <div class="table-container">
-
     <!-- ===== PAGE HEADER ===== -->
     <div class="header-row">
       <div class="header-title-container">
@@ -8,21 +7,15 @@
         <p class="sub-header">Overview and management of all system user accounts.</p>
       </div>
 
-      <button class="add-button" @click="openCreate = true">
-        + Create Employee
+      <button class="add-button" @click="openCreate = true" :disabled="!auth.can('add user')">
+        + Create User
       </button>
     </div>
 
     <!-- ===== FILTERS ===== -->
     <div class="filters-wrapper">
-
       <!-- Search -->
-      <input
-        type="text"
-        class="search-input"
-        placeholder="Search..."
-        v-model="search"
-      />
+      <input type="text" class="search-input" placeholder="Search..." v-model="search" />
 
       <!-- Filter by Role -->
       <select class="select-input" v-model="roleFilter">
@@ -38,7 +31,6 @@
         <option value="active">Active</option>
         <option value="inactive">Inactive</option>
       </select>
-
     </div>
 
     <!-- ===== USERS TABLE ===== -->
@@ -55,7 +47,6 @@
       </thead>
 
       <tbody>
-
         <!-- Loading Skeleton -->
         <tr v-if="isLoading" v-for="n in 5" :key="n" class="skeleton-row">
           <td colspan="6"><div class="skeleton-bar"></div></td>
@@ -63,18 +54,15 @@
 
         <!-- Data rows -->
         <tr v-else v-for="u in users" :key="u.id" class="table-row-hover">
-
           <td>{{ u.id }}</td>
 
-            <td class="user-link" @click="openDetails(u)">
+          <td class="user-link" @click="openDetails(u)">
             {{ u.username }}
           </td>
 
-          <td>
-            {{ u.employee?.first_name }} {{ u.employee?.last_name }}
-          </td>
+          <td>{{ u.employee?.first_name }} {{ u.employee?.last_name }}</td>
 
-          <td>{{ u.role?.role_name ?? "—" }}</td>
+          <td>{{ u.role?.role_name ?? '—' }}</td>
 
           <!-- Status badge -->
           <td>
@@ -85,62 +73,65 @@
 
           <!-- Action menu -->
           <td class="action-cell">
-            <div class="menu-trigger" @click.stop="toggleMenu(u.id)">⋮</div>
+            <div
+              class="menu-trigger"
+              v-if="auth.can('edit user') || auth.can('delete user')"
+              @click.stop="toggleMenu(u.id)"
+            >
+              ⋮
+            </div>
 
             <div v-if="openMenu === u.id" class="menu-dropdown">
-              <div class="menu-item" @click="startEdit(u)">Edit</div>
-              <div class="menu-item" @click="openResetPassword(u)">Reset Password</div>
+              <div class="menu-item" v-if="auth.can('edit user')" @click="startEdit(u)">Edit</div>
+              <div class="menu-item" v-if="auth.can('edit user')" @click="openResetPassword(u)">
+                Reset Password
+              </div>
             </div>
           </td>
         </tr>
 
         <tr v-if="!isLoading && users.length === 0">
-          <td colspan="6" style="text-align:center; padding:20px; color:#777;">
+          <td colspan="6" style="text-align: center; padding: 20px; color: #777">
             No users found.
           </td>
         </tr>
-
       </tbody>
     </table>
 
     <!-- ===== PAGINATION ===== -->
-    <div class="pagination-container flex items-center justify-between mt-4">
-
+    <div class="pagination-container mt-4 flex items-center justify-between">
       <p class="results-count">
         {{ total }} results
         <span v-if="lastPage > 1"> — Page {{ currentPage }} of {{ lastPage }} </span>
       </p>
 
       <div>
-        <button @click="changePage(currentPage - 1)"
-                :disabled="currentPage === 1 || isLoading"
-                class="page-btn">
+        <button
+          @click="changePage(currentPage - 1)"
+          :disabled="currentPage === 1 || isLoading"
+          class="page-btn"
+        >
           &lt; Prev
         </button>
 
-        <button @click="changePage(currentPage + 1)"
-                :disabled="currentPage === lastPage || isLoading"
-                class="page-btn">
+        <button
+          @click="changePage(currentPage + 1)"
+          :disabled="currentPage === lastPage || isLoading"
+          class="page-btn"
+        >
           Next &gt;
         </button>
       </div>
-
     </div>
-
   </div>
 
   <!-- ===== MODALS ===== -->
-  <EmployeeCreateModal
-    v-if="openCreate"
-    @close="openCreate = false"
-    @created="refresh"
-  />
+  <EmployeeCreateModal v-if="openCreate" @close="openCreate = false" @created="refresh" />
   <UserDetailsModal
-  v-if="openDetailsModal"
-  :user="selectedUser"
-  @close="openDetailsModal = false"
+    v-if="openDetailsModal"
+    :user="selectedUser"
+    @close="openDetailsModal = false"
   />
-
 
   <UserEditModal
     v-if="openEdit"
@@ -149,38 +140,33 @@
     @updated="refresh"
   />
 
-  <UserResetPasswordModal
-    v-if="openReset"
-    :user="selectedUser"
-    @close="openReset = false"
-  />
+  <UserResetPasswordModal v-if="openReset" :user="selectedUser" @close="openReset = false" />
 </template>
 <script>
-import axios from "axios"
-import { useAuthStore } from "@/stores/auth"
+import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
 
-import EmployeeCreateModal from "@/components/employees/EmployeeCreateModal.vue"
-import UserDetailsModal from "@/components/users/UserDetailsModal.vue"
+import EmployeeCreateModal from '@/components/employees/EmployeeCreateModal.vue'
+import UserDetailsModal from '@/components/users/UserDetailsModal.vue'
 
-import UserEditModal from "@/components/users/UserEditModal.vue"
-import UserResetPasswordModal from "@/components/users/UserResetPasswordModal.vue"
+import UserEditModal from '@/components/users/UserEditModal.vue'
+import UserResetPasswordModal from '@/components/users/UserResetPasswordModal.vue'
 
 export default {
   components: {
     EmployeeCreateModal,
     UserEditModal,
     UserResetPasswordModal,
-    UserDetailsModal,
-
+    UserDetailsModal
   },
 
   data() {
     return {
       users: [],
       roles: [],
-      search: "",
-      roleFilter: "",
-      statusFilter: "",
+      search: '',
+      roleFilter: '',
+      statusFilter: '',
       isLoading: false,
 
       openMenu: null,
@@ -194,10 +180,14 @@ export default {
       openEdit: false,
       openReset: false,
       openDetailsModal: false,
-      debounceTimer: null,
+      debounceTimer: null
     }
   },
-
+  computed: {
+    auth() {
+      return useAuthStore()
+    }
+  },
   watch: {
     search() {
       this.debounceSearch()
@@ -218,10 +208,9 @@ export default {
       }, 400)
     },
     openDetails(user) {
-  this.selectedUser = user;
-  this.openDetailsModal = true;
-},
-
+      this.selectedUser = user
+      this.openDetailsModal = true
+    },
 
     toggleMenu(id) {
       this.openMenu = this.openMenu === id ? null : id
@@ -242,23 +231,22 @@ export default {
         this.isLoading = true
         const token = useAuthStore().token
 
-        const res = await axios.get("http://localhost:8000/api/users", {
+        const res = await axios.get('http://localhost:8000/api/users', {
           headers: { Authorization: `Bearer ${token}` },
           params: {
             page,
             search: this.search,
             role: this.roleFilter,
-            status: this.statusFilter,
-          },
+            status: this.statusFilter
+          }
         })
 
         this.users = res.data.data
         this.total = res.data.total
         this.currentPage = res.data.current_page
         this.lastPage = res.data.last_page
-
       } catch (err) {
-        console.error("Error loading users:", err)
+        console.error('Error loading users:', err)
       } finally {
         this.isLoading = false
       }
@@ -266,13 +254,11 @@ export default {
 
     async loadRoles() {
       const token = useAuthStore().token
-      const res = await axios.get("http://localhost:8000/api/roles", {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await axios.get('http://localhost:8000/api/roles', {
+        headers: { Authorization: `Bearer ${token}` }
       })
       this.roles = res.data.roles
     },
-
-
 
     refresh() {
       this.fetchUsers(this.currentPage)
@@ -287,7 +273,7 @@ export default {
   mounted() {
     this.fetchUsers()
     this.loadRoles()
-    document.addEventListener("click", () => (this.openMenu = null))
+    document.addEventListener('click', () => (this.openMenu = null))
   }
 }
 </script>
@@ -390,7 +376,7 @@ export default {
   border: 1px solid #ddd;
   border-radius: 6px;
   width: 140px;
-  box-shadow: 0 4px 10px rgba(0,0,0,.15);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   z-index: 999;
 }
 
@@ -403,7 +389,6 @@ export default {
   background: #f4f4f4;
 }
 
-
 .skeleton-bar {
   width: 100%;
   height: 18px;
@@ -413,8 +398,14 @@ export default {
 }
 
 @keyframes pulse {
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
 }
 </style>

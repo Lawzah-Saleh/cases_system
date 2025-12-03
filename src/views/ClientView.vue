@@ -6,7 +6,9 @@
         <p class="sub-header">Detailed overview and management of all the clients.</p>
       </div>
 
-      <button class="add-button" @click="openCreate = true">+ Create Client</button>
+      <button class="add-button" @click="openCreate = true" :disabled="!auth.can('add client')">
+        + Add Client
+      </button>
     </div>
 
     <!-- ===== FILTERS ===== -->
@@ -67,11 +69,26 @@
           <td v-if="isVisible('address')">{{ item.address }}</td>
 
           <td class="action-cell">
-            <!-- menu still works -->
-            <div class="menu-trigger" @click="toggleMenu(item.id)">⋮</div>
+            <div
+              v-if="auth.can('edit client') || auth.can('delete client')"
+              class="menu-trigger"
+              @click="toggleMenu(item.id)"
+            >
+              ⋮
+            </div>
+
             <div v-if="openMenu === item.id" class="menu-dropdown">
-              <div class="menu-item" @click="startEdit(item)">Edit</div>
-              <div class="menu-item delete" @click="openDeleteModal(item)">Delete</div>
+              <div class="menu-item" v-if="auth.can('edit client')" @click="startEdit(item)">
+                Edit
+              </div>
+
+              <div
+                class="menu-item delete"
+                v-if="auth.can('delete client')"
+                @click="openDeleteModal(item)"
+              >
+                Delete
+              </div>
             </div>
           </td>
         </tr>
@@ -253,7 +270,6 @@ export default {
       }
     },
 
-
     changePage(page) {
       if (page < 1 || page > this.lastPage) return
       this.fetchClients(page)
@@ -276,6 +292,10 @@ export default {
     document.removeEventListener('click', this.handleClickOutside)
   },
   computed: {
+    auth() {
+      return useAuthStore()
+    },
+
     visibleColumns() {
       return this.columns.filter((col) => col.visible)
     }

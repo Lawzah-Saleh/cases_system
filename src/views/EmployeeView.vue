@@ -6,16 +6,12 @@
         <p class="sub-header">Detailed overview and management of all system employees.</p>
       </div>
 
-      <button class="add-button" @click="openCreate = true">+ Create Employee</button>
+      <button class="add-button" @click="openCreate = true" :disabled="!auth.can('add employee')">
+        + Create Employee
+      </button>
     </div>
     <div class="filters-wrapper">
-
-      <input
-        type="text"
-        class="search-input"
-        placeholder="Search..."
-        v-model="search"
-      />
+      <input type="text" class="search-input" placeholder="Search..." v-model="search" />
 
       <select class="select-input" v-model="status">
         <option value="">Select Role</option>
@@ -23,22 +19,16 @@
           {{ r.role_name }}
         </option>
       </select>
-
     </div>
 
-    <button class="filter-button" @click="showFilter = true">
-      Show / Hide Columns
-    </button>
+    <button class="filter-button" @click="showFilter = true">Show / Hide Columns</button>
 
     <div v-if="showFilter" class="filter-overlay" @click.self="closeFilter">
       <div class="filter-modal">
-
         <div class="filter-header">
           <h2>Show/Hide Columns</h2>
 
-          <button class="select-all-btn" @click="selectAllColumns">
-            All
-          </button>
+          <button class="select-all-btn" @click="selectAllColumns">All</button>
         </div>
 
         <div class="filter-grid">
@@ -52,16 +42,12 @@
           <button class="cancel-btn" @click="closeFilter">Cancel</button>
           <button class="apply-btn" @click="applyFilters">Apply</button>
         </div>
-
       </div>
     </div>
-
-
 
     <table class="custom-table">
       <thead>
         <tr class="table-header-row">
-
           <th v-if="isVisible('id')">ID</th>
           <th v-if="isVisible('name')">Name</th>
           <th v-if="isVisible('email')">Email</th>
@@ -69,24 +55,19 @@
           <th v-if="isVisible('phone')">Phone</th>
           <th v-if="isVisible('role')">Role</th>
           <th></th>
-
         </tr>
       </thead>
 
       <tbody>
-
         <tr v-if="isLoading" v-for="n in 5" :key="n" class="skeleton-row">
           <td colspan="7"><div class="skeleton-bar"></div></td>
         </tr>
 
         <!-- ===== DATA ROWS ===== -->
         <tr v-else v-for="emp in employees" :key="emp.id" class="table-row-hover">
-
           <td v-if="isVisible('id')">{{ emp.id }}</td>
 
-          <td v-if="isVisible('name')"
-              class="user-link"
-              @click="openDetails(emp)">
+          <td v-if="isVisible('name')" class="user-link" @click="openDetails(emp)">
             {{ emp.first_name }} {{ emp.middle_name }} {{ emp.last_name }}
           </td>
 
@@ -100,14 +81,27 @@
 
           <!-- ACTION MENU -->
           <td class="action-cell">
-            <div class="menu-trigger" @click.stop="toggleMenu(emp.id)">⋮</div>
+            <div
+              v-if="auth.can('edit employee') || auth.can('delete employee')"
+              class="menu-trigger"
+              @click.stop="toggleMenu(emp.id)"
+            >
+              ⋮
+            </div>
 
             <div v-if="openMenu === emp.id" class="menu-dropdown">
-              <div class="menu-item" @click="startEdit(emp)">Edit</div>
-              <div class="menu-item delete" @click="deleteEmployee(emp)">Delete</div>
+              <div class="menu-item" v-if="auth.can('edit employee')" @click="startEdit(emp)">
+                Edit
+              </div>
+              <div
+                class="menu-item delete"
+                v-if="auth.can('edit employee')"
+                @click="deleteEmployee(emp)"
+              >
+                Delete
+              </div>
             </div>
           </td>
-
         </tr>
 
         <tr v-if="!isLoading && employees.length === 0">
@@ -115,7 +109,6 @@
             No employees found.
           </td>
         </tr>
-
       </tbody>
     </table>
 
@@ -144,7 +137,6 @@
         </button>
       </div>
     </div>
-
   </div>
 
   <EmployeeDetailsModal
@@ -163,22 +155,20 @@
     @close="openEdit = false"
     @updated="handleRefresh"
   />
-
 </template>
 <script>
-import axios from "axios";
-import { useAuthStore } from "@/stores/auth";
+import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
 
-import EmployeeCreateModal from "@/components/employees/EmployeeCreateModal.vue";
-import EmployeeEditModal from "@/components/employees/EmployeeEditModal.vue";
-import EmployeeDetailsModal from "@/components/employees/EmployeeDetailsModal.vue";
-
+import EmployeeCreateModal from '@/components/employees/EmployeeCreateModal.vue'
+import EmployeeEditModal from '@/components/employees/EmployeeEditModal.vue'
+import EmployeeDetailsModal from '@/components/employees/EmployeeDetailsModal.vue'
 
 export default {
   components: {
     EmployeeCreateModal,
     EmployeeEditModal,
-    EmployeeDetailsModal,
+    EmployeeDetailsModal
   },
 
   data() {
@@ -203,152 +193,150 @@ export default {
       showFilter: false,
 
       columns: [
-        { key: "id", label: "ID", visible: true },
-        { key: "name", label: "Name", visible: true },
-        { key: "email", label: "Email", visible: true },
-        { key: "gender", label: "Gender", visible: true },
-        { key: "phone", label: "Phone", visible: true },
-        { key: "role", label: "Role", visible: true },
+        { key: 'id', label: 'ID', visible: true },
+        { key: 'name', label: 'Name', visible: true },
+        { key: 'email', label: 'Email', visible: true },
+        { key: 'gender', label: 'Gender', visible: true },
+        { key: 'phone', label: 'Phone', visible: true },
+        { key: 'role', label: 'Role', visible: true }
       ],
 
-      debounceTimer: null,
-    };
+      debounceTimer: null
+    }
   },
 
   computed: {
-    visibleColumns() {
-      return this.columns.filter(col => col.visible);
+    auth() {
+      return useAuthStore()
     },
+    visibleColumns() {
+      return this.columns.filter((col) => col.visible)
+    }
   },
 
   watch: {
     search() {
-      this.debounceSearch();
+      this.debounceSearch()
     },
     status() {
-      this.fetchEmployees(1);
-    },
+      this.fetchEmployees(1)
+    }
   },
 
   methods: {
     closeFilter() {
-      this.showFilter = false;
+      this.showFilter = false
     },
 
     applyFilters() {
-      this.showFilter = false;
+      this.showFilter = false
     },
 
     selectAllColumns() {
-      this.columns.forEach(col => col.visible = true);
+      this.columns.forEach((col) => (col.visible = true))
     },
 
     isVisible(key) {
-      return this.columns.find(col => col.key === key)?.visible;
+      return this.columns.find((col) => col.key === key)?.visible
     },
 
-
     toggleMenu(id) {
-      this.openMenu = this.openMenu === id ? null : id;
+      this.openMenu = this.openMenu === id ? null : id
     },
 
     closeMenu() {
-      this.openMenu = null;
+      this.openMenu = null
     },
 
     debounceSearch() {
-      clearTimeout(this.debounceTimer);
+      clearTimeout(this.debounceTimer)
       this.debounceTimer = setTimeout(() => {
-        this.fetchEmployees(1);
-      }, 400);
+        this.fetchEmployees(1)
+      }, 400)
     },
 
     openDetails(emp) {
-      this.selectedEmployee = emp;
-      this.openDetailsModal = true;
+      this.selectedEmployee = emp
+      this.openDetailsModal = true
     },
 
     startEdit(emp) {
-      this.selectedEmployee = emp;
-      this.openEdit = true;
+      this.selectedEmployee = emp
+      this.openEdit = true
     },
 
     async deleteEmployee(emp) {
-      if (!confirm("Delete this employee?")) return;
-
+      if (!confirm('Delete this employee?')) return
 
       try {
-        const token = useAuthStore().token;
+        const token = useAuthStore().token
 
         await axios.delete(`http://localhost:8000/api/employees/${emp.id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+          headers: { Authorization: `Bearer ${token}` }
+        })
 
-        this.handleRefresh();
+        this.handleRefresh()
       } catch (e) {
-        console.error(e);
+        console.error(e)
       }
     },
 
     async loadRoles() {
-      const token = useAuthStore().token;
-      const res = await axios.get("http://localhost:8000/api/roles", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const token = useAuthStore().token
+      const res = await axios.get('http://localhost:8000/api/roles', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
 
-      this.roles = res.data.roles;
-
+      this.roles = res.data.roles
     },
 
     async fetchEmployees(page = 1) {
       try {
-        this.isLoading = true;
+        this.isLoading = true
 
-        const token = useAuthStore().token;
+        const token = useAuthStore().token
 
         const res = await axios.get('http://localhost:8000/api/employees', {
           headers: { Authorization: `Bearer ${token}` },
           params: {
             page,
             search: this.search,
-            role: this.status,
-          },
-        });
+            role: this.status
+          }
+        })
 
-        this.employees = res.data.data;
-        this.currentPage = res.data.current_page;
-        this.lastPage = res.data.last_page;
-        this.total = res.data.total;
+        this.employees = res.data.data
+        this.currentPage = res.data.current_page
+        this.lastPage = res.data.last_page
+        this.total = res.data.total
       } catch (err) {
-        console.error("Error loading employees:", err);
-
+        console.error('Error loading employees:', err)
       } finally {
-        this.isLoading = false;
+        this.isLoading = false
       }
     },
 
     // ===== Pagination =====
     changePage(p) {
-      if (p < 1 || p > this.lastPage) return;
-      this.fetchEmployees(p);
+      if (p < 1 || p > this.lastPage) return
+      this.fetchEmployees(p)
     },
 
     handleRefresh() {
-      this.fetchEmployees(this.currentPage);
-    },
+      this.fetchEmployees(this.currentPage)
+    }
   },
 
   mounted() {
-    this.fetchEmployees();
-    this.loadRoles();
-    document.addEventListener("click", this.closeMenu);
+    this.fetchEmployees()
+    this.loadRoles()
+    document.addEventListener('click', this.closeMenu)
   },
 
   beforeUnmount() {
-    document.removeEventListener("click", this.closeMenu);
-  },
-};
-
+    document.removeEventListener('click', this.closeMenu)
+  }
+}
 </script>
 <style scoped>
 .header-row {
@@ -396,12 +384,10 @@ export default {
   margin-bottom: 20px;
 }
 
-
-
 .filter-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.45);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -413,7 +399,7 @@ export default {
   background: white;
   border-radius: 16px;
   padding: 40px 50px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
 }
 
 .filter-header {
@@ -476,8 +462,6 @@ export default {
   font-size: 16px;
   cursor: pointer;
 }
-
-
 
 .custom-table {
   width: 100%;
@@ -570,9 +554,14 @@ export default {
 }
 
 @keyframes pulse {
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
 }
-
 </style>
