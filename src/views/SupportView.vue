@@ -7,7 +7,9 @@
         <p class="sub-header">Detailed overview and management of all customer support cases.</p>
       </div>
 
-      <button class="add-button" @click="openCreate = true">+ Create Support</button>
+<button v-if="can('cases.create')" class="add-button" @click="openCreate = true">
+  + Create Support
+</button>
     </div>
 
     <!-- ===================== FILTERS (ADVANCED) ===================== -->
@@ -21,6 +23,33 @@
     <!-- <Suspense>
       <SupportFilters :clients="clients" :priorities="priorities" @applyFilters="handleFilters"/>
     </Suspense> -->
+<div class="case-tabs">
+  <button 
+    v-if="can('cases.view_all')"
+    :class="['case-tab', activeTab === 'all' ? 'active' : '']" 
+    @click="changeTab('all')"
+  >
+    All Cases
+  </button>
+
+  <button 
+    v-if="can('cases.view_assigned')"
+    :class="['case-tab', activeTab === 'mine' ? 'active' : '']" 
+    @click="changeTab('mine')"
+  >
+    My Cases
+  </button>
+
+
+  <button 
+    v-if="can('cases.view_unassigned')"
+    :class="['case-tab', activeTab === 'unassigned' ? 'active' : '']" 
+    @click="changeTab('unassigned')"
+  >
+    Unassigned
+  </button>
+
+</div>
 
 
     <!-- ===================== SHOW / HIDE COLUMNS BUTTON ===================== -->
@@ -67,6 +96,7 @@
           </th>
           <th v-if="isVisible('client')">Customer</th>
           <th v-if="isVisible('employees')">Team Members</th>
+          <th>Action</th>
           <th></th>
         </tr>
       </thead>
@@ -126,23 +156,65 @@
             <div v-else>
               <span>—</span>
 
-              <!-- زر الإسناد يظهر فقط لو لم تغلق المشكلة -->
-              <button 
-                class="assign-btn"
-                @click="openAssignModal(c)"
-                v-if="c.status !== 'closed'"
-              >
-                Assign
-              </button>
+
+
             </div>
+ 
+
+          </td>
+          <td>
+            <td v-if="isVisible('status')">
+
+
+ <!-- ========== WORKFLOW BUTTON ========== -->
+
+<!-- حالة: opened → يظهر زر Assign -->
+<button 
+  v-if="c.status === 'opened' && can('cases.assign')" 
+  class="workflow-btn"
+  @click="openAssignModal(c)"
+>
+  Assign
+</button>
+
+<!-- حالة: assigned → يظهر زر Accept -->
+<button 
+  v-if="c.status === 'assigned' && can('cases.accept')" 
+  class="workflow-btn"
+  @click="acceptCase(c)"
+>
+  Accept
+</button>
+
+<!-- حالة: in_progress → يظهر زر Close -->
+<button 
+  v-if="c.status === 'in_progress' && can('cases.close')" 
+  class="workflow-btn"
+  @click="closeCase(c)"
+>
+  Close
+</button>
+
+    <!-- Assign to Me (هنا فقط لو الحالة غير مسندة) -->
+<!-- <button
+  v-if="c.employees?.length === 0 && can('cases.assign')"
+  class="assign-btn"
+  @click="assignToMe(c)"
+>
+  Assign to Me
+</button> -->
+
+
+</td>
+
           </td>
 
           <td class="action-cell">
             <div class="menu-trigger" @click.stop="toggleMenu(c.id)">⋮</div>
 
             <div v-if="openMenu === c.id" class="menu-dropdown">
-              <div class="menu-item" @click="openEditModal(c)">Edit</div>
-              <div class="menu-item delete" @click="openDeleteModal(c)">Delete</div>
+              <div v-if="can('cases.edit')" class="menu-item" @click="openEditModal(c)">Edit</div>
+              <div v-if="can('cases.delete')" class="menu-item delete" @click="openDeleteModal(c)">Delete</div>
             </div>
           </td>
         </tr>
@@ -216,6 +288,11 @@ import { ref } from 'vue'
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 import { onMounted, onBeforeUnmount } from 'vue'
+const auth = useAuthStore()
+
+const can = (permission) => {
+  return auth.permissions?.includes(permission)
+}
 
 import SupportFilters from '@/components/cases/SupportFilters.vue'
 import CaseDetailsModal from '@/components/cases/CaseDetailsModal.vue'
@@ -225,6 +302,14 @@ import CaseDeleteModal from '@/components/cases/CaseDeleteModal.vue'
 import CaseAssignModal from '@/components/cases/CaseAssignModal.vue'
 
 const showAssign = ref(false)
+const activeTab = ref('all')
+function changeTab(tab) {
+  activeTab.value = tab
+  
+  filterParams.value.tab = tab
+  
+  fetchCases(1)
+}
 
 function openAssignModal(item) {
   selectedCase.value = item
@@ -237,6 +322,10 @@ function closeAssignModal() {
 
 function refreshAfterAssign() {
   fetchCases(currentPage.value)
+}
+async function closeCase(c) {
+  await axios.post(`/api/cases/${c.id}/close`, {}, authHeader)
+  fetchCases()
 }
 
 const openCreate = ref(false)
@@ -358,13 +447,13 @@ async function fetchCases(page = 1) {
       headers: {
         Authorization: `Bearer ${token}`
       },
-params: {
-  page,
-  sort_by: sortBy.value,
-  sort_direction: sortDirection.value,
-  ...filterParams.value
-}
-
+      params: {
+        page,
+        sort_by: sortBy.value,
+        sort_direction: sortDirection.value,
+        tab: activeTab.value,   // <-- مهم جداً
+        ...filterParams.value
+      }
     })
 
     cases.value = res.data.data
@@ -472,6 +561,31 @@ function setSort(column) {
   }
 
   fetchCases(1)
+}
+const authHeader = {
+  headers: {
+    Authorization: `Bearer ${auth.token}`
+  }
+}
+
+
+async function assignToMe(c) {
+  await axios.post(`/api/cases/${c.id}/assign-to-me`, {}, authHeader)
+  fetchCases()
+}
+async function acceptCase(c) {
+await axios.post(`http://localhost:8000/api/cases/${c.id}/accept`, {}, authHeader)
+  fetchCases()
+}
+
+
+async function reassignCase(c, employeeId) {
+  await axios.post(`/api/cases/${c.id}/reassign`, { employee_id: employeeId }, authHeader)
+  fetchCases()
+}
+async function removeEmployee(c, employeeId) {
+  await axios.post(`/api/cases/${c.id}/remove-employee`, { employee_id: employeeId }, authHeader)
+  fetchCases()
 }
 
 </script>
@@ -814,6 +928,43 @@ function setSort(column) {
 }
 
 .assign-btn:hover {
+  background: var(--primary-hover);
+}
+.case-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.case-tab {
+  padding: 8px 20px;
+  font-size: 14px;
+  border-radius: 20px;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.case-tab.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+.workflow-btn {
+  margin-left: 8px;
+  padding: 4px 12px;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--primary-color);
+  color: white;
+  transition: 0.2s;
+}
+
+.workflow-btn:hover {
   background: var(--primary-hover);
 }
 

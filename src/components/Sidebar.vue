@@ -13,7 +13,7 @@
           <span class="menu-text">Dashboard</span>
         </router-link>
       </li>
-      <li v-if="auth.can('view support')">
+      <li v-if="auth.can('cases.view_all')">
         <router-link to="/app/supports">
           <i class="bi bi-life-preserver"></i>
           <span class="menu-text">Supports</span>
