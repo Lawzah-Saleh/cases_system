@@ -1,101 +1,13 @@
-<!-- <template>
-  <div class="dashboard-container">
-
-    <h2 class="page-title">Dashboard</h2>
-
-  
-    <div class="cards-grid">
-      <StatsCard
-        title="This Month CRM Supports"
-        :current="12"
-        :total="45"
-        :trend="1.3"
-        trendText="Up from past week"
-      />
-      <StatsCard
-        title="This Month CRM Supports"
-        :current="0"
-        :total="2"
-        :trend="-4.3"
-        trendText="Down from yesterday"
-      />
-      <StatsCard
-        title="This Month Customers"
-        :current="0"
-        :total="8"
-        :trend="1.3"
-        trendText="Up from past week"
-      />
-      <StatsCard
-        title="This Month Team Members"
-        :current="0"
-        :total="9"
-        :trend="1.3"
-        trendText="Up from past week"
-      />
-    </div>
-
-  </div>
-</template>
-
-<script setup>
-import StatsCard from '@/components/Dashboard/StatsCard.vue'
-</script>
-
-<style scoped>
-
-
-.dashboard-container {
-  padding: 25px 30px;
-  background: #f5f7fb;
-  min-height: 100%;
-  width: 100%;
-  max-width: 100% !important;
-  margin: 0 !important;
-  display: block;
-  padding-top: 10px;
-
-
-}
-
-.cards-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(260px, 1fr));
-  gap: 22px;
-  justify-items: start !important; 
-}
-
-
-.page-title {
-  font-size: 26px;
-  font-weight: 700;
-  margin-bottom: 25px;
-  color: #222;
-}
-
-
-
-@media (max-width: 1200px) {
-  .cards-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (max-width: 900px) {
-  .cards-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 600px) {
-  .cards-grid {
-    grid-template-columns: 1fr;
-  }
-}
-</style> -->
 <template>
   <div class="dashboard">
     <!-- CARDS ROW -->
+    <select v-model="selectedFilter" @change="handleFilterChange" class="filter-select">
+      <option value="day">Today</option>
+      <option value="week">This Week</option>
+      <option value="month">This Month</option>
+      <option value="year">This Year</option>
+    </select>
+
     <div class="cards">
       <StatsCard title="Total Case" :total="cards.total_cases" icon="bi bi-people" />
       <StatsCard title="Total Clients" :total="cards.total_clients" icon="bi bi-people" />
@@ -118,7 +30,7 @@ import StatsCard from '@/components/Dashboard/StatsCard.vue'
       <div class="chart-box small">
         <h3 class="chart-title">Cases by Status</h3>
         <apexchart
-          type="donut"
+          type="pie"
           height="300"
           :options="casesByStatusOptions"
           :series="casesByStatusSeries"
@@ -162,6 +74,7 @@ export default {
   data() {
     return {
       cards: {},
+      selectedFilter: 'month',
 
       // Charts Data
       casesPerDayOptions: {},
@@ -190,12 +103,18 @@ export default {
   },
 
   methods: {
+    handleFilterChange() {
+      this.loadCards()
+    },
+
     async loadCards() {
       const token = useAuthStore().token
 
-      const res = await axios.get(`http://localhost:8000/api/dashboard/cards`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const res = await axios.get(
+        `http://localhost:8000/api/dashboard/cards?range=${this.selectedFilter}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+
       this.cards = res.data
     },
 
@@ -240,8 +159,8 @@ export default {
       this.casesByStatusOptions = {
         labels: res.data.map((r) => r.status),
         chart: { toolbar: { show: false } },
-        legend: { position: 'bottom' },
-        colors: ['#573DFF', '#10B981', '#F59E0B', '#EF4444']
+        legend: { position: 'right', fontSize: '16px' },
+        colors: ['#7C3AED', '#F59E0B', '#10B981', '#60A5FA', '#8E44AD', '#E74C3C']
       }
       this.casesByStatusSeries = res.data.map((r) => r.total)
     },
@@ -252,7 +171,17 @@ export default {
         headers: { Authorization: `Bearer ${token}` }
       })
       this.casesByPriorityOptions = {
-        labels: res.data.map((r) => r.priority)
+        labels: res.data.map((r) => r.priority),
+        chart: { toolbar: { show: false } },
+        legend: { position: 'right', fontSize: '16px' },
+        colors: ['#7C3AED', '#F59E0B', '#10B981', '#60A5FA', '#8E44AD', '#E74C3C'],
+        plotOptions: {
+          pie: {
+            donut: {
+              size: '50%'
+            }
+          }
+        }
       }
       this.casesByPrioritySeries = res.data.map((r) => r.total)
     },
@@ -262,9 +191,21 @@ export default {
       const res = await axios.get(`http://localhost:8000/api/dashboard/cases-by-type`, {
         headers: { Authorization: `Bearer ${token}` }
       })
+
       this.casesByTypeOptions = {
-        labels: res.data.map((r) => r.type)
+        labels: res.data.map((r) => r.type),
+        chart: { toolbar: { show: false } },
+        legend: { position: 'right', fontSize: '16px' },
+        colors: ['#7C3AED', '#F59E0B', '#10B981', '#60A5FA', '#8E44AD', '#E74C3C'],
+        plotOptions: {
+          pie: {
+            donut: {
+              size: '50%'
+            }
+          }
+        }
       }
+
       this.casesByTypeSeries = res.data.map((r) => r.total)
     },
 
@@ -297,6 +238,14 @@ export default {
 </script>
 
 <style>
+.filter-select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
 .dashboard {
   padding: 20px;
   display: flex;
