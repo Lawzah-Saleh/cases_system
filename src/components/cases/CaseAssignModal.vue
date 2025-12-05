@@ -41,11 +41,22 @@
           v-for="emp in filteredEmployees"
           :key="emp.id"
         >
-          <input
-            type="checkbox"
-            :value="emp.id"
-            v-model="selectedEmployees"
-          />
+        <input
+          v-if="props.mode === 'assign'"
+          type="checkbox"
+          :value="emp.id"
+          v-model="selectedEmployees"
+        />
+
+      <input
+        v-if="props.mode === 'reassign'"
+        type="radio"
+        name="newAssignee"
+        :value="emp.id"
+        v-model="selectedEmployee"
+      />
+
+
           <span>{{ emp.first_name }} {{ emp.last_name }}</span>
         </div>
 
@@ -57,6 +68,9 @@
       <!-- Buttons -->
       <div class="actions">
         <button class="btn cancel-btn" @click="close">Cancel</button>
+          <button class="btn assign-btn" @click="assignToMe">
+            Assign to Me
+          </button>
         <button class="btn assign-btn" @click="assign">Assign</button>
       </div>
     </div>
@@ -69,11 +83,14 @@ import { useAuthStore } from "@/stores/auth";
 import axios from "axios";
 import { toast } from "vue3-toastify";
 
+const API_URL = "http://localhost:8000/api";   // <-- ADD THIS HERE
+
 const props = defineProps({
   caseData: Object,
+  mode: { type: String, default: "assign" }
 });
 
-const emit = defineEmits(["close", "assigned"]);
+const emit = defineEmits(["close", "assigned", "reassigned"]);
 
 const employees = ref([]);
 const selectedEmployees = ref([]);
@@ -98,15 +115,34 @@ const selectedEmployeesData = computed(() =>
   employees.value.filter((e) => selectedEmployees.value.includes(e.id))
 );
 
-// computed: filtered list
+// // computed: filtered list
+// const filteredEmployees = computed(() => {
+//   if (!search.value) return employees.value;
+//   return employees.value.filter((emp) =>
+//     (emp.first_name + " " + emp.last_name)
+//       .toLowerCase()
+//       .includes(search.value.toLowerCase())
+//   );
+// });
 const filteredEmployees = computed(() => {
-  if (!search.value) return employees.value;
-  return employees.value.filter((emp) =>
+  let list = employees.value;
+
+  // EXCLUDE logged-in user when reassigning
+  if (props.mode === "reassign") {
+    const userId = auth.user.id;
+    list = list.filter(emp => emp.id !== userId);
+  }
+
+  // Apply search filter
+  if (!search.value) return list;
+
+  return list.filter(emp =>
     (emp.first_name + " " + emp.last_name)
       .toLowerCase()
       .includes(search.value.toLowerCase())
   );
 });
+
 
 function toggleDropdown() {
   dropdownOpen.value = !dropdownOpen.value;
@@ -115,28 +151,85 @@ function toggleDropdown() {
 function removeTag(id) {
   selectedEmployees.value = selectedEmployees.value.filter((e) => e !== id);
 }
+const selectedEmployee = ref(null);
+
 
 async function assign() {
   try {
-    const token = useAuthStore().token
+    const token = useAuthStore().token;
+    
+    let res;
 
-    await axios.post(
-      `http://localhost:8000/api/cases/${props.caseData.id}/assign`,
-      { employee_ids: selectedEmployees.value },
-      {
-        headers: { Authorization: `Bearer ${token}` }
-      }
-    )
+    if (props.mode === "assign") {
+      await axios.post(
+        `http://localhost:8000/api/cases/${props.caseData.id}/assign`,
+        { employee_ids: selectedEmployees.value },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+    }
+emit("assigned");
+emit("close");
+toast.success("Employees assigned successfully!");
 
-    emit('assigned')
-    emit('close')
+ if (props.mode === "reassign") {
 
-    toast.success('Employees assigned successfully!')
-  } catch (e) {
-    console.error(e)
-    toast.error('Failed to assign employees.')
+  console.log("Selected employee:", selectedEmployee.value);
+
+  if (!selectedEmployee.value) {
+    toast.error("Please select an employee to reassign.");
+    return;
+  }
+
+  const newEmployeeId = Number(selectedEmployee.value);
+
+  const res = await axios.post(
+    `${API_URL}/cases/${props.caseData.id}/reassign`,
+    { employee_id: newEmployeeId },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+
+  emit("reassigned");
+    emit("close");
+
+
+  toast.success("Case reassigned successfully!");
+  return;
+}
+
+
+  } catch (err) {
+    console.error("Assignment error:", err);
+    console.error("BACKEND:", err.response?.data);
+
+
+    if (err.response?.data?.message) {
+      toast.error(err.response.data.message);
+    } else {
+      toast.error("An error occurred during assignment.");
+    }
   }
 }
+
+async function assignToMe() {
+  try {
+    const token = useAuthStore().token;
+
+    await axios.post(
+      `http://localhost:8000/api/cases/${props.caseData.id}/assign-to-me`,
+      {},
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    emit("assigned");
+    emit("close");
+
+    toast.success("Assigned to you successfully!");
+  } catch (e) {
+    console.error(e);
+    toast.error("Failed to assign the case to you.");
+  }
+}
+
 
 
 function close() {
@@ -291,6 +384,9 @@ function close() {
   background: var(--primary-color);
   color: white;
 }
+.assign-btn :hover{
+  background: var(--primary-hover);
+}
 
 /* Animation */
 @keyframes popIn {
@@ -303,5 +399,6 @@ function close() {
     opacity: 1;
   }
 }
+
 
 </style>

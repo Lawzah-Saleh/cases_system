@@ -96,7 +96,7 @@
           </th>
           <th v-if="isVisible('client')">Customer</th>
           <th v-if="isVisible('employees')">Team Members</th>
-          <th>Action</th>
+           <th v-if="isVisible('action')">Action</th>
           <th></th>
         </tr>
       </thead>
@@ -163,49 +163,50 @@
 
           </td>
           <td>
-            <td v-if="isVisible('status')">
+          <td v-if="isVisible('action')">
 
+            <button 
+              v-if="c.status === 'opened' && can('cases.assign')" 
+              class="workflow-btn"
+              @click="openAssignModal(c)"
+            >
+              Assign
+            </button>
 
- <!-- ========== WORKFLOW BUTTON ========== -->
-
-<!-- حالة: opened → يظهر زر Assign -->
-<button 
-  v-if="c.status === 'opened' && can('cases.assign')" 
-  class="workflow-btn"
-  @click="openAssignModal(c)"
->
-  Assign
-</button>
-
-<!-- حالة: assigned → يظهر زر Accept -->
-<button 
-  v-if="c.status === 'assigned' && can('cases.accept')" 
+            <!-- <button 
+              v-if="c.status === 'assigned' && can('cases.accept')" 
+              class="workflow-btn"
+              @click="acceptCase(c)"
+            >
+              Accept
+            </button> -->
+<button
+  v-if="c.is_mine && (c.status === 'assigned' || c.status === 'reassigned') && can('cases.accept')"
   class="workflow-btn"
   @click="acceptCase(c)"
 >
   Accept
 </button>
 
-<!-- حالة: in_progress → يظهر زر Close -->
-<button 
-  v-if="c.status === 'in_progress' && can('cases.close')" 
+<button
+  v-if="(c.is_mine && c.status === 'in_progress') &&can('cases.close')"
   class="workflow-btn"
   @click="closeCase(c)"
 >
   Close
 </button>
 
-    <!-- Assign to Me (هنا فقط لو الحالة غير مسندة) -->
-<!-- <button
-  v-if="c.employees?.length === 0 && can('cases.assign')"
-  class="assign-btn"
-  @click="assignToMe(c)"
+<button
+  v-if="c.status === 'assigned' && can('cases.reassign')"
+  class="workflow-btn"
+  @click="openReassignModal(c)"
 >
-  Assign to Me
-</button> -->
+  Reassign
+</button>
 
 
-</td>
+
+            </td>
 
           </td>
 
@@ -277,9 +278,21 @@
 <CaseAssignModal
   v-if="showAssign"
   :caseData="selectedCase"
+  :mode="'assign'"
   @close="closeAssignModal"
   @assigned="handleAssigned"
 />
+
+<CaseAssignModal
+  v-if="showReassign"
+  :caseData="selectedCase"
+  :mode="'reassign'"
+  @close="closeReassignModal"
+  @reassigned="handleReassigned"
+/>
+
+
+
 
 </template>
 
@@ -310,6 +323,14 @@ function changeTab(tab) {
   
   fetchCases(1)
 }
+const showReassign = ref(false);
+function openReassignModal(item) {
+  selectedCase.value = item;
+  showReassign.value = true;
+}
+function closeReassignModal() {
+  showReassign.value = false;
+}
 
 function openAssignModal(item) {
   selectedCase.value = item
@@ -323,10 +344,19 @@ function closeAssignModal() {
 function refreshAfterAssign() {
   fetchCases(currentPage.value)
 }
-async function closeCase(c) {
-  await axios.post(`/api/cases/${c.id}/close`, {}, authHeader)
-  fetchCases()
+
+
+
+function handleReassigned(updatedCase) {
+  if (!updatedCase) {
+    console.error("No updated case received");
+    return;
+  }
+
+  updateCaseInTable(updatedCase);
 }
+
+
 
 const openCreate = ref(false)
 const sortBy = ref(null)
@@ -374,10 +404,7 @@ async function loadFilterData() {
   })).data
 }
 
-onMounted(() => {
-  loadFilterData()
-  fetchCases()
-})
+
 
 
 
@@ -421,7 +448,9 @@ const columns = ref([
   { key: 'status', label: 'Status', visible: true },
   { key: 'priority', label: 'Priority', visible: true },
   { key: 'client', label: 'Client', visible: true },
-  { key: 'employees', label: 'Employees', visible: true }
+  { key: 'employees', label: 'Employees', visible: true },
+  { key: 'action', label: 'Action', visible: true }
+
 ])
 
 // ====== HANDLERS ======
@@ -444,27 +473,36 @@ async function fetchCases(page = 1) {
     const token = useAuthStore().token
 
     const res = await axios.get('http://localhost:8000/api/cases', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      },
+      headers: { Authorization: `Bearer ${token}` },
       params: {
         page,
         sort_by: sortBy.value,
         sort_direction: sortDirection.value,
-        tab: activeTab.value,   // <-- مهم جداً
+        tab: activeTab.value,
         ...filterParams.value
       }
     })
 
+// cases.value = res.data.data.map(c => ({
+//   ...c,
+//   client: c.client ? { ...c.client } : null,
+//   priority: c.priority ? { ...c.priority } : null,
+//   employees: c.employees ? c.employees.map(e => ({ ...e })) : []
+// }))
+    // cases.value = [...res.data.data]     // <--- IMPORTANT
     cases.value = res.data.data
+
     lastPage.value = res.data.last_page
     total.value = res.data.total
+
+    return true                          // <--- allow awaiting
   } catch (e) {
-    console.error('Error fetching cases:', e)
+    console.error(e)
   } finally {
     isLoading.value = false
   }
 }
+
 
 function changePage(p) {
   if (p < 1 || p > lastPage.value) return
@@ -500,6 +538,8 @@ function closeAllMenus() {
 }
 
 onMounted(() => {
+  loadFilterData()
+  fetchCases()
   document.addEventListener('click', closeAllMenus)
 })
 
@@ -548,8 +588,6 @@ function priorityBadgeClass(priority) {
 }
 
 
-// ====== INIT ======
-fetchCases()
 
 
 function setSort(column) {
@@ -567,6 +605,12 @@ const authHeader = {
     Authorization: `Bearer ${auth.token}`
   }
 }
+function updateCaseInTable(updatedCase) {
+  const i = cases.value.findIndex(x => x.id === updatedCase.id)
+  if (i !== -1) {
+    cases.value[i] = { ...updatedCase }
+  }
+}
 
 
 async function assignToMe(c) {
@@ -574,15 +618,34 @@ async function assignToMe(c) {
   fetchCases()
 }
 async function acceptCase(c) {
-await axios.post(`http://localhost:8000/api/cases/${c.id}/accept`, {}, authHeader)
-  fetchCases()
+  const res = await axios.post(
+    `http://localhost:8000/api/cases/${c.id}/accept`,
+    {},
+    authHeader
+  )
+
+  // Instant update in table
+  updateCaseInTable(res.data.case)
+
+}
+
+async function closeCase(c) {
+  const res = await axios.post(
+    `http://localhost:8000/api/cases/${c.id}/close`,
+    {},
+    authHeader
+  )
+
+  // Instant update
+  updateCaseInTable(res.data.case)
+
 }
 
 
-async function reassignCase(c, employeeId) {
-  await axios.post(`/api/cases/${c.id}/reassign`, { employee_id: employeeId }, authHeader)
-  fetchCases()
-}
+// async function reassignCase(c, employeeId) {
+//   await axios.post(`/api/cases/${c.id}/reassign`, { employee_id: employeeId }, authHeader)
+//   fetchCases()
+// }
 async function removeEmployee(c, employeeId) {
   await axios.post(`/api/cases/${c.id}/remove-employee`, { employee_id: employeeId }, authHeader)
   fetchCases()
