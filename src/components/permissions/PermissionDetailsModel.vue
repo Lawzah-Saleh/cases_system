@@ -60,6 +60,7 @@ function close() {
 
 .modal-large {
   width: 550px;
+  height: 600px;
 }
 
 .modal-content {
@@ -93,7 +94,7 @@ function close() {
 .modal-subtitle {
   font-size: 14px;
   color: #777;
-  margin-bottom: 18px;
+  margin-bottom: 35px;
 }
 
 .avatar-wrapper {
@@ -148,12 +149,6 @@ function close() {
   font-weight: 600;
   margin-bottom: 12px;
   color: var(--primary-color);
-}
-
-.permissions-list {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 22px 0;
 }
 
 .perm-item {

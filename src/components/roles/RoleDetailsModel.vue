@@ -25,17 +25,19 @@
       <!-- PERMISSIONS BY CATEGORY -->
       <h3 class="permissions-title">Permissions by Category</h3>
 
-      <div class="category-box" v-for="cat in grouped" :key="cat.name">
-        <!-- CATEGORY HEADER (CLICK TO EXPAND) -->
-        <div class="category-header" @click="toggle(cat.name)">
-          <span class="category-title">{{ cat.name }}</span>
-          <span class="count-badge">{{ cat.permissions.length }}</span>
-        </div>
+      <!-- SCROLL WRAPPER FOR ALL CATEGORIES -->
+      <div class="category-scroll">
+        <div class="category-box" v-for="cat in grouped" :key="cat.name">
+          <div class="category-header" @click="toggle(cat.name)">
+            <span class="category-title">{{ cat.name }}</span>
+            <span class="count-badge">{{ cat.permissions.length }}</span>
+          </div>
 
-        <!-- PERMISSIONS -->
-        <div class="permissions-list" v-if="openCategory === cat.name">
-          <div v-for="perm in cat.permissions" :key="perm.id" class="perm-item">
-            {{ perm.permission_name }}
+          <!-- PERMISSIONS (also scrollable inside if long) -->
+          <div class="permissions-list" v-if="openCategory === cat.name">
+            <div v-for="perm in cat.permissions" :key="perm.id" class="perm-item">
+              {{ perm.permission_name }}
+            </div>
           </div>
         </div>
       </div>
@@ -188,10 +190,6 @@ const grouped = computed(() => {
   padding: 4px 10px;
   font-size: 13px;
   border-radius: 12px;
-}
-
-.permissions-list {
-  padding: 12px 16px;
 }
 
 .perm-item {

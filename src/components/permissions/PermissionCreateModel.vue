@@ -22,17 +22,25 @@
         <div class="full">
           <label>Permissions</label>
 
-          <div v-for="(perm, index) in form.permissions" :key="index" class="perm-input-row">
-            <input v-model="form.permissions[index]" placeholder="Permission name" required />
+          <!-- SCROLLABLE WRAPPER -->
+          <div class="permissions-scroll">
+            <div v-for="(perm, index) in form.permissions" :key="index" class="perm-input-row">
+              <input
+                class="input-full"
+                v-model="form.permissions[index]"
+                placeholder="Permission name"
+                required
+              />
 
-            <button
-              type="button"
-              class="remove-btn"
-              @click="removePermission(index)"
-              v-if="form.permissions.length > 1"
-            >
-              ×
-            </button>
+              <button
+                type="button"
+                class="remove-btn"
+                @click="removePermission(index)"
+                v-if="form.permissions.length > 1"
+              >
+                ×
+              </button>
+            </div>
           </div>
 
           <button type="button" class="add-permission-btn" @click="addPermission">
@@ -192,17 +200,6 @@ select {
   align-items: center;
   gap: 10px;
   margin-bottom: 8px;
-}
-
-.add-permission-btn {
-  margin-top: 8px;
-  background: var(--primary-color);
-  color: white;
-  padding: 6px 12px;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  cursor: pointer;
-  border: none;
 }
 
 .remove-btn {

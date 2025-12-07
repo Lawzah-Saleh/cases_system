@@ -397,6 +397,24 @@ export default {
   animation: pulse 1.5s infinite ease-in-out;
 }
 
+/* PAGINATION */
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page-btn {
+  padding: 5px 20px;
+  border-radius: 6px;
+  border: 1px solid gray;
+  background: white;
+  cursor: pointer;
+}
+
+.page-btn:disabled {
+  opacity: 0.5;
+}
 @keyframes pulse {
   0% {
     opacity: 0.6;

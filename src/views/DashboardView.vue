@@ -42,7 +42,7 @@
     <div class="charts-grid">
       <div class="chart-box">
         <div class="chart-header">
-          <h3>Daily Complaints</h3>
+          <h5>Daily Complaints</h5>
           <select v-model="filterCasesPerDay" @change="loadCasesPerDay">
             <option value="day">Today</option>
             <option value="week">This Week</option>
@@ -61,7 +61,7 @@
       <!-- STATUS CHART -->
       <div class="chart-box">
         <div class="chart-header">
-          <h3>Cases by Status</h3>
+          <h5>Cases by Status</h5>
           <select v-model="filterCasesByStatus" @change="loadCasesByStatus">
             <option value="day">Today</option>
             <option value="week">This Week</option>
@@ -82,7 +82,7 @@
       <!-- TYPE CHART -->
       <div class="chart-box">
         <div class="chart-header">
-          <h3>Case Type</h3>
+          <h5>Case Type</h5>
           <select v-model="filterCasesByType" @change="loadCasesByType">
             <option value="day">Today</option>
             <option value="week">This Week</option>
@@ -99,7 +99,7 @@
       </div>
       <div class="chart-box">
         <div class="chart-header">
-          <h3>Top Clients</h3>
+          <h5>Top Clients</h5>
           <select v-model="filterTopClients" @change="loadTopClients">
             <option value="day">Today</option>
             <option value="week">This Week</option>
@@ -119,7 +119,7 @@
     <!-- PRIORITY CHART -->
     <div class="chart-box">
       <div class="chart-header">
-        <h3>Priority Levels</h3>
+        <h5>Priority Levels</h5>
         <select v-model="filterCasesByPriority" @change="loadCasesByPriority">
           <option value="day">Today</option>
           <option value="week">This Week</option>
@@ -249,7 +249,7 @@ export default {
       this.casesByStatusOptions = {
         labels: res.data.map((r) => r.status),
         colors: ['#7C3AED', '#F59E0B', '#10B981', '#60A5FA', '#8E44AD', '#E74C3C'],
-        legend: { position: 'right' }
+        legend: { position: 'bottom' }
       }
       this.casesByStatusSeries = res.data.map((r) => r.total)
     },
@@ -261,7 +261,7 @@ export default {
       )
       this.casesByPriorityOptions = {
         labels: res.data.map((r) => r.priority),
-        legend: { position: 'right' },
+        legend: { position: 'bottom' },
         colors: ['#7C3AED', '#F59E0B', '#10B981', '#60A5FA', '#8E44AD', '#E74C3C']
       }
       this.casesByPrioritySeries = res.data.map((r) => r.total)
@@ -274,7 +274,7 @@ export default {
       )
       this.casesByTypeOptions = {
         labels: res.data.map((r) => r.type),
-        legend: { position: 'right' }
+        legend: { position: 'bottom' }
       }
       this.casesByTypeSeries = res.data.map((r) => r.total)
     },

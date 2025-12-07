@@ -22,17 +22,25 @@
         <div class="full">
           <label>Permissions</label>
 
-          <div v-for="(perm, index) in form.permissions" :key="index" class="perm-input-row">
-            <input v-model="form.permissions[index]" placeholder="Permission name" required />
+          <!-- SCROLL WRAPPER -->
+          <div class="permissions-scroll">
+            <div v-for="(perm, index) in form.permissions" :key="index" class="perm-input-row">
+              <input
+                class="input-full"
+                v-model="form.permissions[index]"
+                placeholder="Permission name"
+                required
+              />
 
-            <button
-              type="button"
-              class="remove-btn"
-              v-if="form.permissions.length > 1"
-              @click="removePermission(index)"
-            >
-              ×
-            </button>
+              <button
+                type="button"
+                class="remove-btn"
+                v-if="form.permissions.length > 1"
+                @click="removePermission(index)"
+              >
+                ×
+              </button>
+            </div>
           </div>
 
           <button type="button" class="add-permission-btn" @click="addPermission">
@@ -138,6 +146,7 @@ function close() {
 
 .modal-large {
   width: 550px;
+  height: 600px;
 }
 
 .modal-content {
@@ -183,22 +192,17 @@ function close() {
   flex-direction: column;
 }
 
+.modal-subtitle {
+  font-size: 14px;
+  color: #777;
+  margin-bottom: 35px;
+}
+
 .perm-input-row {
   display: flex;
   align-items: center;
   gap: 10px;
   margin-bottom: 8px;
-}
-
-.add-permission-btn {
-  margin-top: 8px;
-  background: var(--primary-color);
-  color: white;
-  padding: 6px 12px;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  cursor: pointer;
-  border: none;
 }
 
 .remove-btn {

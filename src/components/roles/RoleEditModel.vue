@@ -21,39 +21,39 @@
         <!-- PERMISSIONS BY CATEGORY -->
         <div class="full">
           <label>Permissions by Category</label>
+          <div class="category-scroll">
+            <div class="category-box" v-for="cat in permissionCategories" :key="cat.id">
+              <!-- CATEGORY HEADER -->
+              <div class="category-header" @click="toggleCategory(cat.id)">
+                <div class="left">
+                  <span class="category-title">{{ cat.category_name }}</span>
+                </div>
 
-          <div class="category-box" v-for="cat in permissionCategories" :key="cat.id">
-            <!-- CATEGORY HEADER -->
-            <div class="category-header" @click="toggleCategory(cat.id)">
-              <div class="left">
-                <span class="category-title">{{ cat.category_name }}</span>
+                <div class="right">
+                  <!-- SELECT ALL -->
+                  <label class="switch">
+                    <input
+                      type="checkbox"
+                      :checked="isCategoryFullySelected(cat)"
+                      @change="toggleSelectAll(cat)"
+                    />
+                    <span class="slider"></span>
+                  </label>
+                </div>
               </div>
 
-              <div class="right">
-                <!-- SELECT ALL -->
-                <label class="switch">
-                  <input
-                    type="checkbox"
-                    :checked="isCategoryFullySelected(cat)"
-                    @change="toggleSelectAll(cat)"
-                  />
-                  <span class="slider"></span>
-                </label>
+              <!-- PERMISSIONS LIST -->
+              <div class="permissions-list" v-if="openCategory === cat.id">
+                <div v-for="perm in cat.permissions" :key="perm.id" class="perm-item">
+                  <input type="checkbox" :value="perm.id" v-model="form.permissions" />
+                  <span>{{ perm.permission_name }}</span>
+                </div>
               </div>
             </div>
 
-            <!-- PERMISSIONS LIST -->
-            <div class="permissions-list" v-if="openCategory === cat.id">
-              <div v-for="perm in cat.permissions" :key="perm.id" class="perm-item">
-                <input type="checkbox" :value="perm.id" v-model="form.permissions" />
-                <span>{{ perm.permission_name }}</span>
-              </div>
-            </div>
+            <p v-if="errors.permissions" class="error-text">{{ errors.permissions[0] }}</p>
           </div>
-
-          <p v-if="errors.permissions" class="error-text">{{ errors.permissions[0] }}</p>
         </div>
-
         <!-- BUTTONS -->
         <div class="btn-row full">
           <button class="btn-primary" type="submit" :disabled="loading">
