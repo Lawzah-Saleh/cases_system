@@ -70,15 +70,7 @@
             </select>
           </div>
 
-          <!-- Employees -->
-          <div class="form-group full">
-            <h3 class="section-title">Assigned Employees</h3>
-            <select v-model="form.employee_ids" class="input" multiple>
-              <option v-for="e in employees" :key="e.id" :value="e.id">
-                {{ e.first_name }} {{ e.last_name }}
-              </option>
-            </select>
-          </div>
+
 
           <!-- Attachment -->
           <div class="form-group full">

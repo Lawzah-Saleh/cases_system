@@ -12,17 +12,13 @@
 </button>
     </div>
 
-    <!-- ===================== FILTERS (ADVANCED) ===================== -->
-      <!--dev tools --> 
 
 <SupportFilters 
     :clients="clients" 
     :priorities="priorities" 
     @applyFilters="handleFilters"
 />
-    <!-- <Suspense>
-      <SupportFilters :clients="clients" :priorities="priorities" @applyFilters="handleFilters"/>
-    </Suspense> -->
+
 <div class="case-tabs">
   <button 
     v-if="can('cases.view_all')"

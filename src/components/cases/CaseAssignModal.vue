@@ -115,20 +115,11 @@ const selectedEmployeesData = computed(() =>
   employees.value.filter((e) => selectedEmployees.value.includes(e.id))
 );
 
-// // computed: filtered list
-// const filteredEmployees = computed(() => {
-//   if (!search.value) return employees.value;
-//   return employees.value.filter((emp) =>
-//     (emp.first_name + " " + emp.last_name)
-//       .toLowerCase()
-//       .includes(search.value.toLowerCase())
-//   );
-// });
 const filteredEmployees = computed(() => {
   let list = employees.value;
 
-  // EXCLUDE logged-in user when reassigning
   if (props.mode === "reassign") {
+    
     const userId = auth.user.id;
     list = list.filter(emp => emp.id !== userId);
   }
@@ -166,14 +157,13 @@ async function assign() {
         { employee_ids: selectedEmployees.value },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+      emit("assigned");
+    emit("close");
+    toast.success("Employees assigned successfully!");
     }
-emit("assigned");
-emit("close");
-toast.success("Employees assigned successfully!");
+
 
  if (props.mode === "reassign") {
-
-  console.log("Selected employee:", selectedEmployee.value);
 
   if (!selectedEmployee.value) {
     toast.error("Please select an employee to reassign.");
@@ -188,25 +178,19 @@ toast.success("Employees assigned successfully!");
     { headers: { Authorization: `Bearer ${token}` } }
   );
 
-  emit("reassigned");
-    emit("close");
+emit("reassigned", res.data.case);
+emit("close");
+toast.success("Case reassigned successfully!");
 
-
-  toast.success("Case reassigned successfully!");
   return;
 }
 
 
   } catch (err) {
-    console.error("Assignment error:", err);
-    console.error("BACKEND:", err.response?.data);
 
+    console.error(err);
+    toast.error("An error occurred during assignment.");
 
-    if (err.response?.data?.message) {
-      toast.error(err.response.data.message);
-    } else {
-      toast.error("An error occurred during assignment.");
-    }
   }
 }
 
