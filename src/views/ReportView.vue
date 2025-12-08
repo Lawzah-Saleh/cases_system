@@ -3,19 +3,23 @@
     <h2 class="main-header">Reports</h2>
 
     <div class="cards-grid">
-      <GlobalCard title="Cases/supports">
+      
+      <!-- CASES REPORT -->
+      <GlobalCard title="Cases / Supports" @click="goTo('/app/reports/cases')">
         <template #icon>
           <i class="bi bi-shield-lock"></i>
         </template>
       </GlobalCard>
 
-      <GlobalCard title="Employees Acheivement">
+      <!-- EMPLOYEE PERFORMANCE REPORT -->
+      <GlobalCard title="Employees Achievement" @click="goTo('/app/reports/employees')">
         <template #icon>
           <i class="bi bi-people"></i>
         </template>
       </GlobalCard>
 
-      <GlobalCard title="Clients">
+      <!-- CLIENTS REPORT -->
+      <GlobalCard title="Clients" @click="goTo('/app/reports/clients')">
         <template #icon>
           <i class="bi bi-person-circle"></i>
         </template>
@@ -34,3 +38,21 @@ const goTo = (path) => {
   router.push(path)
 }
 </script>
+
+<style scoped>
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+  margin-top: 20px;
+}
+
+.cards-grid > * {
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.cards-grid > *:hover {
+  transform: translateY(-5px);
+}
+</style>

@@ -38,6 +38,22 @@ const routes = [
       { path: 'employees', component: EmployeeView },
       { path: 'users', component: UsersView },
       { path: 'reports', component: ReportView },
+{
+  path: 'reports/cases',
+  component: () => import('@/views/reports/CasesReportView.vue')
+},
+
+{
+  path: 'reports/employees',
+  name: 'employees-report',
+  component: () => import('@/views/reports/EmployeesReportView.vue')
+},
+{
+  path: 'reports/clients',
+  name: 'clients-report',
+  component: () => import('@/views/reports/ClientsReportView.vue')
+},
+
       {
         path: 'settings',
         component: SettingView

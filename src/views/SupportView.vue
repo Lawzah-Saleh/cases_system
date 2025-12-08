@@ -169,15 +169,8 @@
               Assign
             </button>
 
-            <!-- <button 
-              v-if="c.status === 'assigned' && can('cases.accept')" 
-              class="workflow-btn"
-              @click="acceptCase(c)"
-            >
-              Accept
-            </button> -->
 <button
-  v-if="c.is_mine && (c.status === 'assigned' || c.status === 'reassigned') && can('cases.accept')"
+  v-if="c.allowed?.accept"
   class="workflow-btn"
   @click="acceptCase(c)"
 >
@@ -185,7 +178,7 @@
 </button>
 
 <button
-  v-if="(c.is_mine && c.status === 'in_progress') &&can('cases.close')"
+v-if="c.allowed?.close"
   class="workflow-btn"
   @click="closeCase(c)"
 >
@@ -193,7 +186,8 @@
 </button>
 
 <button
-  v-if="c.status === 'assigned' && can('cases.reassign')"
+v-if="c.allowed?.reassign"
+
   class="workflow-btn"
   @click="openReassignModal(c)"
 >
