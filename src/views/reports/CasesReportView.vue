@@ -2,19 +2,17 @@
   <div class="table-container">
 
     <div class="header-row">
-    <div class="header-title-container">
-        <h2 class="main-header">Cases Report</h2>
+      <div class="header-title-container">
+          <h2 class="main-header">Cases Report</h2>
+      </div>
     </div>
-    </div>
 
-    <ReportFilters @applyFilters="applyFilters" />
-
-
+    <ReportFilters :clients="clients" :priorities="priorities"  @applyFilters="handleFilters"/>
     <div class="export-row">
-  <button class="add-button" @click="exportCSV">
-    Export CSV
-  </button>
-</div>
+      <button class="add-button" @click="exportCSV">
+        Export CSV
+      </button>
+    </div>
     <!-- ===================== SHOW / HIDE COLUMNS BUTTON ===================== -->
     <button class="filter-button" @click="showFilter = true">Show / Hide Columns</button>
 
@@ -200,9 +198,8 @@ function changePage(page) {
   if (page < 1 || page > lastPage.value) return
   loadReport(page)
 }
-
-function applyFilters(filters) {
-  filterParams.value = filters
+function handleFilters(f) {
+  filterParams.value = { ...f }
   loadReport(1)
 }
 
@@ -227,6 +224,25 @@ function exportCSV() {
 }
 
 onMounted(() => loadReport())
+
+const clients = ref([])
+const priorities = ref([])
+
+// import { shallowRef } from 'vue'
+// const clients = shallowRef([])
+// const priorities = shallowRef([])
+
+async function loadFilterData() {
+  const token = useAuthStore().token
+
+  clients.value = (await axios.get('http://localhost:8000/api/clients', {
+    headers: { Authorization: `Bearer ${token}` }
+  })).data.data
+
+  priorities.value = (await axios.get('http://localhost:8000/api/priorities', {
+    headers: { Authorization: `Bearer ${token}` }
+  })).data
+}
 </script>
 
 
@@ -319,7 +335,7 @@ onMounted(() => loadReport())
   border: none;
   background: transparent;
   text-decoration: underline;
-  font-size: 15px;
+  font-size: 20px;
   margin-bottom: 15px;
 }
 
@@ -377,7 +393,7 @@ onMounted(() => loadReport())
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 15px;
+  font-size: 18px;
 }
 
 .filter-footer {
@@ -413,7 +429,7 @@ onMounted(() => loadReport())
 }
 
 .results-count {
-  font-size: 13px;
+  font-size: 16px;
   color: #666;
 }
 
@@ -441,5 +457,15 @@ onMounted(() => loadReport())
   border-bottom: 1px solid var(--table-border);
   vertical-align: top;
   font-size: 18px;
+}
+.add-button {
+  background: var(--primary-color);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
 }
 </style>

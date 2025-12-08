@@ -138,7 +138,7 @@ const typeOptions = ['technical','service_request','delay','miscommunication','e
 .filter-select {
   width: 100%;
   padding: 12px 14px;
-  font-size: 14px;
+  font-size: 16px;
   border: 1px solid #e2e2e2;
   border-radius: 10px;
   outline: none;
