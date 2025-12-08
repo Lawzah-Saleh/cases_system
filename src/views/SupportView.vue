@@ -1,53 +1,30 @@
 <template>
   <div class="table-container">
-    <!-- ===================== HEADER ===================== -->
     <div class="header-row">
       <div class="header-title-container">
         <h2 class="main-header">Support Cases</h2>
         <p class="sub-header">Detailed overview and management of all customer support cases.</p>
       </div>
-
-<button v-if="can('cases.create')" class="add-button" @click="openCreate = true">
-  + Create Support
-</button>
-    </div>
-
-
+        <button v-if="can('cases.create')" class="add-button" @click="openCreate = true">
+          + Create Support
+        </button>
+      </div>
 <SupportFilters 
     :clients="clients" 
     :priorities="priorities" 
     @applyFilters="handleFilters"
 />
-
 <div class="case-tabs">
-  <button 
-    v-if="can('cases.view_all')"
-    :class="['case-tab', activeTab === 'all' ? 'active' : '']" 
-    @click="changeTab('all')"
-  >
+  <button v-if="can('cases.view_all')" :class="['case-tab', activeTab === 'all' ? 'active' : '']"  @click="changeTab('all')">
     All Cases
   </button>
-
-  <button 
-    v-if="can('cases.view_assigned')"
-    :class="['case-tab', activeTab === 'mine' ? 'active' : '']" 
-    @click="changeTab('mine')"
-  >
+  <button v-if="can('cases.view_assigned')" :class="['case-tab', activeTab === 'mine' ? 'active' : '']" @click="changeTab('mine')" >
     My Cases
   </button>
-
-
-  <button 
-    v-if="can('cases.view_unassigned')"
-    :class="['case-tab', activeTab === 'unassigned' ? 'active' : '']" 
-    @click="changeTab('unassigned')"
-  >
+  <button v-if="can('cases.view_unassigned')" :class="['case-tab', activeTab === 'unassigned' ? 'active' : '']" @click="changeTab('unassigned')">
     Unassigned
   </button>
-
 </div>
-
-
     <!-- ===================== SHOW / HIDE COLUMNS BUTTON ===================== -->
     <button class="filter-button" @click="showFilter = true">Show / Hide Columns</button>
 
@@ -96,7 +73,6 @@
           <th></th>
         </tr>
       </thead>
-
       <tbody>
         <!-- ===== SKELETON ROWS ===== -->
         <tr v-if="isLoading" v-for="n in 5" :key="n" class="skeleton-row">
@@ -107,109 +83,41 @@
 
         <!-- ===== DATA ROWS ===== -->
         <tr v-else v-for="(c, index) in cases" :key="c.id" class="table-row-hover">
-          <td v-if="isVisible('id')">
-          {{ (currentPage - 1) * 10 + (index + 1) }}
-          </td>
-          <td v-if="isVisible('title')" class="title-cell clickable-title" @click="openDetails(c)">
-            {{ c.title }}
-          </td>
-          <td v-if="isVisible('type')">
-            <span class="badge badge-soft">
-              {{ c.type }}
-            </span>
-          </td>
-
-          <td v-if="isVisible('way_entry')">
-            {{ c.way_entry }}
-          </td>
-
-          <td v-if="isVisible('status')">
-            <span class="badge" :class="statusBadgeClass(c.status)">
-              {{ c.status }}
-            </span>
-          </td>
-
+          <td v-if="isVisible('id')">{{ (currentPage - 1) * 10 + (index + 1) }}</td>
+          <td v-if="isVisible('title')" class="title-cell clickable-title" @click="openDetails(c)">{{ c.title }}</td>
+          <td v-if="isVisible('type')"><span class="badge badge-soft">{{ c.type }}</span></td>
+          <td v-if="isVisible('way_entry')">{{ c.way_entry }}</td>
+          <td v-if="isVisible('status')"><span class="badge" :class="statusBadgeClass(c.status)">{{ c.status }}</span></td>
           <td v-if="isVisible('priority')" @click="setSort('priority')" class="sortable">
             <span class="badge" :class="priorityBadgeClass(c.priority?.priority_name ?? '')">
               {{ c.priority?.priority_name ?? '—' }}
             </span>
           </td>
-
-
-          <td v-if="isVisible('client')">
-            {{ c.client?.client_name ?? '—' }}
-          </td>
-
+          <td v-if="isVisible('client')">{{ c.client?.client_name ?? '—' }}</td>
           <td v-if="isVisible('employees')">
-            <!-- إذا يوجد موظفين -->
             <div v-if="c.employees && c.employees.length">
               <div v-for="e in c.employees" :key="e.id" class="employee-line">
                 • {{ e.first_name }} {{ e.last_name }}
               </div>
             </div>
-
-            <!-- إذا لا يوجد موظفين -->
             <div v-else>
               <span>—</span>
-
-
-
             </div>
- 
-
           </td>
-          <td>
           <td v-if="isVisible('action')">
-
-            <button 
-              v-if="c.status === 'opened' && can('cases.assign')" 
-              class="workflow-btn"
-              @click="openAssignModal(c)"
-            >
-              Assign
-            </button>
-
-<button
-  v-if="c.allowed?.accept"
-  class="workflow-btn"
-  @click="acceptCase(c)"
->
-  Accept
-</button>
-
-<button
-v-if="c.allowed?.close"
-  class="workflow-btn"
-  @click="closeCase(c)"
->
-  Close
-</button>
-
-<button
-v-if="c.allowed?.reassign"
-
-  class="workflow-btn"
-  @click="openReassignModal(c)"
->
-  Reassign
-</button>
-
-
-
-            </td>
-
+            <button v-if="c.status === 'opened' && can('cases.assign')" class="workflow-btn" @click="openAssignModal(c)">Assign</button>
+            <button v-if="c.allowed?.accept" class="workflow-btn" @click="acceptCase(c)">Accept</button>
+            <button v-if="c.allowed?.close" class="workflow-btn"  @click="closeCase(c)">Close</button>
+            <button v-if="c.allowed?.reassign" class="workflow-btn" @click="openReassignModal(c)">Reassign</button>
           </td>
-
           <td class="action-cell">
             <div class="menu-trigger" @click.stop="toggleMenu(c.id)">⋮</div>
-
             <div v-if="openMenu === c.id" class="menu-dropdown">
               <div v-if="can('cases.edit')" class="menu-item" @click="openEditModal(c)">Edit</div>
               <div v-if="can('cases.delete')" class="menu-item delete" @click="openDeleteModal(c)">Delete</div>
             </div>
           </td>
         </tr>
-
         <tr v-if="!isLoading && cases.length === 0">
           <td colspan="10" style="text-align: center; padding: 20px; color: #777">
             No cases found.
@@ -217,25 +125,14 @@ v-if="c.allowed?.reassign"
         </tr>
       </tbody>
     </table>
-
     <!-- ===== PAGINATION ===== -->
     <div class="pagination-container mt-4">
       <p class="results-count">{{ cases.length }} results</p>
-
       <div>
-        <button
-          @click="changePage(currentPage - 1)"
-          :disabled="currentPage === 1 || isLoading"
-          class="page-btn"
-        >
+        <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1 || isLoading" class="page-btn">
           &lt; Prev
         </button>
-
-        <button
-          @click="changePage(currentPage + 1)"
-          :disabled="currentPage === lastPage || isLoading"
-          class="page-btn"
-        >
+        <button @click="changePage(currentPage + 1)" :disabled="currentPage === lastPage || isLoading" class="page-btn">
           Next &gt;
         </button>
       </div>
@@ -252,40 +149,33 @@ v-if="c.allowed?.reassign"
     @close="openCreate = false"
     @created="fetchCases(currentPage)"
   />
-<CaseEditModal
-  v-if="showEdit"
-  :caseData="selectedCase"
-  @close="closeEditModal"
-  @updated="handleRefresh"
-/>
-
-<CaseDeleteModal
-  v-if="showDelete"
-  :caseData="selectedCase"
-  @close="showDelete = false"
-  @deleted="handleDelete"
-/>
-<CaseAssignModal
-  v-if="showAssign"
-  :caseData="selectedCase"
-  :mode="'assign'"
-  @close="closeAssignModal"
-  @assigned="handleAssigned"
-/>
-
-<CaseAssignModal
-  v-if="showReassign"
-  :caseData="selectedCase"
-  :mode="'reassign'"
-  @close="closeReassignModal"
-  @reassigned="handleReassigned"
-/>
-
-
-
-
+  <CaseEditModal
+    v-if="showEdit"
+    :caseData="selectedCase"
+    @close="closeEditModal"
+    @updated="handleRefresh"
+  />
+  <CaseDeleteModal
+    v-if="showDelete"
+    :caseData="selectedCase"
+    @close="showDelete = false"
+    @deleted="handleDelete"
+  />
+  <CaseAssignModal
+    v-if="showAssign"
+    :caseData="selectedCase"
+    :mode="'assign'"
+    @close="closeAssignModal"
+    @assigned="handleAssigned"
+  />
+  <CaseAssignModal
+    v-if="showReassign"
+    :caseData="selectedCase"
+    :mode="'reassign'"
+    @close="closeReassignModal"
+    @reassigned="handleReassigned"
+  />
 </template>
-
 <script setup>
 import { ref } from 'vue'
 import axios from 'axios'
@@ -335,8 +225,6 @@ function refreshAfterAssign() {
   fetchCases(currentPage.value)
 }
 
-
-
 function handleReassigned(updatedCase) {
   if (!updatedCase) {
     console.error("No updated case received");
@@ -346,8 +234,6 @@ function handleReassigned(updatedCase) {
   updateCaseInTable(updatedCase);
 }
 
-
-
 const openCreate = ref(false)
 const sortBy = ref(null)
 const sortDirection = ref('asc')
@@ -355,7 +241,6 @@ const cases = ref([])
 const isLoading = ref(false)
 
 const showDelete = ref(false)
-
 
 function openDeleteModal(item) {
   closeAllMenus()
@@ -371,16 +256,13 @@ function handleDelete(id) {
 
 const openDetailsModal = ref(false)
 const selectedCase = ref(null)
-// dev tools
 
 const clients = ref([])
 const priorities = ref([])
 
 // import { shallowRef } from 'vue'
-
 // const clients = shallowRef([])
 // const priorities = shallowRef([])
-
 
 async function loadFilterData() {
   const token = useAuthStore().token
@@ -393,11 +275,6 @@ async function loadFilterData() {
     headers: { Authorization: `Bearer ${token}` }
   })).data
 }
-
-
-
-
-
 
 function openDetails(c) {
   selectedCase.value = c
@@ -473,27 +350,18 @@ async function fetchCases(page = 1) {
       }
     })
 
-// cases.value = res.data.data.map(c => ({
-//   ...c,
-//   client: c.client ? { ...c.client } : null,
-//   priority: c.priority ? { ...c.priority } : null,
-//   employees: c.employees ? c.employees.map(e => ({ ...e })) : []
-// }))
-    // cases.value = [...res.data.data]     // <--- IMPORTANT
     cases.value = res.data.data
 
     lastPage.value = res.data.last_page
     total.value = res.data.total
 
-    return true                          // <--- allow awaiting
+    return true
   } catch (e) {
     console.error(e)
   } finally {
     isLoading.value = false
   }
 }
-
-
 function changePage(p) {
   if (p < 1 || p > lastPage.value) return
   fetchCases(p)
@@ -537,13 +405,6 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', closeAllMenus)
 })
 
-/* ========== ACTION FUNCTIONS ========== */
-
-
-
-/* ========== FETCH DATA ========== */
-
-// ====== BADGE STYLES ======
 function statusBadgeClass(status) {
   switch (status) {
     case 'opened':
@@ -577,9 +438,6 @@ function priorityBadgeClass(priority) {
   return ''
 }
 
-
-
-
 function setSort(column) {
   if (sortBy.value === column) {
     sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
@@ -601,7 +459,6 @@ function updateCaseInTable(updatedCase) {
     cases.value[i] = { ...updatedCase }
   }
 }
-
 
 async function assignToMe(c) {
   await axios.post(`/api/cases/${c.id}/assign-to-me`, {}, authHeader)
@@ -626,16 +483,10 @@ async function closeCase(c) {
     authHeader
   )
 
-  // Instant update
   updateCaseInTable(res.data.case)
 
 }
 
-
-// async function reassignCase(c, employeeId) {
-//   await axios.post(`/api/cases/${c.id}/reassign`, { employee_id: employeeId }, authHeader)
-//   fetchCases()
-// }
 async function removeEmployee(c, employeeId) {
   await axios.post(`/api/cases/${c.id}/remove-employee`, { employee_id: employeeId }, authHeader)
   fetchCases()
@@ -661,13 +512,13 @@ async function removeEmployee(c, employeeId) {
 }
 
 .main-header {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 700;
   color: var(--primary-color);
 }
 
 .sub-header {
-  font-size: 13px;
+  font-size: 16px;
   color: #777;
 }
 
@@ -678,7 +529,7 @@ async function removeEmployee(c, employeeId) {
   padding: 10px 20px;
   border-radius: var(--radius-lg);
   cursor: pointer;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
 }
 
@@ -690,7 +541,7 @@ async function removeEmployee(c, employeeId) {
   border: none;
   background: transparent;
   text-decoration: underline;
-  font-size: 15px;
+  font-size: 18px;
   margin-bottom: 15px;
 }
 
@@ -722,13 +573,13 @@ async function removeEmployee(c, employeeId) {
 }
 
 .filter-header h2 {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
   color: var(--primary-color);
 }
 
 .select-all-btn {
-  font-size: 16px;
+  font-size: 18px;
   background: none;
   border: none;
   color: var(--primary-color);
@@ -748,7 +599,7 @@ async function removeEmployee(c, employeeId) {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .filter-footer {
@@ -762,7 +613,7 @@ async function removeEmployee(c, employeeId) {
   padding: 10px 26px;
   border-radius: 8px;
   border: none;
-  font-size: 14px;
+  font-size: 16px;
   cursor: pointer;
 }
 
@@ -772,7 +623,7 @@ async function removeEmployee(c, employeeId) {
   padding: 10px 26px;
   border-radius: 8px;
   border: none;
-  font-size: 14px;
+  font-size: 16px;
   cursor: pointer;
 }
 
@@ -785,7 +636,7 @@ async function removeEmployee(c, employeeId) {
 .table-header-row th {
   background: var(--table-header-bg);
   padding: 12px 16px;
-  font-size: 14px;
+  font-size: 20px;
   text-align: left;
   border-bottom: 1px solid var(--table-border);
 }
@@ -794,7 +645,7 @@ async function removeEmployee(c, employeeId) {
   padding: 12px 16px;
   border-bottom: 1px solid var(--table-border);
   vertical-align: top;
-  font-size: 14px;
+  font-size: 18px;
 }
 
 .table-row-hover:hover td {
@@ -813,7 +664,7 @@ async function removeEmployee(c, employeeId) {
 /* EMPLOYEES LIST */
 .employee-line {
   margin-bottom: 3px;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 /* BADGES */
@@ -821,7 +672,7 @@ async function removeEmployee(c, employeeId) {
   display: inline-block;
   padding: 4px 10px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 600;
 }
 
@@ -884,7 +735,7 @@ async function removeEmployee(c, employeeId) {
 }
 
 .results-count {
-  font-size: 13px;
+  font-size: 16px;
   color: #666;
 }
 
@@ -973,7 +824,7 @@ async function removeEmployee(c, employeeId) {
   border: none;
   padding: 6px 14px;
   border-radius: 8px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   margin-top: 6px;
@@ -991,7 +842,7 @@ async function removeEmployee(c, employeeId) {
 
 .case-tab {
   padding: 8px 20px;
-  font-size: 14px;
+  font-size: 16px;
   border-radius: 20px;
   border: 1px solid #ddd;
   background: white;
@@ -1009,7 +860,7 @@ async function removeEmployee(c, employeeId) {
   padding: 4px 12px;
   border: none;
   border-radius: 12px;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   background: var(--primary-color);
