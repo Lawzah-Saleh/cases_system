@@ -2,8 +2,10 @@
   <div class="table-container">
     <div class="mb-4 flex items-center justify-between">
       <h2 class="main-header">
-        <span class="link-back" @click="$router.back()">Setting</span> / Cases Delay Time
+        <span class="link-back" @click="$router.back()">Setting</span> / Permissions
       </h2>
+
+      <button class="add-button" @click="openCreate = true">+ Create permissions</button>
     </div>
 
     <!-- ===== FILTERS ===== -->
@@ -15,56 +17,83 @@
       <thead>
         <tr class="table-header-row">
           <th>id</th>
-          <th>Priority Name</th>
-          <th>Priority Delay time</th>
+          <th>permission category Name</th>
+          <th>permissions</th>
           <th></th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(priority, index) in priorities" :key="priority.id">
+        <tr v-for="(per, index) in permissions" :key="per.id">
           <td>{{ index + 1 }}</td>
 
-          <td>{{ priority.priority_name }}</td>
-          <td>{{ priority.delay_time }}</td>
+          <td>{{ per.category_name }}</td>
+          <td class="user-link" @click="openDetails(per)">Show permissions</td>
 
           <td class="action-cell">
-            <div class="menu-trigger" @click="toggleMenu(priority.id)">⋮</div>
-            <div v-if="openMenu === priority.id" class="menu-dropdown">
-              <div class="menu-item" @click="startEdit(priority)">Edit</div>
-              <div class="menu-item delete" @click="deletepriority(priority)">Delete</div>
+            <div class="menu-trigger" @click="toggleMenu(per.id)">⋮</div>
+            <div v-if="openMenu === per.id" class="menu-dropdown">
+              <div class="menu-item" @click="startEdit(per)">Edit</div>
+              <div class="menu-item delete" @click="deletepermission(per)">Delete</div>
             </div>
           </td>
         </tr>
 
         <!-- ===== NO DATA STATE ===== -->
-        <tr v-if="!isLoading && priorities.length === 0">
+        <tr v-if="!isLoading && permissions.length === 0">
           <td colspan="7" style="text-align: center; padding: 20px; color: #777">
-            No priorities found.
+            No permissions found.
           </td>
         </tr>
       </tbody>
     </table>
 
     <div class="pagination-container mt-4 flex items-center justify-between">
-      <p class="text-result">{{ priorities.length }} results</p>
+      <p class="text-result">{{ permissions.length }} results</p>
+
+      <div>
+        <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1" class="page-btn">
+          &lt; Prev
+        </button>
+
+        <button
+          @click="changePage(currentPage + 1)"
+          :disabled="currentPage === lastPage"
+          class="page-btn"
+        >
+          Next &gt;
+        </button>
+      </div>
     </div>
   </div>
 
-  <PriorityEditModal
+  <!-- ===== CREATE MODAL ===== -->
+  <PermissionCreateModel v-if="openCreate" @close="openCreate = false" @created="handleRefresh" />
+
+  <!-- ===== EDIT MODAL ===== -->
+  <PermissionEditModel
     v-if="openEdit"
-    :priority="selectedPriority"
+    :permission="selectedPermission"
     @close="openEdit = false"
     @updated="handleRefresh"
+  />
+
+  <PermissionDetailsModel
+    v-if="openPermissionDetailsModal"
+    :permission="selectedPermission"
+    @close="openPermissionDetailsModal = false"
   />
 </template>
 
 <script>
 import axios from 'axios'
-import { useAuthStore } from '../stores/auth'
+import { useAuthStore } from '../../stores/auth'
 import { toast } from 'vue3-toastify'
-import PriorityEditModal from '@/components/priorities/PriorityEditModal.vue'
+import PermissionCreateModel from '@/components/permissions/PermissionCreateModel.vue'
+import PermissionEditModel from '@/components/permissions/PermissionEditModel.vue'
+import PermissionDetailsModel from '@/components/permissions/PermissionDetailsModel.vue'
+
 export default {
-  components: { PriorityEditModal },
+  components: { PermissionCreateModel, PermissionEditModel, PermissionDetailsModel },
   watch: {
     search() {
       this.debounceSearch()
@@ -73,50 +102,51 @@ export default {
   data() {
     return {
       search: '',
-      priorities: [],
+      permissions: [],
       openMenu: null,
+      currentPage: 1,
+      lastPage: 1,
       openCreate: false,
       openEdit: false,
-      selectedPriority: null,
-      openPriorityDetailsModal: false,
+      selectedPermission: null,
+      openPermissionDetailsModal: false,
       isLoading: false
     }
   },
   methods: {
-    openDetails(priority) {
-      this.selectedPriority = priority
-      this.openPriorityDetailsModal = true
+    openDetails(permission) {
+      this.selectedPermission = permission
+      this.openPermissionDetailsModal = true
     },
-
-    startEdit(priority) {
-      this.selectedPriority = JSON.parse(JSON.stringify(priority))
+    startEdit(permission) {
+      this.selectedPermission = JSON.parse(JSON.stringify(permission))
       this.openEdit = true
     },
 
     debounceSearch() {
       clearTimeout(this.debounceTimer)
       this.debounceTimer = setTimeout(() => {
-        this.fetchpriorities()
+        this.fetchPermissions(1)
       }, 400)
     },
     handleRefresh() {
-      this.fetchpriorities()
+      this.fetchPermissions(this.currentPage)
     },
     toggleMenu(id) {
       this.openMenu = this.openMenu === id ? null : id
     },
 
-    async deletepriority(priority) {
-      if (!confirm('Delete this priority?')) return
+    async deletepermission(permission) {
+      if (!confirm('Delete this permission?')) return
 
       try {
         const token = useAuthStore().token
 
-        await axios.delete(`http://localhost:8000/api/priorities/${priority.id}`, {
+        await axios.delete(`http://localhost:8000/api/permission-categories/${permission.id}`, {
           headers: { Authorization: `Bearer ${token}` }
         })
 
-        toast.success('priority deleted successfully!', {
+        toast.success('Permission deleted successfully!', {
           autoClose: 1500
         })
 
@@ -125,30 +155,38 @@ export default {
         this.handleRefresh()
       } catch (e) {
         console.error(e)
-        toast.error('Failed to delete priority.', { autoClose: 2000 })
+        toast.error('Failed to delete permission.', { autoClose: 2000 })
       }
     },
 
-    async fetchpriorities() {
+    async fetchPermissions(page = 1) {
       try {
         this.isLoading = true
 
         const authStore = useAuthStore()
         const token = authStore.token || localStorage.getItem('token')
 
-        const res = await axios.get('http://localhost:8000/api/priorities', {
+        const res = await axios.get('http://localhost:8000/api/permission-categories', {
           headers: { Authorization: `Bearer ${token}` },
           params: {
+            page,
             search: this.search
           }
         })
 
-        this.priorities = res.data
+        this.permissions = res.data.data
+        this.currentPage = res.data.current_page
+        this.lastPage = res.data.last_page
       } catch (err) {
-        console.error('Error fetching priorities:', err)
+        console.error('Error fetching permissions:', err)
       } finally {
-        this.isLoading = false // ← أضف هذا دائمًا لإطفاء حالة التحميل
+        this.isLoading = false
       }
+    },
+
+    changePage(page) {
+      if (page < 1 || page > this.lastPage) return
+      this.fetchPermissions(page)
     },
 
     handleClickOutside(event) {
@@ -161,7 +199,7 @@ export default {
     }
   },
   mounted() {
-    this.fetchpriorities()
+    this.fetchPermissions()
     document.addEventListener('click', this.handleClickOutside)
   },
   beforeUnmount() {
@@ -214,16 +252,14 @@ export default {
   display: block;
 }
 
-.action-cell {
-  position: relative;
-}
-
 .user-link {
   color: var(--primary-color);
   cursor: pointer;
   font-weight: 600;
 }
-
+.action-cell {
+  position: relative;
+}
 .menu-trigger {
   cursor: pointer;
   font-size: 20px;
@@ -251,6 +287,15 @@ export default {
 }
 .delete {
   color: red;
+}
+
+.link-back {
+  cursor: pointer;
+  color: gray;
+  font-weight: 700;
+}
+.link-back:hover {
+  text-decoration: underline;
 }
 
 /* Flex helpers */
@@ -283,15 +328,6 @@ export default {
   background-color: white;
   cursor: pointer;
   margin-left: 5px;
-}
-
-.link-back {
-  cursor: pointer;
-  color: gray;
-  font-weight: 700;
-}
-.link-back:hover {
-  text-decoration: underline;
 }
 
 .page-btn:disabled {

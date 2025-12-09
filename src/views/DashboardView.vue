@@ -56,6 +56,10 @@
           :options="casesPerDayOptions"
           :series="casesPerDaySeries"
         />
+
+        <div class="d-flex justify-content-end mb-3">
+          <button @click="downloadCaseBerDayExcel" class="btn btn-success">Download Excel</button>
+        </div>
       </div>
 
       <!-- STATUS CHART -->
@@ -75,6 +79,10 @@
           :options="casesByStatusOptions"
           :series="casesByStatusSeries"
         />
+
+        <div class="d-flex justify-content-end mb-3">
+          <button @click="downloadCaseStatusExcel" class="btn btn-success">Download Excel</button>
+        </div>
       </div>
     </div>
 
@@ -96,6 +104,9 @@
           :options="casesByTypeOptions"
           :series="casesByTypeSeries"
         />
+        <div class="d-flex justify-content-end mb-3">
+          <button @click="downloadCaseTypeExcel" class="btn btn-success">Download Excel</button>
+        </div>
       </div>
       <div class="chart-box">
         <div class="chart-header">
@@ -113,6 +124,10 @@
           :options="topClientsOptions"
           :series="topClientsSeries"
         />
+
+        <div class="d-flex justify-content-end mb-3">
+          <button @click="downloadTopClientsExcel" class="btn btn-success">Download Excel</button>
+        </div>
       </div>
     </div>
     <!-- TOP CLIENTS -->
@@ -133,6 +148,10 @@
         :options="casesByPriorityOptions"
         :series="casesByPrioritySeries"
       />
+
+      <div class="d-flex justify-content-end mb-3">
+        <button @click="downloadCasePriorityExcel" class="btn btn-success">Download Excel</button>
+      </div>
     </div>
   </div>
 </template>
@@ -141,6 +160,14 @@
 import axios from 'axios'
 import StatsCard from '@/components/Dashboard/StatsCard.vue'
 import { useAuthStore } from '../stores/auth'
+import { toast } from 'vue3-toastify'
+import { downloadExcel } from '@/services/excelService'
+import dashboardService from '@/services/dashboardService'
+import { useCasesByPriorityChart } from '@/composables/charts/useCasesByPriorityChart'
+import { useCasesByTypeChart } from '@/composables/charts/useCasesByTypeChart'
+import { useTopClientsChart } from '@/composables/charts/useTopClientsChart'
+import { useCasesPerDayChart } from '@/composables/charts/useCasesPerDayChart'
+import { useCasesByStatusChart } from '@/composables/charts/useCasesByStatusChart'
 
 export default {
   components: { StatsCard },
@@ -187,111 +214,145 @@ export default {
   },
 
   methods: {
+    async downloadCasePriorityExcel() {
+      try {
+        await downloadExcel(
+          `/dashboard/cases-per-priority/excel?range=${this.filterCasesByPriority}`,
+          'Cases-Per-Priority.xlsx'
+        )
+
+        toast.success('Excel file downloaded successfully!', {
+          timeout: 3000
+        })
+      } catch (err) {
+        console.error(err)
+        toast.error('Failed to download the Excel file.', {
+          timeout: 3000
+        })
+      }
+    },
+    async downloadCaseStatusExcel() {
+      try {
+        await downloadExcel(
+          `/dashboard/cases-per-status/excel?range=${this.filterCasesByStatus}`,
+          'Cases-Per-Status.xlsx'
+        )
+
+        toast.success('Excel file downloaded successfully!', {
+          timeout: 3000
+        })
+      } catch (err) {
+        console.error(err)
+        toast.error('Failed to download the Excel file.', {
+          timeout: 3000
+        })
+      }
+    },
+    async downloadCaseTypeExcel() {
+      try {
+        await downloadExcel(
+          `/dashboard/cases-per-type/excel?range=${this.filterCasesByType}`,
+          'Cases-Per-Type.xlsx'
+        )
+
+        toast.success('Excel file downloaded successfully!', {
+          timeout: 3000
+        })
+      } catch (err) {
+        console.error(err)
+        toast.error('Failed to download the Excel file.', {
+          timeout: 3000
+        })
+      }
+    },
+    async downloadTopClientsExcel() {
+      try {
+        await downloadExcel(
+          `/dashboard/top-clients/excel?range=${this.filterTopClients}`,
+          'Top-Clients.xlsx'
+        )
+
+        toast.success('Excel file downloaded successfully!', {
+          timeout: 3000
+        })
+      } catch (err) {
+        console.error(err)
+        toast.error('Failed to download the Excel file.', {
+          timeout: 3000
+        })
+      }
+    },
+    async downloadCaseBerDayExcel() {
+      try {
+        await downloadExcel(
+          `/dashboard/cases-per-day/excel?range=${this.filterCasesPerDay}`,
+          'Cases-Per-Day.xlsx'
+        )
+
+        toast.success('Excel file downloaded successfully!', {
+          timeout: 3000
+        })
+      } catch (err) {
+        console.error(err)
+        toast.error('Failed to download the Excel file.', {
+          timeout: 3000
+        })
+      }
+    },
     token() {
       return { headers: { Authorization: `Bearer ${useAuthStore().token}` } }
     },
 
     async loadCards() {
-      const token = this.token()
-
-      // total cases
-      const casesRes = await axios.get(
-        `http://localhost:8000/api/dashboard/cards?range=${this.filterTotalCases}`,
-        token
-      )
-
-      // total clients
-      const clientsRes = await axios.get(
-        `http://localhost:8000/api/dashboard/cards?range=${this.filterTotalClients}`,
-        token
-      )
-
-      // total employees
-      const employeesRes = await axios.get(
-        `http://localhost:8000/api/dashboard/cards?range=${this.filterTotalEmployees}`,
-        token
-      )
-
-      // completion rate
-      const completionRes = await axios.get(
-        `http://localhost:8000/api/dashboard/completion-rate?range=${this.filterCompletionRate}`,
-        token
-      )
+      const casesRes = await dashboardService.getCards(this.filterTotalCases)
+      const clientsRes = await dashboardService.getCards(this.filterTotalClients)
+      const employeesRes = await dashboardService.getCards(this.filterTotalEmployees)
+      const completionRes = await dashboardService.getCompletionRate(this.filterCompletionRate)
 
       this.cards.total_cases = casesRes.data.total_cases
       this.cards.total_clients = clientsRes.data.total_clients
       this.cards.total_employees = employeesRes.data.total_employees
       this.completionRate = completionRes.data.completion_rate
     },
-
     async loadCasesPerDay() {
-      const res = await axios.get(
-        `http://localhost:8000/api/dashboard/cases-per-day?range=${this.filterCasesPerDay}`,
-        this.token()
-      )
+      const res = await dashboardService.getCasesPerDay(this.filterCasesPerDay)
 
-      this.casesPerDayOptions = {
-        chart: { toolbar: { show: false } },
-        colors: ['#190F4E', '#4338CA'],
-        plotOptions: { bar: { distributed: true, columnWidth: '20%' } },
-        legend: { show: false },
-        xaxis: { categories: res.data.map((r) => r.date) }
-      }
+      const { options, series } = useCasesPerDayChart(res.data)
 
-      this.casesPerDaySeries = [{ name: 'Cases', data: res.data.map((r) => r.total) }]
+      this.casesPerDayOptions = options
+      this.casesPerDaySeries = series
     },
-
     async loadCasesByStatus() {
-      const res = await axios.get(
-        `http://localhost:8000/api/dashboard/cases-by-status?range=${this.filterCasesByStatus}`,
-        this.token()
-      )
-      this.casesByStatusOptions = {
-        labels: res.data.map((r) => r.status),
-        colors: ['#7C3AED', '#F59E0B', '#10B981', '#60A5FA', '#8E44AD', '#E74C3C'],
-        legend: { position: 'bottom' }
-      }
-      this.casesByStatusSeries = res.data.map((r) => r.total)
-    },
+      const res = await dashboardService.getCasesByStatus(this.filterCasesByStatus)
 
+      const { options, series } = useCasesByStatusChart(res.data)
+
+      this.casesByStatusOptions = options
+      this.casesByStatusSeries = series
+    },
     async loadCasesByPriority() {
-      const res = await axios.get(
-        `http://localhost:8000/api/dashboard/cases-by-priority?range=${this.filterCasesByPriority}`,
-        this.token()
-      )
-      this.casesByPriorityOptions = {
-        labels: res.data.map((r) => r.priority),
-        legend: { position: 'bottom' },
-        colors: ['#7C3AED', '#F59E0B', '#10B981', '#60A5FA', '#8E44AD', '#E74C3C']
-      }
-      this.casesByPrioritySeries = res.data.map((r) => r.total)
-    },
+      const res = await dashboardService.getCasesByPriority(this.filterCasesByPriority)
 
+      const { options, series } = useCasesByPriorityChart(res.data)
+
+      this.casesByPriorityOptions = options
+      this.casesByPrioritySeries = series
+    },
     async loadCasesByType() {
-      const res = await axios.get(
-        `http://localhost:8000/api/dashboard/cases-by-type?range=${this.filterCasesByType}`,
-        this.token()
-      )
-      this.casesByTypeOptions = {
-        labels: res.data.map((r) => r.type),
-        legend: { position: 'bottom' }
-      }
-      this.casesByTypeSeries = res.data.map((r) => r.total)
-    },
+      const res = await dashboardService.getCasesByType(this.filterCasesByType)
 
+      const { options, series } = useCasesByTypeChart(res.data)
+
+      this.casesByTypeOptions = options
+      this.casesByTypeSeries = series
+    },
     async loadTopClients() {
-      const res = await axios.get(
-        `http://localhost:8000/api/dashboard/top-clients?range=${this.filterTopClients}`,
-        this.token()
-      )
-      this.topClientsOptions = {
-        chart: { toolbar: { show: false } },
-        colors: ['#190F4E', '#4338CA'],
-        plotOptions: { bar: { distributed: true, columnWidth: '20%' } },
-        legend: { show: false },
-        xaxis: { categories: res.data.map((r) => r.client_name) }
-      }
-      this.topClientsSeries = [{ name: 'Cases', data: res.data.map((r) => r.cases_count) }]
+      const res = await dashboardService.getTopClients(this.filterTopClients)
+
+      const { options, series } = useTopClientsChart(res.data)
+
+      this.topClientsOptions = options
+      this.topClientsSeries = series
     }
   }
 }
@@ -428,5 +489,9 @@ select {
 }
 .charts-grid:last-of-type {
   grid-template-columns: 1fr 1fr;
+}
+
+.apexcharts-menu-item.exportCSV {
+  display: none !important;
 }
 </style>
