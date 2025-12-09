@@ -2,9 +2,8 @@
   <div class="table-container">
     <div class="mb-4 flex items-center justify-between">
       <h2 class="main-header">
-        <span class="link-back" @click="$router.back()">Setting</span> / Roles
+        <span class="link-back" @click="$router.back()">Setting</span> / Cases Delay Time
       </h2>
-      <button class="add-button" @click="openCreate = true">+ Create Role</button>
     </div>
 
     <!-- ===== FILTERS ===== -->
@@ -16,81 +15,56 @@
       <thead>
         <tr class="table-header-row">
           <th>id</th>
-          <th>Role Name</th>
-          <th>Role's Permissions</th>
+          <th>Priority Name</th>
+          <th>Priority Delay time</th>
           <th></th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(role, index) in roles" :key="role.id">
+        <tr v-for="(priority, index) in priorities" :key="priority.id">
           <td>{{ index + 1 }}</td>
 
-          <td>{{ role.role_name }}</td>
-          <td class="user-link" @click="openDetails(role)">Show permissions</td>
+          <td>{{ priority.priority_name }}</td>
+          <td>{{ priority.delay_time }}</td>
 
           <td class="action-cell">
-            <div class="menu-trigger" @click="toggleMenu(role.id)">⋮</div>
-            <div v-if="openMenu === role.id" class="menu-dropdown">
-              <div class="menu-item" @click="startEdit(role)">Edit</div>
-              <div class="menu-item delete" @click="deleterole(role)">Delete</div>
+            <div class="menu-trigger" @click="toggleMenu(priority.id)">⋮</div>
+            <div v-if="openMenu === priority.id" class="menu-dropdown">
+              <div class="menu-item" @click="startEdit(priority)">Edit</div>
+              <div class="menu-item delete" @click="deletepriority(priority)">Delete</div>
             </div>
           </td>
         </tr>
 
         <!-- ===== NO DATA STATE ===== -->
-        <tr v-if="!isLoading && roles.length === 0">
+        <tr v-if="!isLoading && priorities.length === 0">
           <td colspan="7" style="text-align: center; padding: 20px; color: #777">
-            No roles found.
+            No priorities found.
           </td>
         </tr>
       </tbody>
     </table>
 
     <div class="pagination-container mt-4 flex items-center justify-between">
-      <p class="text-result">{{ roles.length }} results</p>
-
-      <div>
-        <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1" class="page-btn">
-          &lt; Prev
-        </button>
-
-        <button
-          @click="changePage(currentPage + 1)"
-          :disabled="currentPage === lastPage"
-          class="page-btn"
-        >
-          Next &gt;
-        </button>
-      </div>
+      <p class="text-result">{{ priorities.length }} results</p>
     </div>
   </div>
 
-  <RoleCreateModel v-if="openCreate" @close="openCreate = false" @created="handleRefresh" />
-
-  <RoleEditModel
+  <PriorityEditModal
     v-if="openEdit"
-    :role="selectedRole"
+    :priority="selectedPriority"
     @close="openEdit = false"
     @updated="handleRefresh"
-  />
-
-  <RoleDetailsModel
-    v-if="openRoleDetailsModal"
-    :role="selectedRole"
-    @close="openRoleDetailsModal = false"
   />
 </template>
 
 <script>
 import axios from 'axios'
-import { useAuthStore } from '../stores/auth'
+import { useAuthStore } from '../../stores/auth'
 import { toast } from 'vue3-toastify'
-import RoleDetailsModel from '@/components/roles/RoleDetailsModel.vue'
-import RoleCreateModel from '@/components/roles/RoleCreateModel.vue'
-import RoleEditModel from '@/components/roles/RoleEditModel.vue'
-
+import PriorityEditModal from '@/components/priorities/PriorityEditModal.vue'
 export default {
-  components: { RoleDetailsModel, RoleCreateModel, RoleEditModel },
+  components: { PriorityEditModal },
   watch: {
     search() {
       this.debounceSearch()
@@ -99,52 +73,50 @@ export default {
   data() {
     return {
       search: '',
-      roles: [],
+      priorities: [],
       openMenu: null,
-      currentPage: 1,
-      lastPage: 1,
       openCreate: false,
       openEdit: false,
-      selectedRole: null,
-      openRoleDetailsModal: false,
+      selectedPriority: null,
+      openPriorityDetailsModal: false,
       isLoading: false
     }
   },
   methods: {
-    openDetails(role) {
-      this.selectedRole = role
-      this.openRoleDetailsModal = true
+    openDetails(priority) {
+      this.selectedPriority = priority
+      this.openPriorityDetailsModal = true
     },
 
-    startEdit(role) {
-      this.selectedRole = JSON.parse(JSON.stringify(role))
+    startEdit(priority) {
+      this.selectedPriority = JSON.parse(JSON.stringify(priority))
       this.openEdit = true
     },
 
     debounceSearch() {
       clearTimeout(this.debounceTimer)
       this.debounceTimer = setTimeout(() => {
-        this.fetchroles(1)
+        this.fetchpriorities()
       }, 400)
     },
     handleRefresh() {
-      this.fetchroles(this.currentPage)
+      this.fetchpriorities()
     },
     toggleMenu(id) {
       this.openMenu = this.openMenu === id ? null : id
     },
 
-    async deleterole(role) {
-      if (!confirm('Delete this role?')) return
+    async deletepriority(priority) {
+      if (!confirm('Delete this priority?')) return
 
       try {
         const token = useAuthStore().token
 
-        await axios.delete(`http://localhost:8000/api/roles/${role.id}`, {
+        await axios.delete(`http://localhost:8000/api/priorities/${priority.id}`, {
           headers: { Authorization: `Bearer ${token}` }
         })
 
-        toast.success('Role deleted successfully!', {
+        toast.success('priority deleted successfully!', {
           autoClose: 1500
         })
 
@@ -153,39 +125,30 @@ export default {
         this.handleRefresh()
       } catch (e) {
         console.error(e)
-        toast.error('Failed to delete role.', { autoClose: 2000 })
+        toast.error('Failed to delete priority.', { autoClose: 2000 })
       }
     },
 
-    async fetchroles(page = 1) {
+    async fetchpriorities() {
       try {
         this.isLoading = true
 
         const authStore = useAuthStore()
         const token = authStore.token || localStorage.getItem('token')
 
-        const res = await axios.get('http://localhost:8000/api/roles/paginations', {
+        const res = await axios.get('http://localhost:8000/api/priorities', {
           headers: { Authorization: `Bearer ${token}` },
           params: {
-            page,
             search: this.search
           }
         })
 
-        this.roles = res.data.data
-        this.currentPage = res.data.current_page
-        this.lastPage = res.data.last_page
-
+        this.priorities = res.data
       } catch (err) {
-        console.error('Error fetching roles:', err)
+        console.error('Error fetching priorities:', err)
       } finally {
-        this.isLoading = false
+        this.isLoading = false // ← أضف هذا دائمًا لإطفاء حالة التحميل
       }
-    },
-
-    changePage(page) {
-      if (page < 1 || page > this.lastPage) return
-      this.fetchroles(page)
     },
 
     handleClickOutside(event) {
@@ -198,7 +161,7 @@ export default {
     }
   },
   mounted() {
-    this.fetchroles()
+    this.fetchpriorities()
     document.addEventListener('click', this.handleClickOutside)
   },
   beforeUnmount() {

@@ -9,10 +9,10 @@ import ReportView from '@/views/ReportView.vue'
 import ClientView from '@/views/ClientView.vue'
 import SupportView from '@/views/SupportView.vue'
 import SettingView from '@/views/SettingView.vue'
-import PermissionView from '@/views/PermissionView.vue'
-import RoleView from '@/views/RoleView.vue'
-import PriorityDelayTimeView from '@/views/PriorityDelayTimeView.vue'
-import PersonalAccountView from '@/views/PersonalAccountView.vue'
+import PermissionView from '@/views/settings/PermissionView.vue'
+import RoleView from '@/views/settings/RoleView.vue'
+import PriorityDelayTimeView from '@/views/settings/PriorityDelayTimeView.vue'
+import PersonalAccountView from '@/views/settings/PersonalAccountView.vue'
 
 const routes = [
   {
@@ -38,40 +38,40 @@ const routes = [
       { path: 'employees', component: EmployeeView },
       { path: 'users', component: UsersView },
       { path: 'reports', component: ReportView },
-{
-  path: 'reports/cases',
-  component: () => import('@/views/reports/CasesReportView.vue')
-},
+      {
+        path: 'reports/cases',
+        component: () => import('@/views/reports/CasesReportView.vue')
+      },
 
-{
-  path: 'reports/employees',
-  name: 'employees-report',
-  component: () => import('@/views/reports/EmployeesReportView.vue')
-},
-{
-  path: 'reports/clients',
-  name: 'clients-report',
-  component: () => import('@/views/reports/ClientsReportView.vue')
-},
+      {
+        path: 'reports/employees',
+        name: 'employees-report',
+        component: () => import('@/views/reports/EmployeesReportView.vue')
+      },
+      {
+        path: 'reports/clients',
+        name: 'clients-report',
+        component: () => import('@/views/reports/ClientsReportView.vue')
+      },
 
       {
         path: 'settings',
         component: SettingView
       },
       {
-        path: 'permission',
+        path: 'settings/permission',
         component: PermissionView
       },
       {
-        path: 'role',
+        path: 'settings/role',
         component: RoleView
       },
       {
-        path: 'cases_delay_time',
+        path: 'settings/cases_delay_time',
         component: PriorityDelayTimeView
       },
       {
-        path: 'personalAccount',
+        path: 'settings/personalAccount',
         component: PersonalAccountView
       }
     ]
