@@ -7,14 +7,23 @@
       </div>
     </div>
 
-    <ReportFilters :clients="clients" :priorities="priorities"  @applyFilters="handleFilters"/>
-    <div class="export-row">
-      <button class="add-button" @click="exportCSV">
-        Export CSV
-      </button>
-    </div>
+    <ReportFilters :clients="clients" :priorities="priorities"   :employees="employees"
+ @applyFilters="handleFilters"/>
+
     <!-- ===================== SHOW / HIDE COLUMNS BUTTON ===================== -->
-    <button class="filter-button" @click="showFilter = true">Show / Hide Columns</button>
+    <!-- <button class="filter-button" @click="showFilter = true">Show / Hide Columns</button> -->
+    <div class="report-header-row">
+  <!-- Left side: Show / Hide Columns text -->
+  <button class="show-hide-btn" @click="showFilter = true">
+    Show/Hide Columns ({{ visibleCount }}/{{ columns.length }})
+  </button>
+
+  <!-- Right side: Export -->
+  <button class="download-btn" @click="exportCSV">
+    DOWNLOAD EXCEL
+  </button>
+</div>
+
 
     <!-- ===================== COLUMNS MODAL ===================== -->
     <div v-if="showFilter" class="filter-overlay" @click.self="closeFilter">
@@ -69,7 +78,7 @@
         <tr v-else v-for="(item, index) in cases" :key="item.id" class="table-row-hover">
           <td v-if="isVisible('id')">{{ item.id }}</td>
           <td v-if="isVisible('title')">{{ item.title }}</td>
-          <td v-if="isVisible('status')">{{ item.type }}</td>
+          <td v-if="isVisible('type')">{{ item.type }}</td>
           <td v-if="isVisible('way_entry')">{{ item.way_entry }}</td>
           <td v-if="isVisible('status')">{{ item.status }}</td>
           <td v-if="isVisible('priority')">{{ item.priority?.priority_name ?? '—' }}</td>
@@ -156,6 +165,8 @@ const columns = ref([
   { key: 'priority', label: 'Priority', visible: true },
   { key: 'client', label: 'Client', visible: true },
   { key: 'employees', label: 'Employees', visible: true },
+  { key: 'created', label: 'Created At', visible: true },
+
 ])
 
 const isVisible = (key) => columns.value.find(c => c.key === key)?.visible ?? false
@@ -223,10 +234,16 @@ function exportCSV() {
   window.open('http://localhost:8000/api/reports/cases/export', '_blank')
 }
 
-onMounted(() => loadReport())
+onMounted(() => {
+  loadFilterData()
+  loadReport()
+})
+
 
 const clients = ref([])
 const priorities = ref([])
+const employees = ref([])
+
 
 // import { shallowRef } from 'vue'
 // const clients = shallowRef([])
@@ -242,108 +259,155 @@ async function loadFilterData() {
   priorities.value = (await axios.get('http://localhost:8000/api/priorities', {
     headers: { Authorization: `Bearer ${token}` }
   })).data
+  employees.value = (await axios.get('http://localhost:8000/api/employees', {
+  headers: { Authorization: `Bearer ${token}` }
+})).data.data
+
 }
 </script>
 
 
 <style scoped>
-/* IDENTICAL styling from SupportView (clean + consistent) */
+/* CONTAINER */
 .table-container {
   background: #fff;
-  padding: 24px;
-  border-radius: 20px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.04);
+  padding: 32px;
+  border-radius: 18px;
+  box-shadow: 0 4px 22px rgba(0,0,0,0.06);
+  border: 1px solid #eee;
+  margin-bottom: 30px;
 }
+
+/* HEADER */
 .header-row {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #f0f0f0;
   margin-bottom: 20px;
-}
-.main-header {
-  font-size: 22px;
-  font-weight: 700;
 }
 
-.add-button {
-  padding: 10px 20px;
-  border-radius: 12px;
-  background: var(--primary-color);
-  color: white;
-  border: none;
-  cursor: pointer;
+.main-header {
+  font-size: 26px;
+  font-weight: 700;
+  color: #2d2d2d;
 }
-.stats-container {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-.stat-box {
-  background: #f7f7f7;
-  padding: 16px;
-  border-radius: 12px;
-  flex: 1;
-  text-align: center;
-}
-.stat-box h4 {
-  margin: 0;
-  font-size: 16px;
-  color: #666;
-}
-.stat-box p {
-  margin: 0;
-  font-size: 22px;
-  font-weight: bold;
-}
-.filter-button {
-  text-decoration: underline;
-  cursor: pointer;
-  margin-bottom: 15px;
-}
-.custom-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.custom-table th,
-.custom-table td {
-  padding: 12px;
-  border-bottom: 1px solid #ddd;
-}
-.empty-msg {
-  text-align: center;
-  padding: 20px;
-  color: #666;
-}
-.pagination-container {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
-}
-.skeleton-bar {
-  height: 14px;
-  background: #eee;
-}
+
+/* ACTION ROW (Export / Filters Button) */
 .export-row {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 15px;
-}
-/* SHOW/HIDE COLUMNS BUTTON */
-.filter-button {
-  padding: 6px 0;
-  cursor: pointer;
-  color: var(--primary-color);
-  border: none;
-  background: transparent;
-  text-decoration: underline;
-  font-size: 20px;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
-/* MODAL */
+/* BUTTONS */
+.add-button {
+  background: var(--primary-color);
+  color: #fff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  transition: 0.2s ease;
+}
+.add-button:hover {
+  opacity: 0.85;
+}
+
+.filter-button {
+  background: transparent;
+  border: none;
+  color: var(--primary-color);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 20px;
+  text-decoration: underline;
+}
+.filter-button:hover {
+  opacity: 0.7;
+}
+
+/* TABLE */
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.table-header-row th {
+  background: #fafafa;
+  padding: 14px 16px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #444;
+  border-bottom: 2px solid #e6e6e6;
+}
+
+.custom-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 15px;
+  color: #2d2d2d;
+}
+
+.table-row-hover:hover {
+  background: #f9f9f9;
+}
+
+/* SORT ARROWS */
+.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+.sortable:hover {
+  color: var(--primary-color);
+}
+
+/* EMPTY STATE */
+.empty-msg {
+  text-align: center;
+  padding: 25px;
+  font-size: 15px;
+  color: #999;
+}
+
+/* PAGINATION */
+.pagination-container {
+  margin-top: 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.results-count {
+  font-size: 14px;
+  color: #666;
+}
+
+.page-btn {
+  padding: 7px 22px;
+  border: 1px solid #d0d0d0;
+  border-radius: 7px;
+  background: #fff;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+.page-btn:hover {
+  background: #f5f5f5;
+}
+.page-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* MODAL - SHOW/HIDE COLUMNS */
 .filter-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0,0,0,0.45);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -351,41 +415,40 @@ async function loadFilterData() {
 }
 
 .filter-modal {
-  width: 750px;
-  max-width: 95%;
-  background: white;
+  width: 650px;
+  max-width: 90%;
+  background: #fff;
+  padding: 35px 40px;
   border-radius: 16px;
-  padding: 32px 40px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
 }
 
 .filter-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
 
 .filter-header h2 {
   font-size: 20px;
   font-weight: 700;
-  color: var(--primary-color);
+  color: #333;
 }
 
 .select-all-btn {
-  font-size: 16px;
   background: none;
   border: none;
   color: var(--primary-color);
-  font-weight: 600;
   cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
 }
 
 .filter-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  row-gap: 18px;
-  column-gap: 40px;
+  gap: 18px 40px;
   margin-bottom: 30px;
 }
 
@@ -393,79 +456,92 @@ async function loadFilterData() {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 18px;
+  font-size: 16px;
 }
 
 .filter-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
+  gap: 14px;
+}
+
+.apply-btn, .cancel-btn {
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
 }
 
 .cancel-btn {
-  background: #e5e5e5;
-  padding: 10px 26px;
-  border-radius: 8px;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
+  background: #e7e7e7;
+  color: #333;
+}
+.cancel-btn:hover {
+  background: #dcdcdc;
 }
 
 .apply-btn {
   background: var(--primary-color);
-  color: white;
-  padding: 10px 26px;
-  border-radius: 8px;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
+  color: #fff;
+  font-weight: 600;
 }
-/* PAGINATION */
-.pagination-container {
+.apply-btn:hover {
+  opacity: 0.85;
+}
+
+/* SKELETON LOADING */
+.skeleton-bar {
+  height: 14px;
+  background: #ececec;
+  border-radius: 6px;
+  animation: pulse 1.4s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { opacity: .5; }
+  50% { opacity: .1; }
+  100% { opacity: .5; }
+}
+.report-header-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 18px;
+  background: #f3f3f7; /* light gray analytics style */
+  padding: 14px 18px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  margin-top: 10px;
 }
 
-.results-count {
-  font-size: 16px;
-  color: #666;
-}
-
-.page-btn {
-  padding: 5px 20px;
-  border-radius: 6px;
-  border: 1px solid gray;
-  background: white;
+.show-hide-btn {
+  background: transparent;
+  border: none;
+  color: #2d2d5f;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: underline;
   cursor: pointer;
 }
 
-.page-btn:disabled {
-  opacity: 0.5;
-}
-.table-header-row th {
-  background: var(--table-header-bg);
-  padding: 12px 16px;
-  font-size: 20px;
-  text-align: left;
-  border-bottom: 1px solid var(--table-border);
+.show-hide-btn:hover {
+  opacity: 0.8;
 }
 
-.custom-table td {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--table-border);
-  vertical-align: top;
-  font-size: 18px;
-}
-.add-button {
+.download-btn {
   background: var(--primary-color);
   color: #fff;
+  padding: 10px 22px;
+  border-radius: 8px;
   border: none;
-  padding: 10px 20px;
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
 }
+
+.download-btn:hover {
+  background: var(--primary-hover);
+}
+
 </style>

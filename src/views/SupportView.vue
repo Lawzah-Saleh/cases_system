@@ -12,6 +12,7 @@
 <SupportFilters 
     :clients="clients" 
     :priorities="priorities" 
+    :employees="employees"
     @applyFilters="handleFilters"
 />
 <div class="case-tabs">
@@ -193,6 +194,8 @@ import CaseCreateModal from '@/components/cases/CaseCreateModal.vue'
 import CaseEditModal from '@/components/cases/CaseEditModal.vue'
 import CaseDeleteModal from '@/components/cases/CaseDeleteModal.vue'
 import CaseAssignModal from '@/components/cases/CaseAssignModal.vue'
+import EmployeesMultiSelect from '@/components/cases/EmployeesMultiSelect.vue'
+
 
 const showAssign = ref(false)
 const activeTab = ref('all')
@@ -259,6 +262,8 @@ const selectedCase = ref(null)
 
 const clients = ref([])
 const priorities = ref([])
+const employees = ref([])
+
 
 // import { shallowRef } from 'vue'
 // const clients = shallowRef([])
@@ -274,6 +279,10 @@ async function loadFilterData() {
   priorities.value = (await axios.get('http://localhost:8000/api/priorities', {
     headers: { Authorization: `Bearer ${token}` }
   })).data
+    employees.value = (await axios.get('http://localhost:8000/api/employees', {
+  headers: { Authorization: `Bearer ${token}` }
+})).data.data
+
 }
 
 function openDetails(c) {
