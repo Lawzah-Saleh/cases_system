@@ -269,3 +269,12 @@
 .permissions-list::-webkit-scrollbar-thumb:hover {
   background: #999;
 }
+
+.link-back {
+  cursor: pointer;
+  color: gray;
+  font-weight: 700;
+}
+.link-back:hover {
+  text-decoration: underline;
+}

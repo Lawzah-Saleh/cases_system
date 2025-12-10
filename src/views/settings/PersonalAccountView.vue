@@ -161,15 +161,6 @@ onMounted(loadAccount)
   cursor: pointer;
 }
 
-.link-back {
-  cursor: pointer;
-  color: gray;
-  font-weight: 700;
-}
-.link-back:hover {
-  text-decoration: underline;
-}
-
 .modal-subtitle {
   font-size: 14px;
   color: #777;
