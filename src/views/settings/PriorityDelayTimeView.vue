@@ -285,15 +285,6 @@ export default {
   margin-left: 5px;
 }
 
-.link-back {
-  cursor: pointer;
-  color: gray;
-  font-weight: 700;
-}
-.link-back:hover {
-  text-decoration: underline;
-}
-
 .page-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;

@@ -1,29 +1,31 @@
 <template>
   <div class="table-container">
-
     <div class="header-row">
       <div class="header-title-container">
-          <h2 class="main-header">Cases Report</h2>
+        <h2 class="main-header">
+          <span class="link-back" @click="$router.back()">Reports</span> / Cases Report
+        </h2>
       </div>
     </div>
 
-    <ReportFilters :clients="clients" :priorities="priorities"   :employees="employees"
- @applyFilters="handleFilters"/>
+    <ReportFilters
+      :clients="clients"
+      :priorities="priorities"
+      :employees="employees"
+      @applyFilters="handleFilters"
+    />
 
     <!-- ===================== SHOW / HIDE COLUMNS BUTTON ===================== -->
     <!-- <button class="filter-button" @click="showFilter = true">Show / Hide Columns</button> -->
     <div class="report-header-row">
-  <!-- Left side: Show / Hide Columns text -->
-  <button class="show-hide-btn" @click="showFilter = true">
-    Show/Hide Columns ({{ visibleCount }}/{{ columns.length }})
-  </button>
+      <!-- Left side: Show / Hide Columns text -->
+      <button class="show-hide-btn" @click="showFilter = true">
+        Show/Hide Columns ({{ visibleCount }}/{{ columns.length }})
+      </button>
 
-  <!-- Right side: Export -->
-  <button class="download-btn" @click="exportCSV">
-    DOWNLOAD EXCEL
-  </button>
-</div>
-
+      <!-- Right side: Export -->
+      <button class="download-btn" @click="exportCSV">DOWNLOAD EXCEL</button>
+    </div>
 
     <!-- ===================== COLUMNS MODAL ===================== -->
     <div v-if="showFilter" class="filter-overlay" @click.self="closeFilter">
@@ -54,20 +56,21 @@
         <tr class="table-header-row">
           <th v-if="isVisible('id')">ID</th>
           <th v-if="isVisible('title')" @click="setSort('title')" class="sortable">
-          Title <span>{{ sortBy === 'title' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</span>
-          </th>   
+            Title <span>{{ sortBy === 'title' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</span>
+          </th>
           <th v-if="isVisible('type')">Type</th>
           <th v-if="isVisible('way_entry')">Way Entry</th>
           <th v-if="isVisible('status')" @click="setSort('status')" class="sortable">
-            Status <span>{{ sortBy === 'status' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</span>
+            Status
+            <span>{{ sortBy === 'status' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</span>
           </th>
           <th v-if="isVisible('priority')" @click="setSort('priority')" class="sortable">
-            Priority <span>{{ sortBy === 'priority' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</span>
+            Priority
+            <span>{{ sortBy === 'priority' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</span>
           </th>
           <th v-if="isVisible('client')">Customer</th>
           <th v-if="isVisible('employees')">Team Members</th>
-          <th v-if="isVisible('created')"> Created at</th>
-
+          <th v-if="isVisible('created')">Created At</th>
         </tr>
       </thead>
 
@@ -120,7 +123,6 @@
         </button>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -129,7 +131,6 @@ import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 import ReportFilters from '@/components/cases/SupportFilters.vue'
-
 
 const auth = useAuthStore()
 
@@ -166,12 +167,11 @@ const columns = ref([
   { key: 'priority', label: 'Priority', visible: true },
   { key: 'client', label: 'Client', visible: true },
   { key: 'employees', label: 'Employees', visible: true },
-  { key: 'created', label: 'Created At', visible: true },
-
+  { key: 'created', label: 'Created At', visible: true }
 ])
 
-const isVisible = (key) => columns.value.find(c => c.key === key)?.visible ?? false
-const selectAllColumns = () => columns.value.forEach(c => (c.visible = true))
+const isVisible = (key) => columns.value.find((c) => c.key === key)?.visible ?? false
+const selectAllColumns = () => columns.value.forEach((c) => (c.visible = true))
 const closeFilter = () => (showFilter.value = false)
 const applyColumnFilters = () => (showFilter.value = false)
 
@@ -198,7 +198,6 @@ async function loadReport(page = 1) {
 
     total.value = res.data?.total ?? 0
     lastPage.value = res.data?.last_page ?? 1
-
   } catch (err) {
     console.error('Report load failed:', err)
   } finally {
@@ -231,8 +230,34 @@ function formatDate(date) {
 }
 
 /* ===================== FIXED EXPORT URL ===================== */
-function exportCSV() {
-  window.open('http://localhost:8000/api/reports/cases/export', '_blank')
+async function exportCSV() {
+  try {
+    const params = {
+      sort_by: sortBy.value || '',
+      sort_direction: sortDirection.value || 'asc',
+      visible_columns: columns.value
+        .filter((c) => c.visible)
+        .map((c) => c.key)
+        .join(','), // "id,title,status"
+      ...filterParams.value
+    }
+
+    const response = await axios.get('http://localhost:8000/api/reports/cases/export', {
+      params,
+      headers: { Authorization: `Bearer ${auth.token}` },
+      responseType: 'blob'
+    })
+
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', 'cases-report.xlsx')
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+  } catch (error) {
+    console.error('EXPORT ERROR:', error)
+  }
 }
 
 onMounted(() => {
@@ -240,11 +265,9 @@ onMounted(() => {
   loadReport()
 })
 
-
 const clients = ref([])
 const priorities = ref([])
 const employees = ref([])
-
 
 // import { shallowRef } from 'vue'
 // const clients = shallowRef([])
@@ -253,20 +276,24 @@ const employees = ref([])
 async function loadFilterData() {
   const token = useAuthStore().token
 
-  clients.value = (await axios.get('http://localhost:8000/api/clients', {
-    headers: { Authorization: `Bearer ${token}` }
-  })).data.data
+  clients.value = (
+    await axios.get('http://localhost:8000/api/clients', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+  ).data.data
 
-  priorities.value = (await axios.get('http://localhost:8000/api/priorities', {
-    headers: { Authorization: `Bearer ${token}` }
-  })).data
-  employees.value = (await axios.get('http://localhost:8000/api/employees', {
-  headers: { Authorization: `Bearer ${token}` }
-})).data.data
-
+  priorities.value = (
+    await axios.get('http://localhost:8000/api/priorities', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+  ).data
+  employees.value = (
+    await axios.get('http://localhost:8000/api/employees', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+  ).data.data
 }
 </script>
-
 
 <style scoped>
 /* CONTAINER */
@@ -274,7 +301,7 @@ async function loadFilterData() {
   background: #fff;
   padding: 32px;
   border-radius: 18px;
-  box-shadow: 0 4px 22px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 22px rgba(0, 0, 0, 0.06);
   border: 1px solid #eee;
   margin-bottom: 30px;
 }
@@ -408,7 +435,7 @@ async function loadFilterData() {
 .filter-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.45);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -421,7 +448,7 @@ async function loadFilterData() {
   background: #fff;
   padding: 35px 40px;
   border-radius: 16px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
 }
 
 .filter-header {
@@ -466,7 +493,8 @@ async function loadFilterData() {
   gap: 14px;
 }
 
-.apply-btn, .cancel-btn {
+.apply-btn,
+.cancel-btn {
   padding: 10px 24px;
   border-radius: 8px;
   font-size: 15px;
@@ -500,9 +528,15 @@ async function loadFilterData() {
 }
 
 @keyframes pulse {
-  0% { opacity: .5; }
-  50% { opacity: .1; }
-  100% { opacity: .5; }
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.1;
+  }
+  100% {
+    opacity: 0.5;
+  }
 }
 .report-header-row {
   display: flex;
@@ -544,5 +578,4 @@ async function loadFilterData() {
 .download-btn:hover {
   background: var(--primary-hover);
 }
-
 </style>
