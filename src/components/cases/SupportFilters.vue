@@ -270,7 +270,7 @@ function removeTag(key) {
   .btn-apply:hover {
     background: var(--primary-hover);
   }
-
+  
   .btn-reset {
     background: #eee;
     color: #333;

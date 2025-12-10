@@ -66,7 +66,8 @@
           </th>
           <th v-if="isVisible('client')">Customer</th>
           <th v-if="isVisible('employees')">Team Members</th>
-          <th></th>
+          <th v-if="isVisible('created')"> Created at</th>
+
         </tr>
       </thead>
 
