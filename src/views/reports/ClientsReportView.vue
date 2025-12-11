@@ -2,21 +2,25 @@
   <div class="client-report-page">
     <!-- HEADER -->
     <div class="header-row">
-      <div>
+      <!-- LEFT: TITLE -->
+      <div class="title-container">
         <h2 class="page-title">
-          <span class="link-back" @click="$router.back()">Reports</span> /Client Reports
+          <span class="link-back" @click="$router.back()">Reports</span> / Client Reports
         </h2>
       </div>
 
-      <button class="btn btn-success" @click="downloadExcel">Download Excel</button>
+      <!-- RIGHT: ACTIONS (button + filter) -->
+      <div class="actions-container">
+        <button class="btn btn-success" @click="downloadExcel">Download Excel</button>
 
-      <div class="client-selector">
-        <label for="clientSelect">Client:</label>
-        <select id="clientSelect" v-model="selectedClientId" @change="onClientChange">
-          <option v-for="c in clients" :key="c.id" :value="c.id">
-            {{ c.client_name }} ({{ c.cases_count }} cases)
-          </option>
-        </select>
+        <div class="client-selector">
+          <label for="clientSelect">Client:</label>
+          <select id="clientSelect" v-model="selectedClientId" @change="onClientChange">
+            <option v-for="c in clients" :key="c.id" :value="c.id">
+              {{ c.client_name }} ({{ c.cases_count }} cases)
+            </option>
+          </select>
+        </div>
       </div>
     </div>
 
@@ -32,8 +36,8 @@
         <div class="card">
           <h3>Client Info</h3>
           <p class="client-name">{{ client.client_name }}</p>
-          <p v-if="client.email"><strong>Email:</strong> {{ client.email }}</p>
-          <p v-if="client.address"><strong>Address:</strong> {{ client.address }}</p>
+          <p v-if="client.email">Email: {{ client.email }}</p>
+          <p v-if="client.address">Address: {{ client.address }}</p>
         </div>
 
         <!-- Stats Cards -->
@@ -221,8 +225,6 @@ async function loadClients() {
       selectedClientId.value = clients.value[0].id
       await loadClientReport(selectedClientId.value)
     }
-
-    toast.success('Clients loaded successfully')
   } catch (err) {
     console.error(err)
     toast.error('Failed to load clients')
@@ -247,8 +249,6 @@ async function loadClientReport(clientId) {
     team.value = res.data.team || []
 
     buildCharts()
-
-    toast.success('Client report loaded')
   } catch (err) {
     console.error(err)
     toast.error('Failed to load client report')
@@ -499,5 +499,28 @@ onMounted(() => {
   background: #ffffff;
   box-shadow: 0 0 0 3px rgba(92, 77, 255, 0.18);
   outline: none;
+}
+
+.header-row {
+  display: flex;
+  justify-content: space-between; /* LEFT vs RIGHT */
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 12px;
+}
+
+/* Container for the right side items */
+.actions-container {
+  display: flex;
+  align-items: center;
+  gap: 15px; /* space between button and select */
+}
+
+/* Make selector look aligned */
+.client-selector {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 </style>

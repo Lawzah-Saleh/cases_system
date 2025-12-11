@@ -278,3 +278,14 @@
 .link-back:hover {
   text-decoration: underline;
 }
+
+.main-header {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.sub-header {
+  font-size: 13px;
+  color: #777;
+}
