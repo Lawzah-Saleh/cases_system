@@ -33,7 +33,7 @@ defineProps({
 .icon-box {
   width: 45px;
   height: 45px;
-  background: #fff2c6;
+  background: #f8c930;
   border-radius: 10px;
   display: flex;
   align-items: center;

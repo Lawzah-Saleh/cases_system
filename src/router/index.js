@@ -73,7 +73,24 @@ const routes = [
       {
         path: 'settings/personalAccount',
         component: PersonalAccountView
-      }
+      },
+      {
+      path: 'statistics',
+        component: () => import('@/views/statistics/StatisticsView.vue'),
+      },
+      {
+        path: 'statistics/cases',
+        component: () => import('@/views/statistics/CasesStatisticsView.vue'),
+      },
+      {
+        path: 'statistics/employees',
+        component: () => import('@/views/statistics/EmployeesStatisticsView.vue'),
+      },
+      {
+        path: 'statistics/clients',
+        component: () => import('@/views/statistics/ClientsStatisticsView.vue'),
+      },
+
     ]
   }
 

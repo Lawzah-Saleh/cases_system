@@ -43,6 +43,13 @@
           <span class="menu-text">Reports</span>
         </router-link>
       </li>
+      <li v-if="auth.can('view statistics')">
+        <router-link to="/app/statistics">
+          <i class="bi bi-bar-chart-line-fill"></i>
+          <span class="menu-text">Statistics</span>
+        </router-link>
+      </li>
+
 
       <li>
         <router-link to="/app/settings">
@@ -156,7 +163,8 @@ onBeforeUnmount(() => window.removeEventListener('resize', handleResize))
   padding: 12px 20px;
   color: var(--sidebar-text);
   text-decoration: none;
-  font-size: 16px;
+  font-size: 20px;
+  font-weight: 700;
   border-radius: 8px;
   transition: all 0.2s ease-in-out;
 }
@@ -167,7 +175,9 @@ onBeforeUnmount(() => window.removeEventListener('resize', handleResize))
 }
 
 .sidebar-menu i {
-  font-size: 18px;
+  font-size: 20px;
+  font-weight: bold;
+
 }
 
 /* Hide menu text on mobile when collapsed (optional) */

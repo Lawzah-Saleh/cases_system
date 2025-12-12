@@ -1,193 +1,243 @@
 <template>
-  <div class="page-container">
+  <div class="table-container">
 
-    <!-- Title -->
-    <h2 class="page-title">Employee Performance Report</h2>
-
-
-<div class="stats-grid">
-  <StatCard title="Top Performer" :value="stats?.highest?.name ?? '—'" color="#27ae60">
-    <template #filter>
-      <select v-model="filterRange" @change="loadReport">
-        <option value="day">Today</option>
-        <option value="week">This Week</option>
-        <option value="month">This Month</option>
-        <option value="year">This Year</option>
-      </select>
-    </template>
-  </StatCard>
-
-  <StatCard title="Lowest Performer" :value="stats?.lowest?.name ?? '—'" color="#e74c3c">
-    <template #filter>
-      <select v-model="filterRange" @change="loadReport">
-        <option value="day">Today</option>
-        <option value="week">This Week</option>
-        <option value="month">This Month</option>
-        <option value="year">This Year</option>
-      </select>
-    </template>
-  </StatCard>
-
-  <StatCard title="Best Completion Rate" :value="format(stats?.best_completion?.completion_rate, '%')">
-    <template #filter>
-      <select v-model="filterRange" @change="loadReport">
-        <option value="day">Today</option>
-        <option value="week">This Week</option>
-        <option value="month">This Month</option>
-        <option value="year">This Year</option>
-      </select>
-    </template>
-  </StatCard>
-
-  <StatCard title="Best SLA" :value="format(stats?.best_sla?.sla_rate, '%')">
-    <template #filter>
-      <select v-model="filterRange" @change="loadReport">
-        <option value="day">Today</option>
-        <option value="week">This Week</option>
-        <option value="month">This Month</option>
-        <option value="year">This Year</option>
-      </select>
-    </template>
-  </StatCard>
-
-  <StatCard title="Fastest Response" :value="format(stats?.fastest?.avg_first_response_time, 'min')">
-    <template #filter>
-      <select v-model="filterRange" @change="loadReport">
-        <option value="day">Today</option>
-        <option value="week">This Week</option>
-        <option value="month">This Month</option>
-        <option value="year">This Year</option>
-      </select>
-    </template>
-  </StatCard>
-</div>
-
-
-    <!-- CHARTS -->
-    <div class="charts-section">
-      <PerformanceBarChart :employees="employees" />
-      <ResponseChart :employees="employees" />
+    <!-- ================= HEADER ================= -->
+    <div class="header-row">
+      <h2 class="main-header">
+        <span class="link-back" @click="$router.back()">Reports</span>
+        / Employee Reports
+      </h2>
     </div>
-        <div class="report-header-row">
-          <!-- Left side: Show / Hide Columns text -->
-          <button class="show-hide-btn">
-            Show/Hide Columns
-          </button>
 
-          <!-- Right side: Export -->
-          <button class="download-btn" @click="exportCSV">
-            DOWNLOAD EXCEL
-          </button>
-        </div>
+    <!-- ================= FILTER BAR ================= -->
+    <div class="filters-row">
 
-    <!-- EMPLOYEE TABLE -->
-    <EmployeePerformanceTable :employees="employees" />
+      <!-- Range -->
+      <select v-model="filters.range">
+        <option value="day">Today</option>
+        <option value="week">This Week</option>
+        <option value="month">This Month</option>
+        <option value="year">This Year</option>
+      </select>
+
+      <!-- Employee Search -->
+      <input
+        v-model="filters.employee"
+        placeholder="Search employee..."
+      />
+
+      <!-- SLA -->
+      <select v-model="filters.sla">
+        <option value="">All SLA</option>
+        <option value="met">SLA Met</option>
+        <option value="breached">SLA Breached</option>
+      </select>
+
+      <button class="reset-btn" @click="resetFilters">Reset</button>
+    </div>
+
+    <!-- ================= ACTION BAR ================= -->
+    <div class="report-header-row">
+      <button class="download-btn" @click="exportExcel" :disabled="loading">
+        DOWNLOAD EXCEL
+      </button>
+    </div>
+
+    <!-- ================= TABLE ================= -->
+    <EmployeePerformanceTable
+      v-if="!loading && employees.length"
+      :employees="employees"
+    />
+
+    <!-- ================= STATES ================= -->
+    <div v-if="loading" class="loading-indicator">
+      Loading data...
+    </div>
+
+    <div v-if="!loading && employees.length === 0" class="no-data">
+      No results found.
+    </div>
+
+    <!-- ================= PAGINATION ================= -->
+    <div class="pagination-container" v-if="lastPage > 1">
+      <p class="results-count">{{ total }} results</p>
+
+      <div>
+        <button
+          class="page-btn"
+          @click="changePage(currentPage - 1)"
+          :disabled="currentPage === 1 || loading"
+        >
+          &lt; Prev
+        </button>
+
+        <button
+          class="page-btn"
+          @click="changePage(currentPage + 1)"
+          :disabled="currentPage === lastPage || loading"
+        >
+          Next &gt;
+        </button>
+      </div>
+    </div>
 
   </div>
 </template>
 <script setup>
-import { ref, onMounted } from "vue"
-import axios from "axios"
-import { useAuthStore } from "@/stores/auth"
-
-// Components
-import StatCard from "@/components/reports/StatCard.vue"
-import PerformanceBarChart from "@/components/reports/PerformanceBarChart.vue"
-import ResponseChart from "@/components/reports/ResponseChart.vue"
-import EmployeePerformanceTable from "@/components/reports/EmployeePerformanceTable.vue"
+import { ref, reactive, watch, onMounted } from 'vue'
+import axios from 'axios'
+import { useAuthStore } from '@/stores/auth'
+import EmployeePerformanceTable from '@/components/reports/EmployeePerformanceTable.vue'
 
 const auth = useAuthStore()
 
-const stats = ref({})
+const loading = ref(false)
 const employees = ref([])
-const filterRange = ref("month") // default range
 
-// Formatting helper
-function format(val, unit) {
-  if (val === undefined || val === null) return "—"
-  return `${val} ${unit}`
-}
+const currentPage = ref(1)
+const lastPage = ref(1)
+const total = ref(0)
 
-async function loadReport() {
+const filters = reactive({
+  range: 'month',
+  employee: '',
+  sla: ''
+})
+
+/* ================= LOAD REPORT ================= */
+async function loadReport(page = 1) {
   try {
-    const res = await axios.get("http://localhost:8000/api/reports/employees", {
-      headers: { Authorization: `Bearer ${auth.token}` },
-      params: { range: filterRange.value }
-    })
+    loading.value = true
+    currentPage.value = page
 
-    stats.value = res.data.stats
-    employees.value = res.data.data
+    const res = await axios.get(
+      'http://localhost:8000/api/reports/employees',
+      {
+        headers: { Authorization: `Bearer ${auth.token}` },
+        params: {
+          page,
+          ...filters
+        }
+      }
+    )
+
+    employees.value = res.data?.data ?? []
+    total.value = res.data?.total ?? employees.value.length
+    lastPage.value = res.data?.last_page ?? 1
 
   } catch (err) {
-    console.error("Failed loading employee report:", err)
+    console.error('Employee report error:', err)
+    employees.value = []
+  } finally {
+    loading.value = false
   }
 }
 
-onMounted(loadReport)
+/* ================= AUTO SEARCH (DEBOUNCE) ================= */
+let debounceTimer = null
+watch(
+  () => ({ ...filters }),
+  () => {
+    clearTimeout(debounceTimer)
+    debounceTimer = setTimeout(() => {
+      loadReport(1)
+    }, 350)
+  },
+  { deep: true }
+)
+
+/* ================= PAGINATION ================= */
+function changePage(page) {
+  if (page < 1 || page > lastPage.value) return
+  loadReport(page)
+}
+
+/* ================= RESET ================= */
+function resetFilters() {
+  filters.range = 'month'
+  filters.employee = ''
+  filters.sla = ''
+  loadReport(1)
+}
+
+/* ================= EXPORT ================= */
+async function exportExcel() {
+  try {
+    const response = await axios.get(
+      'http://localhost:8000/api/reports/employees/export',
+      {
+        headers: { Authorization: `Bearer ${auth.token}` },
+        params: filters,
+        responseType: 'blob'
+      }
+    )
+
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', 'employees-report.xlsx')
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+
+  } catch (e) {
+    console.error('Export failed', e)
+  }
+}
+
+onMounted(() => {
+  loadReport()
+})
 </script>
 <style scoped>
-.page-title {
-  font-size: 28px;
+.table-container {
+  background: #fff;
+  padding: 32px;
+  border-radius: 18px;
+  box-shadow: 0 4px 22px rgba(0, 0, 0, 0.06);
+  border: 1px solid #eee;
+}
+
+.header-row {
+  border-bottom: 2px solid #f0f0f0;
+  margin-bottom: 16px;
+}
+
+.main-header {
+  font-size: 26px;
   font-weight: 700;
-  margin-bottom: 14px;
 }
 
-.range-filter {
-  margin-bottom: 20px;
-  background: #f3f3f7;
-  padding: 12px 16px;
-  border-radius: 10px;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.stat-card select {
-  padding: 4px 6px;
-  border-radius: 6px;
-  border: 1px solid #ddd;
-  background: #f7f7f7;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 16px;
-  margin-bottom: 25px;
-}
-
-.charts-section {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 22px;
-  margin-bottom: 30px;
-}
-.report-header-row {
+.filters-row {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #f3f3f7; /* light gray analytics style */
-  padding: 14px 18px;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: #f3f3f7;
+  padding: 12px 14px;
   border-radius: 10px;
-  margin-bottom: 12px;
-  margin-top: 10px;
+  margin: 18px 0;
 }
 
-.show-hide-btn {
+.filters-row select,
+.filters-row input {
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  min-width: 180px;
+}
+
+.reset-btn {
   background: transparent;
   border: none;
-  color: #2d2d5f;
-  font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   text-decoration: underline;
   cursor: pointer;
 }
 
-.show-hide-btn:hover {
-  opacity: 0.8;
+.report-header-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
 }
 
 .download-btn {
@@ -196,18 +246,27 @@ onMounted(loadReport)
   padding: 10px 22px;
   border-radius: 8px;
   border: none;
-  font-size: 14px;
   font-weight: 600;
-  cursor: pointer;
-  transition: 0.2s ease;
 }
 
-.download-btn:hover {
-  background: var(--primary-hover);
+.loading-indicator,
+.no-data {
+  text-align: center;
+  margin-top: 30px;
+  font-size: 17px;
 }
-@media (max-width: 900px) {
-  .charts-section {
-    grid-template-columns: 1fr;
-  }
+
+.pagination-container {
+  margin-top: 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page-btn {
+  padding: 7px 22px;
+  border: 1px solid #ccc;
+  border-radius: 7px;
+  background: #fff;
 }
 </style>

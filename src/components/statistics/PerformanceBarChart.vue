@@ -12,16 +12,19 @@
 </template>
 
 <script setup>
-import { computed } from "vue"
+import { computed } from 'vue'
 
 const props = defineProps({
-  employees: { type: Array, required: true }
+  data: {
+    type: Array,
+    default: () => []   // ← يمنع أي crash
+  }
 })
 
 const chartSeries = computed(() => [
   {
-    name: "Performance Score",
-    data: props.employees.map(e => e.performance_score)
+    name: 'Performance Score',
+    data: props.data.map(item => item.value)
   }
 ])
 
@@ -30,16 +33,21 @@ const chartOptions = computed(() => ({
     toolbar: { show: false }
   },
   xaxis: {
-    categories: props.employees.map(e => e.name),
+    categories: props.data.map(item => item.name),
     labels: { rotate: -45 }
   },
   plotOptions: {
-    bar: { horizontal: false, columnWidth: "60%" }
+    bar: { columnWidth: '60%' }
   },
-  colors: ["#3498db"],
+  colors: props.data.map(item =>
+    item.value >= 85 ? '#2ecc71'
+    : item.value >= 60 ? '#f1c40f'
+    : '#e74c3c'
+  ),
   dataLabels: { enabled: false }
 }))
 </script>
+
 
 <style scoped>
 .chart-box {
@@ -48,8 +56,19 @@ const chartOptions = computed(() => ({
   border-radius: 14px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.05);
 }
+
 .chart-title {
   font-size: 18px;
   margin-bottom: 12px;
+}
+
+@media (max-width: 768px) {
+  .chart-box {
+    padding: 15px;
+  }
+
+  .chart-title {
+    font-size: 16px;
+  }
 }
 </style>
