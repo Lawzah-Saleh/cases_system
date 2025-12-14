@@ -3,40 +3,26 @@
     <h2 class="main-header">Statistics</h2>
 
     <div class="cards-grid">
-
       <!-- CASES STATISTICS -->
-      <GlobalCard
-        v-if="auth.can('view cases statistics')"
-        title="Cases Statistics"
-        @click="goTo('/app/statistics/cases')"
-      >
+      <GlobalCard title="Cases Statistics" @click="goTo('/app/statistics/cases')">
         <template #icon>
           <i class="bi bi-shield-check"></i>
         </template>
       </GlobalCard>
 
       <!-- EMPLOYEES PERFORMANCE -->
-      <GlobalCard
-        v-if="auth.can('view employee statistics')"
-        title="Employees Performance"
-        @click="goTo('/app/statistics/employees')"
-      >
+      <GlobalCard title="Employees Performance" @click="goTo('/app/statistics/employees')">
         <template #icon>
           <i class="bi bi-graph-up-arrow"></i>
         </template>
       </GlobalCard>
 
       <!-- CLIENTS STATISTICS -->
-      <GlobalCard
-        v-if="auth.can('view client statistics')"
-        title="Clients Statistics"
-        @click="goTo('/app/statistics/clients')"
-      >
+      <GlobalCard title="Clients Statistics" @click="goTo('/app/statistics/clients')">
         <template #icon>
           <i class="bi bi-person-lines-fill"></i>
         </template>
       </GlobalCard>
-
     </div>
   </div>
 </template>
@@ -73,7 +59,9 @@ const goTo = (path) => {
 
 .cards-grid > * {
   cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 .cards-grid > *:hover {

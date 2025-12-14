@@ -1,70 +1,61 @@
 <template>
   <div class="page-container">
     <!-- ================= HEADER ================= -->
-         <div class="page-header">
+    <div class="page-header">
       <h2 class="main-header">
         <span class="link-back" @click="$router.back()">statistics</span>
         / Employee Performance statistics
       </h2>
-            <select v-model="range" @change="loadStatistics">
+      <select v-model="range" @change="loadStatistics">
         <option value="day">Today</option>
         <option value="week">This Week</option>
         <option value="month">This Month</option>
         <option value="year">This Year</option>
       </select>
     </div>
- 
 
     <!-- SKELETON LOADING -->
     <div v-if="loading">
-    <div class="stats-grid">
+      <div class="stats-grid">
         <SkeletonCard v-for="i in 9" :key="i" />
-    </div>
+      </div>
 
-    <div class="charts-grid">
+      <div class="charts-grid">
         <SkeletonChart />
         <SkeletonChart />
-    </div>
+      </div>
     </div>
     <!-- ================= PERFORMANCE SECTION ================= -->
     <template v-if="!loading">
       <div class="stats-grid">
-        <StatCard
-        title="Top Performer"
-        :value="stats.highest?.name ?? '—'"
-        color="#27ae60"
-        >
-        <template #subtitle>
+        <StatCard title="Top Performer" :value="stats.highest?.name ?? '—'" color="#27ae60">
+          <template #subtitle>
             Completion Rate:
-            {{ stats.highest?.completion_rate !== undefined
+            {{
+              stats.highest?.completion_rate !== undefined
                 ? stats.highest.completion_rate + '%'
                 : '—'
             }}
-        </template>
+          </template>
 
-        <template #info>
-            Employee with the highest overall performance score.
-        </template>
+          <template #info> Employee with the highest overall performance score. </template>
         </StatCard>
 
         <StatCard
-        title="Lowest Performer"
-        :value="stats.lowest?.name ?? '—'"
-        color="#e74c3c"
-        clickable
-        @click="goToEmployee(stats.lowest?.name)"
+          title="Lowest Performer"
+          :value="stats.lowest?.name ?? '—'"
+          color="#e74c3c"
+          clickable
+          @click="goToEmployee(stats.lowest?.name)"
         >
-        <template #subtitle>
+          <template #subtitle>
             Completion Rate:
-            {{ stats.lowest?.completion_rate !== undefined
-                ? stats.lowest.completion_rate + '%'
-                : '—'
+            {{
+              stats.lowest?.completion_rate !== undefined ? stats.lowest.completion_rate + '%' : '—'
             }}
-        </template>
+          </template>
 
-        <template #info>
-            Employee with the lowest overall performance score.
-        </template>
+          <template #info> Employee with the lowest overall performance score. </template>
         </StatCard>
         <StatCard
           title="Overall Performance"
@@ -72,9 +63,7 @@
           :trend="trends.performance?.delta ?? 0"
           color="#34495e"
         >
-          <template #info>
-            Average performance score compared to the previous period
-          </template>
+          <template #info> Average performance score compared to the previous period </template>
         </StatCard>
         <StatCard
           title="Fastest Response"
@@ -84,9 +73,7 @@
           <template #subtitle>
             {{ stats.fastest?.name }}
           </template>
-          <template #info>
-            Employee with the shortest first response time
-          </template>
+          <template #info> Employee with the shortest first response time </template>
         </StatCard>
         <!-- <StatCard
           title="Best SLA"
@@ -100,43 +87,26 @@
             Employee with the highest SLA compliance rate
           </template>
         </StatCard> -->
-        <StatCard
-          title="SLA Breach Rate"
-          :value="slaBreach.rate + '%'"
-          color="#e74c3c"
-        >
-          <template #subtitle>
-            {{ slaBreach.breached }} of {{ slaBreach.total }} cases
-          </template>
-          <template #info>
-            Percentage of closed cases that violated SLA
-          </template>
+        <StatCard title="SLA Breach Rate" :value="slaBreach.rate + '%'" color="#e74c3c">
+          <template #subtitle> {{ slaBreach.breached }} of {{ slaBreach.total }} cases </template>
+          <template #info> Percentage of closed cases that violated SLA </template>
         </StatCard>
-      </div>    
+      </div>
 
       <!-- ================= CHARTS ================= -->
-        <div class="charts-grid">
-            <PerformanceBarChart
-            v-if="charts.performance.length"
-            :data="charts.performance"
-            />
-            <ResponseLineChart
-            v-if="charts.response_time.length"
-            :data="charts.response_time"
-            />
-            <PerformanceDistributionChart
-            v-if="distribution.high + distribution.medium + distribution.low > 0"
-            :distribution="distribution"
-            />
-        </div>
+      <div class="charts-grid">
+        <PerformanceBarChart v-if="charts.performance.length" :data="charts.performance" />
+        <ResponseLineChart v-if="charts.response_time.length" :data="charts.response_time" />
+        <PerformanceDistributionChart
+          v-if="distribution.high + distribution.medium + distribution.low > 0"
+          :distribution="distribution"
+        />
+      </div>
 
-        <div
-            v-if="charts.performance.length === 0"
-            class="empty-state"
-        >
-            <i class="bi bi-bar-chart"></i>
-            <p>No statistics available for selected range</p>
-        </div>
+      <div v-if="charts.performance.length === 0" class="empty-state">
+        <i class="bi bi-bar-chart"></i>
+        <p>No statistics available for selected range</p>
+      </div>
     </template>
   </div>
 </template>
@@ -152,7 +122,6 @@ import ResponseLineChart from '@/components/statistics/ResponseChart.vue'
 import PerformanceDistributionChart from '@/components/statistics/PerformanceDistributionChart.vue'
 import SkeletonCard from '@/components/statistics/SkeletonCard.vue'
 import SkeletonChart from '@/components/statistics/SkeletonChart.vue'
-
 
 import { useRouter } from 'vue-router'
 const router = useRouter()
@@ -176,10 +145,8 @@ const slaBreach = ref({ rate: 0, breached: 0, total: 0 })
 
 const charts = ref({
   performance: [],
-  response_time: [],
-
+  response_time: []
 })
-
 
 const trends = ref({})
 
@@ -187,24 +154,19 @@ const loadStatistics = async () => {
   try {
     loading.value = true
 
-    const res = await axios.get(
-      'http://localhost:8000/api/statistics/employees',
-      {
-        headers: { Authorization: `Bearer ${auth.token}` },
-        params: { range: range.value }
-      }
-    )
+    const res = await axios.get('http://localhost:8000/api/statistics/employees', {
+      headers: { Authorization: `Bearer ${auth.token}` },
+      params: { range: range.value }
+    })
 
     stats.value = res.data.stats
     distribution.value = res.data.distribution
     slaBreach.value = res.data.sla_breach
-charts.value = {
-  performance: res.data.charts?.performance ?? [],
-  response_time: res.data.charts?.response_time ?? [],
-}
+    charts.value = {
+      performance: res.data.charts?.performance ?? [],
+      response_time: res.data.charts?.response_time ?? []
+    }
     trends.value = res.data.trends
-
-
   } catch (e) {
     console.error('Failed loading employee statistics', e)
   } finally {
@@ -217,7 +179,11 @@ onMounted(loadStatistics)
 
 <style scoped>
 .page-container {
-  padding: 10px;
+  background-color: white;
+  background: #fff;
+  padding: 24px 28px;
+  border-radius: 16px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
 }
 
 .page-header {
@@ -254,8 +220,9 @@ onMounted(loadStatistics)
 
 .charts-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 22px;
+  width: 100%;
 }
 
 @media (max-width: 900px) {

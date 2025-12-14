@@ -43,13 +43,12 @@
           <span class="menu-text">Reports</span>
         </router-link>
       </li>
-      <li v-if="auth.can('view statistics')">
+      <li v-if="auth.can('view statistic')">
         <router-link to="/app/statistics">
           <i class="bi bi-bar-chart-line-fill"></i>
           <span class="menu-text">Statistics</span>
         </router-link>
       </li>
-
 
       <li>
         <router-link to="/app/settings">
@@ -177,7 +176,6 @@ onBeforeUnmount(() => window.removeEventListener('resize', handleResize))
 .sidebar-menu i {
   font-size: 20px;
   font-weight: bold;
-
 }
 
 /* Hide menu text on mobile when collapsed (optional) */

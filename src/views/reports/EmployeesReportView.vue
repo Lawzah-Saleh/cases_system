@@ -1,6 +1,5 @@
 <template>
   <div class="table-container">
-
     <!-- ================= HEADER ================= -->
     <div class="header-row">
       <h2 class="main-header">
@@ -35,17 +34,11 @@
         Show / Hide Columns ({{ visibleColumns.length }}/{{ columns.length }})
       </button>
 
-      <button class="download-btn" @click="exportExcel" :disabled="loading">
-        DOWNLOAD EXCEL
-      </button>
+      <button class="download-btn" @click="exportExcel" :disabled="loading">DOWNLOAD EXCEL</button>
     </div>
 
     <!-- ================= SHOW / HIDE MODAL ================= -->
-    <div
-      v-if="showColumnsModal"
-      class="columns-overlay"
-      @click.self="showColumnsModal = false"
-    >
+    <div v-if="showColumnsModal" class="columns-overlay" @click.self="showColumnsModal = false">
       <div class="columns-modal">
         <div class="columns-header">
           <h2>Show / Hide Columns</h2>
@@ -53,23 +46,15 @@
         </div>
 
         <div class="columns-grid">
-          <label
-            v-for="col in columns"
-            :key="col.key"
-            class="column-item"
-          >
+          <label v-for="col in columns" :key="col.key" class="column-item">
             <input type="checkbox" v-model="col.visible" />
             {{ col.label }}
           </label>
         </div>
 
         <div class="columns-footer">
-          <button class="cancel-btn" @click="showColumnsModal = false">
-            Cancel
-          </button>
-          <button class="apply-btn" @click="showColumnsModal = false">
-            Apply
-          </button>
+          <button class="cancel-btn" @click="showColumnsModal = false">Cancel</button>
+          <button class="apply-btn" @click="showColumnsModal = false">Apply</button>
         </div>
       </div>
     </div>
@@ -101,10 +86,7 @@
 
             <td v-if="isVisible('completion_rate')">
               <div class="progress-bar">
-                <div
-                  class="progress-fill"
-                  :style="{ width: emp.completion_rate + '%' }"
-                ></div>
+                <div class="progress-fill" :style="{ width: emp.completion_rate + '%' }"></div>
               </div>
               <small>{{ emp.completion_rate }}%</small>
             </td>
@@ -116,36 +98,24 @@
               {{ emp.avg_first_response_time }} min
             </td>
 
-            <td
-              v-if="isVisible('sla_rate')"
-              :class="slaClass(emp.sla_rate)"
-            >
+            <td v-if="isVisible('sla_rate')" :class="slaClass(emp.sla_rate)">
               {{ emp.sla_rate }}%
             </td>
 
-
-
-            <td
-              v-if="isVisible('performance_score')"
-              :class="scoreClass(emp.performance_score)"
-            >
+            <td v-if="isVisible('performance_score')" :class="scoreClass(emp.performance_score)">
               <strong>{{ emp.performance_score }}</strong>
             </td>
           </tr>
 
           <tr v-if="!employees.length">
-            <td :colspan="visibleColumns.length" class="empty-msg">
-              No results found.
-            </td>
+            <td :colspan="visibleColumns.length" class="empty-msg">No results found.</td>
           </tr>
         </tbody>
       </table>
     </div>
 
     <!-- ================= LOADING ================= -->
-    <div v-if="loading" class="loading-indicator">
-      Loading data...
-    </div>
+    <div v-if="loading" class="loading-indicator">Loading data...</div>
 
     <!-- ================= PAGINATION ================= -->
     <div class="pagination-container" v-if="lastPage > 1">
@@ -154,12 +124,15 @@
         <button class="page-btn" @click="changePage(currentPage - 1)" :disabled="currentPage === 1">
           &lt; Prev
         </button>
-        <button class="page-btn" @click="changePage(currentPage + 1)" :disabled="currentPage === lastPage">
+        <button
+          class="page-btn"
+          @click="changePage(currentPage + 1)"
+          :disabled="currentPage === lastPage"
+        >
           Next &gt;
         </button>
       </div>
     </div>
-
   </div>
 </template>
 <script setup>
@@ -195,9 +168,9 @@ const columns = ref([
   { key: 'performance_score', label: 'Score', visible: true, sortable: true }
 ])
 
-const visibleColumns = computed(() => columns.value.filter(c => c.visible))
-const isVisible = key => columns.value.find(c => c.key === key)?.visible
-const selectAllColumns = () => columns.value.forEach(c => (c.visible = true))
+const visibleColumns = computed(() => columns.value.filter((c) => c.visible))
+const isVisible = (key) => columns.value.find((c) => c.key === key)?.visible
+const selectAllColumns = () => columns.value.forEach((c) => (c.visible = true))
 
 /* ================= SORT ================= */
 const sortBy = ref('performance_score')
@@ -217,9 +190,7 @@ const sortedEmployees = computed(() => {
     const A = a[sortBy.value]
     const B = b[sortBy.value]
     if (typeof A === 'string') {
-      return sortDirection.value === 'asc'
-        ? A.localeCompare(B)
-        : B.localeCompare(A)
+      return sortDirection.value === 'asc' ? A.localeCompare(B) : B.localeCompare(A)
     }
     return sortDirection.value === 'asc' ? A - B : B - A
   })
@@ -259,19 +230,16 @@ async function exportExcel() {
   try {
     const params = {
       ...filters,
-      visible_columns: visibleColumns.value.map(c => c.key).join(',')
+      visible_columns: visibleColumns.value.map((c) => c.key).join(',')
     }
 
-    const response = await axios.get(
-      'http://localhost:8000/api/reports/employees/export',
-      {
-        headers: {
-          Authorization: `Bearer ${auth.token}`
-        },
-        params,
-        responseType: 'blob'
-      }
-    )
+    const response = await axios.get('http://localhost:8000/api/reports/employees/export', {
+      headers: {
+        Authorization: `Bearer ${auth.token}`
+      },
+      params,
+      responseType: 'blob'
+    })
 
     const blob = new Blob([response.data], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -285,23 +253,21 @@ async function exportExcel() {
     link.click()
     link.remove()
     window.URL.revokeObjectURL(url)
-
   } catch (error) {
     console.error('Export Excel failed:', error)
   }
 }
 
-
 /* ================= UI HELPERS ================= */
-const scoreClass = s => (s >= 85 ? 'score-high' : s >= 60 ? 'score-mid' : 'score-low')
-const slaClass = s => (s >= 90 ? 'sla-high' : s >= 60 ? 'sla-mid' : 'sla-low')
-const responseClass = r => (r <= 5 ? 'resp-fast' : r <= 30 ? 'resp-med' : 'resp-slow')
+const scoreClass = (s) => (s >= 85 ? 'score-high' : s >= 60 ? 'score-mid' : 'score-low')
+const slaClass = (s) => (s >= 90 ? 'sla-high' : s >= 60 ? 'sla-mid' : 'sla-low')
+const responseClass = (r) => (r <= 5 ? 'resp-fast' : r <= 30 ? 'resp-med' : 'resp-slow')
 
 onMounted(loadReport)
 </script>
 
-  <style scoped>
-  /* ======================================================
+<style scoped>
+/* ======================================================
    CONTAINER & LAYOUT
 ====================================================== */
 .table-container {
@@ -325,12 +291,6 @@ onMounted(loadReport)
   font-size: 26px;
   font-weight: 700;
   color: #2d2d2d;
-}
-
-.link-back {
-  color: var(--primary-color);
-  cursor: pointer;
-  font-weight: 600;
 }
 
 /* ======================================================
@@ -513,7 +473,6 @@ onMounted(loadReport)
   color: #e74c3c;
 }
 
-
 /* ======================================================
    EMPTY & LOADING STATES
 ====================================================== */
@@ -666,6 +625,4 @@ onMounted(loadReport)
     align-items: flex-start;
   }
 }
-
-
-  </style>
+</style>

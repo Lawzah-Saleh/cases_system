@@ -1,153 +1,101 @@
 <template>
-  <div class="client-report-page">
+  <div class="table-container">
     <!-- HEADER -->
     <div class="header-row">
-      <!-- LEFT: TITLE -->
-      <div class="title-container">
-        <h2 class="page-title">
-          <span class="link-back" @click="$router.back()">Reports</span> / Client Reports
-        </h2>
-      </div>
+      <h2 class="main-header">
+        <span class="link-back" @click="$router.back()">Reports</span> / Clients Report
+      </h2>
+    </div>
 
-      <!-- RIGHT: ACTIONS (button + filter) -->
-      <div class="actions-container">
-        <button class="btn btn-success" @click="downloadExcel">Download Excel</button>
+    <div class="filter-row">
+      <input
+        class="search-input"
+        v-model="search"
+        @input="onSearch"
+        placeholder="Search employee..."
+      />
+    </div>
+    <!-- FILTER BAR -->
+    <div class="report-header-row">
+      <button class="show-hide-btn" @click="showFilter = true">
+        Show/Hide Columns ({{ visibleCount }}/{{ columns.length }})
+      </button>
 
-        <div class="client-selector">
-          <label for="clientSelect">Client:</label>
-          <select id="clientSelect" v-model="selectedClientId" @change="onClientChange">
-            <option v-for="c in clients" :key="c.id" :value="c.id">
-              {{ c.client_name }} ({{ c.cases_count }} cases)
-            </option>
-          </select>
+      <button class="download-btn" @click="exportExcel">DOWNLOAD EXCEL</button>
+    </div>
+
+    <div v-if="showFilter" class="filter-overlay" @click.self="closeFilter">
+      <div class="filter-modal">
+        <div class="filter-header">
+          <h2>Show/Hide Columns</h2>
+          <button class="select-all-btn" @click="selectAllColumns">All</button>
+        </div>
+
+        <div class="filter-grid">
+          <div v-for="col in columns" :key="col.key" class="filter-item">
+            <input type="checkbox" v-model="col.visible" />
+            <label>{{ col.label }}</label>
+          </div>
+        </div>
+
+        <div class="filter-footer">
+          <button class="cancel-btn" @click="closeFilter">Cancel</button>
+          <button class="apply-btn" @click="applyColumnFilters">Apply</button>
         </div>
       </div>
     </div>
 
-    <!-- LOADING / ERROR -->
-    <div v-if="isLoading" class="center-msg">Loading report...</div>
-    <div v-else-if="!selectedClientId" class="center-msg">No client selected.</div>
+    <!-- TABLE -->
+    <table class="custom-table">
+      <thead>
+        <tr class="table-header-row">
+          <th v-if="isVisible('client_name')">Client</th>
+          <th v-if="isVisible('email')">Email</th>
+          <th v-if="isVisible('address')">Address</th>
+          <th v-if="isVisible('total_cases')">Total Cases</th>
+          <th v-if="isVisible('employees')">Employees</th>
+        </tr>
+      </thead>
 
-    <!-- CONTENT -->
-    <div v-else class="content-grid">
-      <!-- LEFT COLUMN -->
-      <div class="left-column">
-        <!-- Client Card -->
-        <div class="card">
-          <h3>Client Info</h3>
-          <p class="client-name">{{ client.client_name }}</p>
-          <p v-if="client.email">Email: {{ client.email }}</p>
-          <p v-if="client.address">Address: {{ client.address }}</p>
-        </div>
+      <tbody>
+        <tr v-if="loading" v-for="n in 5" :key="n">
+          <td colspan="14"><div class="skeleton-bar"></div></td>
+        </tr>
 
-        <!-- Stats Cards -->
-        <div class="stats-grid">
-          <div class="stat-card">
-            <p class="stat-label">Total Cases</p>
-            <p class="stat-value">{{ stats.total_cases }}</p>
-          </div>
-          <div class="stat-card">
-            <p class="stat-label">Opened</p>
-            <p class="stat-value">{{ stats.status.opened }}</p>
-          </div>
-          <div class="stat-card">
-            <p class="stat-label">In Progress</p>
-            <p class="stat-value">{{ stats.status.inprogress }}</p>
-          </div>
-          <div class="stat-card">
-            <p class="stat-label">assigned</p>
-            <p class="stat-value">{{ stats.status.assigned }}</p>
-          </div>
-          <div class="stat-card">
-            <p class="stat-label">re-assigned</p>
-            <p class="stat-value">{{ stats.status.reassigned }}</p>
-          </div>
-          <div class="stat-card">
-            <p class="stat-label">Closed</p>
-            <p class="stat-value">{{ stats.status.closed }}</p>
-          </div>
-        </div>
+        <tr v-else v-for="row in rows" :key="row.client_id" class="table-row-hover">
+          <td v-if="isVisible('client_name')">{{ row.client_name }}</td>
+          <td v-if="isVisible('email')">{{ row.email }}</td>
+          <td v-if="isVisible('address')">{{ row.address }}</td>
+          <td v-if="isVisible('total_cases')">{{ row.total_cases }}</td>
+          <td v-if="isVisible('employees')">{{ row.employees_count }}</td>
+        </tr>
 
-        <!-- Team -->
-        <div class="card">
-          <h3>Team Involved</h3>
-          <p v-if="team.length === 0" class="muted">No employees assigned yet.</p>
-          <ul v-else class="team-list">
-            <li v-for="e in team" :key="e.id">
-              <span class="team-name">{{ e.full_name }}</span>
-              <span class="team-meta" v-if="e.job_title"> · {{ e.job_title }}</span>
-              <span class="team-meta" v-if="e.email"> · {{ e.email }}</span>
-            </li>
-          </ul>
-        </div>
-      </div>
+        <tr v-if="!loading && rows.length === 0">
+          <td colspan="14" class="empty-msg">No results found.</td>
+        </tr>
+      </tbody>
+    </table>
 
-      <!-- RIGHT COLUMN -->
-      <div class="right-column">
-        <!-- Charts Row -->
-        <div class="charts-row">
-          <div class="card chart-card">
-            <h3>Cases by Status</h3>
-            <apexchart
-              v-if="statusChartSeries.length"
-              type="donut"
-              height="260"
-              :options="statusChartOptions"
-              :series="statusChartSeries"
-            />
-            <p v-else class="muted">No data.</p>
-          </div>
+    <!-- PAGINATION -->
+    <div class="pagination-container">
+      <p class="results-count">Page {{ currentPage }} of {{ lastPage }}</p>
 
-          <div class="card chart-card">
-            <h3>Cases by Priority</h3>
-            <apexchart
-              v-if="priorityChartSeries.length"
-              type="donut"
-              height="260"
-              :options="priorityChartOptions"
-              :series="priorityChartSeries"
-            />
-            <p v-else class="muted">No data.</p>
-          </div>
-        </div>
+      <div>
+        <button
+          class="page-btn"
+          @click="changePage(currentPage - 1)"
+          :disabled="currentPage === 1 || loading"
+        >
+          ‹ Prev
+        </button>
 
-        <!-- Latest Cases Table -->
-        <div class="card">
-          <div class="table-header">
-            <h3>Latest Cases ( 10 )</h3>
-          </div>
-
-          <table class="cases-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Title</th>
-                <th>Status</th>
-                <th>Priority</th>
-                <th>Created At</th>
-                <th>Team</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-if="latestCases.length === 0">
-                <td colspan="6" class="muted center-msg">No cases found for this client.</td>
-              </tr>
-              <tr v-for="c in latestCases" :key="c.id">
-                <td>{{ c.id }}</td>
-                <td>{{ c.title }}</td>
-                <td>{{ c.status }}</td>
-                <td>{{ c.priority || '—' }}</td>
-                <td>{{ c.created_at }}</td>
-                <td>
-                  <div v-if="c.employees.length">
-                    <div v-for="(e, idx) in c.employees" :key="idx">• {{ e }}</div>
-                  </div>
-                  <span v-else>—</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <button
+          class="page-btn"
+          @click="changePage(currentPage + 1)"
+          :disabled="currentPage === lastPage || loading"
+        >
+          Next ›
+        </button>
       </div>
     </div>
   </div>
@@ -157,370 +105,322 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
-import { toast } from 'vue3-toastify'
-
+import { computed } from 'vue'
 const auth = useAuthStore()
 
+const rows = ref([])
+const loading = ref(false)
+
+const search = ref('')
+const currentPage = ref(1)
+const lastPage = ref(1)
+const showFilter = ref(false)
+
+const columns = ref([
+  { key: 'client_name', label: 'Client', visible: true },
+  { key: 'email', label: 'Email', visible: true },
+  { key: 'address', label: 'Address', visible: true },
+  { key: 'total_cases', label: 'Total Cases', visible: true },
+  { key: 'employees', label: 'Employees', visible: true }
+])
+
+const isVisible = (key) => columns.value.find((c) => c.key === key)?.visible ?? false
+
+const visibleCount = computed(() => columns.value.filter((c) => c.visible).length)
+
+const selectAllColumns = () => columns.value.forEach((c) => (c.visible = true))
+
+const closeFilter = () => (showFilter.value = false)
+const applyColumnFilters = () => (showFilter.value = false)
+
 const clients = ref([])
-const selectedClientId = ref(null)
+const priorities = ref([])
+const employees = ref([])
 
-const isLoading = ref(false)
-
-const client = ref({})
-const stats = ref({
-  total_cases: 0,
-  status: {
-    opened: 0,
-    assigned: 0,
-    inprogress: 0,
-    reassigned: 0,
-    closed: 0
-  },
-  priority: {}
-})
-const latestCases = ref([])
-const team = ref([])
-
-// Charts
-const statusChartOptions = ref({})
-const statusChartSeries = ref([])
-
-const priorityChartOptions = ref({})
-const priorityChartSeries = ref([])
-
-async function downloadExcel() {
+/* ================= LOAD REPORT ================= */
+async function loadReport(page = 1) {
   try {
-    const res = await axios.get(
-      `http://localhost:8000/api/reports/clients/${selectedClientId.value}/export`,
-      {
-        headers: { Authorization: `Bearer ${auth.token}` },
-        responseType: 'blob'
+    loading.value = true
+    currentPage.value = page
+
+    const res = await axios.get('http://127.0.0.1:8000/api/report/clients', {
+      headers: {
+        Authorization: `Bearer ${auth.token}`
+      },
+      params: {
+        page,
+        search: search.value
       }
-    )
-
-    const url = window.URL.createObjectURL(new Blob([res.data]))
-    const link = document.createElement('a')
-    link.href = url
-    link.setAttribute('download', `client-report-${selectedClientId.value}.xlsx`)
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-  } catch (err) {
-    console.error(err)
-    toast.error('Failed to download Excel')
-  }
-}
-
-async function loadClients() {
-  try {
-    isLoading.value = true
-
-    const res = await axios.get('http://localhost:8000/api/reports/clients', {
-      headers: { Authorization: `Bearer ${auth.token}` }
     })
 
-    clients.value = res.data.data || []
-
-    if (clients.value.length > 0) {
-      selectedClientId.value = clients.value[0].id
-      await loadClientReport(selectedClientId.value)
-    }
-  } catch (err) {
-    console.error(err)
-    toast.error('Failed to load clients')
+    rows.value = res.data?.data ?? []
+    lastPage.value = res.data?.last_page ?? 1
   } finally {
-    isLoading.value = false
+    loading.value = false
   }
 }
+let searchTimeout = null
 
-async function loadClientReport(clientId) {
-  if (!clientId) return
-
-  try {
-    isLoading.value = true
-
-    const res = await axios.get(`http://localhost:8000/api/reports/clients/${clientId}`, {
-      headers: { Authorization: `Bearer ${auth.token}` }
-    })
-
-    client.value = res.data.client
-    stats.value = res.data.stats
-    latestCases.value = res.data.latest_cases || []
-    team.value = res.data.team || []
-
-    buildCharts()
-  } catch (err) {
-    console.error(err)
-    toast.error('Failed to load client report')
-  } finally {
-    isLoading.value = false
-  }
+function onSearch() {
+  clearTimeout(searchTimeout)
+  searchTimeout = setTimeout(() => {
+    loadReport(1)
+  }, 300)
 }
 
-function onClientChange() {
-  loadClientReport(selectedClientId.value)
+function changePage(page) {
+  if (page < 1 || page > lastPage.value) return
+  loadReport(page)
 }
 
-function buildCharts() {
-  // Status chart
-  const st = stats.value.status || {}
-  const statusLabels = []
-  const statusValues = []
+/* ================= EXPORT ================= */
+async function exportExcel() {
+  const visibleColumns = columns.value.filter((c) => c.visible).map((c) => c.key)
 
-  for (const [key, value] of Object.entries(st)) {
-    statusLabels.push(key)
-    statusValues.push(value)
-  }
+  const response = await axios.get('http://127.0.0.1:8000/api/report/clients/export', {
+    headers: { Authorization: `Bearer ${auth.token}` },
+    params: {
+      search: search.value,
+      columns: visibleColumns
+    },
+    responseType: 'blob'
+  })
 
-  statusChartOptions.value = {
-    labels: statusLabels,
-    legend: { position: 'bottom' }
-  }
-  statusChartSeries.value = statusValues
-
-  // Priority chart
-  const pr = stats.value.priority || {}
-  const priorityLabels = []
-  const priorityValues = []
-
-  for (const [key, value] of Object.entries(pr)) {
-    priorityLabels.push(key)
-    priorityValues.push(value)
-  }
-
-  priorityChartOptions.value = {
-    labels: priorityLabels,
-    legend: { position: 'bottom' }
-  }
-  priorityChartSeries.value = priorityValues
+  const url = window.URL.createObjectURL(new Blob([response.data]))
+  const link = document.createElement('a')
+  link.href = url
+  link.setAttribute('download', 'clients-report.xlsx')
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
 }
 
 onMounted(() => {
-  loadClients()
+  loadReport()
 })
 </script>
 
 <style scoped>
-.client-report-page {
+.filter-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: #f3f3f7;
+  padding: 14px 16px;
+  border-radius: 12px;
+  margin-bottom: 18px;
+}
+/* reuse SAME style language as cases report */
+.search-input {
+  padding: 10px;
+  border: 1px solid var(--table-border);
+  border-radius: var(--radius-md);
   background: #fff;
-  padding: 24px 28px;
-  border-radius: 16px;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+  width: 200px;
 }
 
-/* Header */
+.table-container {
+  background: #fff;
+  padding: 32px;
+  border-radius: 18px;
+  border: 1px solid #eee;
+  box-shadow: 0 4px 22px rgba(0, 0, 0, 0.06);
+}
+
 .header-row {
+  border-bottom: 2px solid #f0f0f0;
+  margin-bottom: 20px;
+}
+
+.main-header {
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.report-header-row {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 12px;
-}
-
-.page-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: #222;
-}
-
-.page-subtitle {
-  font-size: 14px;
-  color: #777;
-  margin-top: 4px;
-}
-
-.client-selector {
-  display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #444;
+  background: #f3f3f7;
+  padding: 14px 18px;
+  border-radius: 10px;
+  margin-bottom: 12px;
 }
 
-.client-selector label {
-  margin-bottom: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #444;
-}
-
-.client-selector select {
-  padding: 6px 10px;
+.search-input {
+  padding: 9px 14px;
   border-radius: 8px;
   border: 1px solid #ddd;
-  min-width: 220px;
+  width: 320px;
 }
 
-/* Content Grid */
-.content-grid {
-  display: grid;
-  grid-template-columns: 1.1fr 2fr;
-  gap: 20px;
-  margin-top: 10px;
-}
-
-.left-column,
-.right-column {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* Cards */
-.card {
-  background: #fafafa;
-  border-radius: 14px;
-  padding: 16px 18px;
-  border: 1px solid #eee;
-}
-
-.card h3 {
-  font-size: 16px;
-  font-weight: 700;
-  margin-bottom: 10px;
-}
-
-/* Client info */
-.client-name {
-  font-size: 17px;
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-
-/* Stats */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.stat-card {
-  background: #fff;
-  border-radius: 10px;
-  padding: 10px 12px;
-  border: 1px solid #e5e5e5;
-}
-
-.stat-label {
-  font-size: 13px;
-  color: #777;
-}
-
-.stat-value {
-  font-size: 18px;
-  font-weight: 700;
-  margin-top: 2px;
-}
-
-/* Charts */
-.charts-row {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.chart-card {
-  min-height: 320px;
-}
-
-/* Team list */
-.team-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.team-list li {
-  font-size: 14px;
-  margin-bottom: 4px;
-}
-
-.team-name {
+.download-btn {
+  background: var(--primary-color);
+  color: #fff;
+  padding: 10px 22px;
+  border-radius: 8px;
+  border: none;
   font-weight: 600;
+  cursor: pointer;
 }
 
-.team-meta {
-  font-size: 12px;
-  color: #777;
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-/* Table */
-.table-header {
+.table-header-row th {
+  background: #fafafa;
+  padding: 14px;
+  font-weight: 700;
+}
+
+.custom-table td {
+  padding: 14px;
+  border-bottom: 1px solid #eee;
+}
+
+.table-row-hover:hover {
+  background: #f9f9f9;
+}
+
+.empty-msg {
+  text-align: center;
+  padding: 25px;
+  color: #999;
+}
+
+.pagination-container {
+  margin-top: 22px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.page-btn {
+  padding: 7px 22px;
+  border-radius: 7px;
+  border: 1px solid #d0d0d0;
+  background: #fff;
+}
+
+.skeleton-bar {
+  height: 14px;
+  background: #ececec;
+  border-radius: 6px;
+  animation: pulse 1.4s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.1;
+  }
+  100% {
+    opacity: 0.5;
+  }
+}
+
+.show-hide-btn {
+  background: transparent;
+  border: none;
+  color: #2d2d5f;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.show-hide-btn:hover {
+  opacity: 0.8;
+}
+
+/* MODAL - SHOW/HIDE COLUMNS */
+.filter-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.filter-modal {
+  width: 650px;
+  max-width: 90%;
+  background: #fff;
+  padding: 35px 40px;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.filter-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 22px;
 }
 
-.cases-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-.cases-table th,
-.cases-table td {
-  padding: 8px 10px;
-  border-bottom: 1px solid #eee;
-}
-
-.cases-table th {
-  background: #f3f3f7;
+.filter-header h2 {
+  font-size: 20px;
   font-weight: 700;
-  text-align: left;
+  color: #333;
 }
 
-/* Helpers */
-.center-msg {
-  text-align: center;
-  padding: 18px;
-  font-size: 14px;
+.select-all-btn {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
 }
 
-.error-msg {
-  color: #b3261e;
-  background: #fdecea;
-  border-radius: 10px;
-  padding: 10px 12px;
+.filter-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px 40px;
+  margin-bottom: 30px;
 }
 
-.muted {
-  color: #888;
-  font-size: 13px;
-}
-
-/*** INPUTS ***/
-
-.input:focus {
-  border-color: #5c4dff;
-  background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(92, 77, 255, 0.18);
-  outline: none;
-}
-
-.header-row {
-  display: flex;
-  justify-content: space-between; /* LEFT vs RIGHT */
-  align-items: center;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 12px;
-}
-
-/* Container for the right side items */
-.actions-container {
+.filter-item {
   display: flex;
   align-items: center;
-  gap: 15px; /* space between button and select */
+  gap: 10px;
+  font-size: 16px;
 }
 
-/* Make selector look aligned */
-.client-selector {
+.filter-footer {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  justify-content: flex-end;
+  gap: 14px;
+}
+
+.apply-btn,
+.cancel-btn {
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 15px;
+  border: none;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background: #e7e7e7;
+  color: #333;
+}
+.cancel-btn:hover {
+  background: #dcdcdc;
+}
+
+.apply-btn {
+  background: var(--primary-color);
+  color: #fff;
+  font-weight: 600;
+}
+.apply-btn:hover {
+  opacity: 0.85;
 }
 </style>

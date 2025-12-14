@@ -75,22 +75,21 @@ const routes = [
         component: PersonalAccountView
       },
       {
-      path: 'statistics',
-        component: () => import('@/views/statistics/StatisticsView.vue'),
+        path: 'statistics',
+        component: () => import('@/views/StatisticsView.vue')
       },
       {
         path: 'statistics/cases',
-        component: () => import('@/views/statistics/CasesStatisticsView.vue'),
+        component: () => import('@/views/statistics/CasesStatisticsView.vue')
       },
       {
         path: 'statistics/employees',
-        component: () => import('@/views/statistics/EmployeesStatisticsView.vue'),
+        component: () => import('@/views/statistics/EmployeesStatisticsView.vue')
       },
       {
         path: 'statistics/clients',
-        component: () => import('@/views/statistics/ClientsStatisticsView.vue'),
-      },
-
+        component: () => import('@/views/statistics/ClientsStatisticsView.vue')
+      }
     ]
   }
 

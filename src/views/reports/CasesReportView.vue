@@ -269,10 +269,6 @@ const clients = ref([])
 const priorities = ref([])
 const employees = ref([])
 
-// import { shallowRef } from 'vue'
-// const clients = shallowRef([])
-// const priorities = shallowRef([])
-
 async function loadFilterData() {
   const token = useAuthStore().token
 
