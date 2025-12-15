@@ -7,6 +7,7 @@
     </div>
 
     <div class="actions">
+      <!-- SEARCH -->
       <div class="search-box">
         <input
           type="text"
@@ -15,10 +16,8 @@
           @input="onSearchInput"
           @keydown="handleKey"
         />
-
         <i class="bi bi-search search-icon"></i>
 
-        <!-- DROPDOWN -->
         <ul v-if="showDropdown" class="search-dropdown">
           <li
             v-for="(item, index) in filteredSuggestions"
@@ -31,14 +30,34 @@
         </ul>
       </div>
 
-      <button class="icon-btn notification-btn">
-        <i class="bi bi-bell"></i>
-        <span class="badge">3</span>
-      </button>
+      <!-- 🔔 NOTIFICATIONS -->
+      <div v-if="auth.can('receive_notification')" class="notification-wrapper">
+        <button class="icon-btn notification-btn" @click="toggleNotifications">
+          <i class="bi bi-bell"></i>
+          <span v-if="notifications.unreadCount > 0" class="badge">
+            {{ notifications.unreadCount }}
+          </span>
+        </button>
 
+        <div v-if="showNotifications" class="notification-dropdown">
+          <div v-if="notifications.notifications.length === 0" class="empty">No notifications</div>
+
+          <ul v-else>
+            <li
+              v-for="n in notifications.notifications"
+              :key="n.id"
+              :class="{ unread: !n.read_at }"
+              @click="markSingleAsRead(n)"
+            >
+              {{ n.data.message }}
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- PROFILE -->
       <div class="profile" @click="toggleMenu">
         <i class="bi bi-person-circle avatar-icon"></i>
-
         <div class="profile-info">
           <span class="username">{{ auth.user?.username || 'User' }}</span>
         </div>
@@ -52,45 +71,66 @@
 </template>
 
 <script setup>
-const emit = defineEmits(['toggle'])
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { searchRoutes } from '@/router/searchMap'
 import { useAuthStore } from '@/stores/auth'
+import { useNotificationStore } from '@/stores/notification'
 import axios from '../api/axiosClient'
+
 const auth = useAuthStore()
+const notifications = useNotificationStore()
 const router = useRouter()
 
+/* SEARCH */
 const search = ref('')
 const showDropdown = ref(false)
 const focusedIndex = ref(0)
+
+/* PROFILE */
 const menuOpen = ref(false)
 
+/* NOTIFICATIONS */
+const showNotifications = ref(false)
+
+/* FETCH ON LOAD */
+onMounted(() => {
+  if (auth.can('receive_notification')) {
+    notifications.fetchNotifications()
+  }
+})
+
+/* 🔔 CLICK BELL = OPEN + MARK ALL AS READ */
+async function toggleNotifications() {
+  showNotifications.value = !showNotifications.value
+
+  if (showNotifications.value) {
+    await notifications.fetchNotifications()
+    await notifications.markAllAsRead()
+  }
+}
+
+/* CLICK SINGLE NOTIFICATION = MARK AS READ ONLY */
+async function markSingleAsRead(n) {
+  if (!n.read_at) {
+    await notifications.markAsRead(n.id)
+  }
+}
+
+/* PROFILE MENU */
 function toggleMenu() {
   menuOpen.value = !menuOpen.value
 }
 
 async function logout() {
-  try {
-    await axios.post(
-      '/logout',
-      {},
-      {
-        headers: { Authorization: `Bearer ${auth.token}` }
-      }
-    )
-
-    auth.logout()
-    router.push('/login')
-  } catch (err) {
-    console.error(err)
-  }
+  await axios.post('/logout', {}, { headers: { Authorization: `Bearer ${auth.token}` } })
+  auth.logout()
+  router.push('/login')
 }
 
-// AUTO-COMPLETE FILTER
+/* SEARCH LOGIC */
 const filteredSuggestions = computed(() => {
   const term = search.value.toLowerCase()
-
   if (term.length < 2) {
     showDropdown.value = false
     return []
@@ -104,27 +144,22 @@ const filteredSuggestions = computed(() => {
   return matches
 })
 
-// HIGHLIGHT
 function highlight(text, term) {
   if (!term) return text
-  const regex = new RegExp(`(${term})`, 'gi')
-  return text.replace(regex, '<strong>$1</strong>')
+  return text.replace(new RegExp(`(${term})`, 'gi'), '<strong>$1</strong>')
 }
 
-// SELECT BY CLICK / ENTER
 function selectSuggestion(item) {
   search.value = ''
   showDropdown.value = false
   router.push(item.route)
 }
 
-// ON TYPE
 function onSearchInput() {
   showDropdown.value = search.value.length >= 2
   focusedIndex.value = 0
 }
 
-// KEYBOARD NAVIGATION
 function handleKey(e) {
   if (!showDropdown.value || filteredSuggestions.value.length === 0) return
 
@@ -351,5 +386,50 @@ strong {
   .username {
     display: inline;
   }
+}
+
+.notification-wrapper {
+  position: relative;
+}
+
+.notification-dropdown {
+  position: absolute;
+  right: 0;
+  top: 40px;
+  width: 280px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.15);
+  z-index: 3000;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.notification-dropdown ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.notification-dropdown li {
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.notification-dropdown li.unread {
+  background: #f3f6ff;
+  font-weight: 600;
+}
+
+.notification-dropdown li:hover {
+  background: #eef2ff;
+}
+
+.notification-dropdown .empty {
+  padding: 14px;
+  text-align: center;
+  color: #888;
 }
 </style>
