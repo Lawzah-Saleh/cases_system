@@ -14,7 +14,7 @@ export function useCasesByPriorityChart(data) {
       },
       labels: data.map((r) => r.priority),
       legend: { position: 'bottom' },
-      colors: ['#7C3AED', '#F59E0B', '#10B981', '#60A5FA', '#8E44AD', '#E74C3C']
+      colors: ['#1e7a3b', '#b3261e', '#b45b00', '#364fc7', '#006395', '#E74C3C']
     },
 
     series: data.map((r) => r.total)

@@ -195,7 +195,7 @@ function removeTag(key) {
   <style scoped>
   .filter-wrapper {
     background: #ffffff;
-    padding: 30px;
+    padding: 10px;
     border-radius: 16px;
     box-shadow: 0px 2px 18px rgba(0,0,0,0.05);
     margin-bottom: 25px;
@@ -263,20 +263,42 @@ function removeTag(key) {
   }
 
   .btn-apply {
-    background: var(--primary-color);
-    color: white;
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--primary-hover)
+  );
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  color: white;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
   }
 
   .btn-apply:hover {
-    background: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.16);
+  opacity: 0.9;
   }
   
   .btn-reset {
     background: #eee;
     color: #333;
+      border-radius: 8px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
   }
 
   .btn-reset:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.16);
+  opacity: 0.9;
     background: #d6d6d6;
   }
 

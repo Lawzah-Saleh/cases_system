@@ -1,6 +1,5 @@
 <template>
   <div class="table-container">
-    <!-- ===== PAGE HEADER ===== -->
     <div class="header-row">
       <div class="header-title-container">
         <h2 class="main-header">Users</h2>
@@ -278,30 +277,6 @@ export default {
 }
 </script>
 <style scoped>
-.header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 25px;
-}
-
-.header-title-container {
-  display: flex;
-  flex-direction: column;
-}
-
-.main-header {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--primary-color);
-}
-
-.sub-header {
-  font-size: 13px;
-  color: #777;
-  margin-top: 4px;
-}
-
 .filters-wrapper {
   display: flex;
   align-items: center;
@@ -397,24 +372,6 @@ export default {
   animation: pulse 1.5s infinite ease-in-out;
 }
 
-/* PAGINATION */
-.pagination-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.page-btn {
-  padding: 5px 20px;
-  border-radius: 6px;
-  border: 1px solid gray;
-  background: white;
-  cursor: pointer;
-}
-
-.page-btn:disabled {
-  opacity: 0.5;
-}
 @keyframes pulse {
   0% {
     opacity: 0.6;

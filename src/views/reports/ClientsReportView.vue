@@ -219,23 +219,6 @@ onMounted(() => {
   width: 200px;
 }
 
-.table-container {
-  background: #fff;
-  padding: 32px;
-  border-radius: 18px;
-  border: 1px solid #eee;
-  box-shadow: 0 4px 22px rgba(0, 0, 0, 0.06);
-}
-
-.header-row {
-  border-bottom: 2px solid #f0f0f0;
-  margin-bottom: 20px;
-}
-
-.main-header {
-  font-size: 26px;
-  font-weight: 700;
-}
 
 .report-header-row {
   display: flex;
@@ -252,16 +235,6 @@ onMounted(() => {
   border-radius: 8px;
   border: 1px solid #ddd;
   width: 320px;
-}
-
-.download-btn {
-  background: var(--primary-color);
-  color: #fff;
-  padding: 10px 22px;
-  border-radius: 8px;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
 }
 
 .custom-table {
@@ -322,105 +295,4 @@ onMounted(() => {
   }
 }
 
-.show-hide-btn {
-  background: transparent;
-  border: none;
-  color: #2d2d5f;
-  font-size: 15px;
-  font-weight: 600;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.show-hide-btn:hover {
-  opacity: 0.8;
-}
-
-/* MODAL - SHOW/HIDE COLUMNS */
-.filter-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-}
-
-.filter-modal {
-  width: 650px;
-  max-width: 90%;
-  background: #fff;
-  padding: 35px 40px;
-  border-radius: 16px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-}
-
-.filter-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 22px;
-}
-
-.filter-header h2 {
-  font-size: 20px;
-  font-weight: 700;
-  color: #333;
-}
-
-.select-all-btn {
-  background: none;
-  border: none;
-  color: var(--primary-color);
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 15px;
-}
-
-.filter-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px 40px;
-  margin-bottom: 30px;
-}
-
-.filter-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 16px;
-}
-
-.filter-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 14px;
-}
-
-.apply-btn,
-.cancel-btn {
-  padding: 10px 24px;
-  border-radius: 8px;
-  font-size: 15px;
-  border: none;
-  cursor: pointer;
-}
-
-.cancel-btn {
-  background: #e7e7e7;
-  color: #333;
-}
-.cancel-btn:hover {
-  background: #dcdcdc;
-}
-
-.apply-btn {
-  background: var(--primary-color);
-  color: #fff;
-  font-weight: 600;
-}
-.apply-btn:hover {
-  opacity: 0.85;
-}
 </style>

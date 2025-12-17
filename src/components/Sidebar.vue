@@ -86,19 +86,11 @@ onBeforeUnmount(() => window.removeEventListener('resize', handleResize))
 </script>
 
 <style scoped>
-:root {
-  --sidebar-width: 250px;
-  --sidebar-bg: #190f4a;
-  --sidebar-text: #fff;
-  --sidebar-hover: #3a3a5a;
-  --appbar-height: 60px;
-}
 
-/* Sidebar */
 .sidebar {
   width: var(--sidebar-width);
-  background: var(--sidebar-bg);
-  color: var(--sidebar-text);
+ background: var(--primary-color);  
+ color: var(--sidebar-text);
   position: fixed;
   left: 0;
   top: 0;
@@ -108,8 +100,7 @@ onBeforeUnmount(() => window.removeEventListener('resize', handleResize))
     width 0.3s ease-in-out;
   z-index: 2000;
   overflow-y: auto;
-  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.2);
-  font-family: 'Segoe UI', sans-serif;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.12);
 }
 
 /* Mobile hidden by default */
@@ -132,13 +123,13 @@ onBeforeUnmount(() => window.removeEventListener('resize', handleResize))
 
 /* Logo */
 .sidebar-header {
-  padding: 0px;
+  padding: 18px 12px;
   text-align: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .logo {
-  max-width: 300px;
+  max-width: 200px;
   height: auto;
   display: block;
   margin: 0 auto;
@@ -152,33 +143,47 @@ onBeforeUnmount(() => window.removeEventListener('resize', handleResize))
 }
 
 .sidebar-menu li {
-  margin: 5px 0;
+  margin: 2px 0;
 }
 
 .sidebar-menu li a {
   display: flex;
   align-items: center;
   gap: 15px;
-  padding: 12px 20px;
+  padding: 14px 20px;
   color: var(--sidebar-text);
   text-decoration: none;
-  font-size: 20px;
-  font-weight: 700;
-  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 500;  border-radius: 8px;
   transition: all 0.2s ease-in-out;
+    position: relative;
+
+}
+.sidebar-menu li a.router-link-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--brand-accent);
+  border-radius: 0 4px 4px 0;
 }
 
-.sidebar-menu li a:hover,
 .sidebar-menu li a.router-link-active {
   background: var(--sidebar-hover);
+  font-weight: 600;
 }
+
+.sidebar-menu li a:hover {
+  background: rgba(255,255,255,0.06);
+}
+
 
 .sidebar-menu i {
-  font-size: 20px;
-  font-weight: bold;
+  font-size: 18px;
+  opacity: 0.85;
 }
 
-/* Hide menu text on mobile when collapsed (optional) */
 @media (max-width: 768px) {
   .menu-text {
     display: inline;
@@ -199,7 +204,6 @@ onBeforeUnmount(() => window.removeEventListener('resize', handleResize))
   }
 }
 
-/* Scrollbar for long menu */
 .sidebar::-webkit-scrollbar {
   width: 6px;
 }

@@ -304,23 +304,6 @@ export default {
 </script>
 
 <style scoped>
-.filter-button {
-  padding-bottom: 20px;
-  cursor: pointer;
-  color: var(--primary-color);
-  border: none;
-  background-color: transparent;
-  text-decoration: underline;
-  font-size: 18px;
-}
-.filter-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  column-gap: 40px;
-  row-gap: 20px;
-  margin-bottom: 30px;
-}
-
 .filter-dropdown {
   position: fixed;
   top: 50%;
@@ -332,14 +315,6 @@ export default {
   border-radius: 8px;
   width: 600px;
   z-index: 2000;
-}
-
-.filter-item {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  margin-bottom: 20px;
-  font-size: 18px;
 }
 
 .model {
@@ -412,31 +387,6 @@ export default {
   border-radius: 50%;
 }
 
-.pagination-container {
-  display: flex;
-  justify-content: space-between; /* push items to edges */
-  align-items: center; /* vertically center them */
-  margin-top: 1rem;
-}
-
-.page-btn {
-  padding: 5px 20px;
-  border-radius: 6px;
-  border-color: gray;
-  background-color: white;
-  cursor: pointer;
-  margin-left: 5px;
-}
-
-.page-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.text-result {
-  font-weight: bold;
-}
-
 .filters-wrapper {
   display: flex;
   align-items: center;
@@ -450,84 +400,5 @@ export default {
   border-radius: var(--radius-md);
   background: #fff;
   width: 200px;
-}
-
-.filter-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 35px;
-}
-
-.filter-header h2 {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--primary-color);
-}
-
-.select-all-btn {
-  font-size: 20px;
-  background: none;
-  border: none;
-  color: var(--primary-color);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.filter-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  row-gap: 24px;
-  column-gap: 60px;
-  margin-bottom: 40px;
-}
-
-.filter-item {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  font-size: 18px;
-}
-
-.filter-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 15px;
-}
-
-.cancel-btn {
-  background: #e5e5e5;
-  padding: 12px 32px;
-  border-radius: 8px;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-}
-.apply-btn {
-  background: var(--primary-color);
-  color: white;
-  padding: 12px 32px;
-  border-radius: 8px;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.filter-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-}
-
-.filter-modal {
-  width: 750px;
-  background: white;
-  border-radius: 16px;
-  padding: 40px 50px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
 }
 </style>

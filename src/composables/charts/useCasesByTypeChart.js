@@ -14,7 +14,7 @@ export function useCasesByTypeChart(data) {
       },
       labels: data.map((r) => r.type),
       legend: { position: 'bottom' },
-      colors: ['#7C3AED', '#F59E0B', '#10B981', '#60A5FA', '#8E44AD', '#E74C3C']
+      colors: ['#7C3AED', '#F59E0B', '#10B981', '#60A5FA', '#04d3bb', '#E74C3C']
     },
 
     series: data.map((r) => r.total)

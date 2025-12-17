@@ -314,31 +314,6 @@ export default {
   border-radius: 50%;
 }
 
-.pagination-container {
-  display: flex;
-  justify-content: space-between; /* push items to edges */
-  align-items: center; /* vertically center them */
-  margin-top: 1rem;
-}
-
-.page-btn {
-  padding: 5px 20px;
-  border-radius: 6px;
-  border-color: gray;
-  background-color: white;
-  cursor: pointer;
-  margin-left: 5px;
-}
-
-.page-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.text-result {
-  font-weight: bold;
-}
-
 .filters-wrapper {
   display: flex;
   align-items: center;

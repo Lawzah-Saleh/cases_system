@@ -115,9 +115,9 @@
     <!-- ===== PAGINATION ===== -->
     <div class="pagination-container mt-4 flex items-center justify-between">
       <p class="results-count">
-        {{ total }} results
-        <span v-if="lastPage > 1"> — Page {{ currentPage }} of {{ lastPage }} </span>
-      </p>
+  Showing {{ employees.length }} of {{ total }} employees
+</p>
+
 
       <div>
         <button
@@ -339,23 +339,6 @@ export default {
 }
 </script>
 <style scoped>
-.header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 25px;
-}
-
-.main-header {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--primary-color);
-}
-
-.sub-header {
-  font-size: 13px;
-  color: #777;
-}
 
 .filters-wrapper {
   display: flex;
@@ -371,96 +354,6 @@ export default {
   border-radius: var(--radius-md);
   background: #fff;
   width: 200px;
-}
-
-.filter-button {
-  padding: 6px 0;
-  cursor: pointer;
-  color: var(--primary-color);
-  border: none;
-  background: transparent;
-  text-decoration: underline;
-  font-size: 16px;
-  margin-bottom: 20px;
-}
-
-.filter-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-}
-
-.filter-modal {
-  width: 750px;
-  background: white;
-  border-radius: 16px;
-  padding: 40px 50px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-}
-
-.filter-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 35px;
-}
-
-.filter-header h2 {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--primary-color);
-}
-
-.select-all-btn {
-  font-size: 20px;
-  background: none;
-  border: none;
-  color: var(--primary-color);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.filter-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  row-gap: 24px;
-  column-gap: 60px;
-  margin-bottom: 40px;
-}
-
-.filter-item {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  font-size: 18px;
-}
-
-.filter-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 15px;
-}
-
-.cancel-btn {
-  background: #e5e5e5;
-  padding: 12px 32px;
-  border-radius: 8px;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-}
-.apply-btn {
-  background: var(--primary-color);
-  color: white;
-  padding: 12px 32px;
-  border-radius: 8px;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
 }
 
 .custom-table {
@@ -525,24 +418,6 @@ export default {
   background: #f4f4f4;
 }
 
-/* PAGINATION */
-.pagination-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.page-btn {
-  padding: 5px 20px;
-  border-radius: 6px;
-  border: 1px solid gray;
-  background: white;
-  cursor: pointer;
-}
-
-.page-btn:disabled {
-  opacity: 0.5;
-}
 
 /* SKELETON */
 .skeleton-bar {

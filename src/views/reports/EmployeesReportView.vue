@@ -15,7 +15,24 @@
         <option value="week">This Week</option>
         <option value="month">This Month</option>
         <option value="year">This Year</option>
+        <option value="custom">Custom Range</option>
+
       </select>
+    <template v-if="filters.range === 'custom'">
+      <input
+        type="date"
+        v-model="filters.from_date"
+        placeholder="From date"
+      />
+
+      <input
+        type="date"
+        v-model="filters.to_date"
+        placeholder="To date"
+      />
+      
+    </template>
+
 
       <input v-model="filters.employee" placeholder="Search employee..." />
 
@@ -24,6 +41,15 @@
         <option value="met">SLA Met</option>
         <option value="breached">SLA Breached</option>
       </select>
+      <button
+        v-if="filters.range === 'custom'"
+        class="apply-btn"
+        @click="applyCustomRange"
+        :disabled="!filters.from_date || !filters.to_date"
+      >
+        Apply
+      </button>
+
 
       <button class="reset-btn" @click="resetFilters">Reset</button>
     </div>
@@ -34,7 +60,7 @@
         Show / Hide Columns ({{ visibleColumns.length }}/{{ columns.length }})
       </button>
 
-      <button class="download-btn" @click="exportExcel" :disabled="loading">DOWNLOAD EXCEL</button>
+      <button class="download-btn" @click="exportExcel" :disabled="loading || !employees.length">DOWNLOAD EXCEL</button>
     </div>
 
     <!-- ================= SHOW / HIDE MODAL ================= -->
@@ -80,6 +106,7 @@
 
         <tbody>
           <tr v-for="emp in sortedEmployees" :key="emp.id">
+            <td v-if="isVisible('id')">{{ emp.id }}</td> <!-- ✅ جديد -->
             <td v-if="isVisible('name')">{{ emp.name }}</td>
             <td v-if="isVisible('total_cases')">{{ emp.total_cases }}</td>
             <td v-if="isVisible('closed_cases')">{{ emp.closed_cases }}</td>
@@ -118,8 +145,11 @@
     <div v-if="loading" class="loading-indicator">Loading data...</div>
 
     <!-- ================= PAGINATION ================= -->
-    <div class="pagination-container" v-if="lastPage > 1">
-      <p class="results-count">{{ total }} results</p>
+    <div class="pagination-container">
+      
+    <p class="results-count">
+      Showing {{ employees.length }} of {{ total }} employees
+    </p>
       <div>
         <button class="page-btn" @click="changePage(currentPage - 1)" :disabled="currentPage === 1">
           &lt; Prev
@@ -151,6 +181,8 @@ const total = ref(0)
 
 const filters = reactive({
   range: 'month',
+  from_date: '',
+  to_date: '',
   employee: '',
   sla: ''
 })
@@ -159,6 +191,7 @@ const filters = reactive({
 const showColumnsModal = ref(false)
 
 const columns = ref([
+  { key: 'id', label: 'ID', visible: true, sortable: true },
   { key: 'name', label: 'Employee', visible: true, sortable: true },
   { key: 'total_cases', label: 'Total Cases', visible: true, sortable: true },
   { key: 'closed_cases', label: 'Closed Cases', visible: true, sortable: true },
@@ -212,12 +245,32 @@ async function loadReport(page = 1) {
   loading.value = false
 }
 
-watch(filters, () => loadReport(1), { deep: true })
+watch(
+  () => [filters.range, filters.employee, filters.sla],
+  () => loadReport(1)
+)
+/* ================= DATE LOGIC ================= */
+watch(
+  () => filters.range,
+  (val) => {
+    if (val !== 'custom') {
+      filters.from_date = ''
+      filters.to_date = ''
+    }
+  }
+)
+
 
 function resetFilters() {
   filters.range = 'month'
+  filters.from_date = ''
+  filters.to_date = ''
   filters.employee = ''
   filters.sla = ''
+}
+function applyCustomRange() {
+  if (!filters.from_date || !filters.to_date) return
+  loadReport(1)
 }
 
 function changePage(p) {
@@ -267,31 +320,7 @@ onMounted(loadReport)
 </script>
 
 <style scoped>
-/* ======================================================
-   CONTAINER & LAYOUT
-====================================================== */
-.table-container {
-  background: #fff;
-  padding: 32px;
-  border-radius: 18px;
-  border: 1px solid #eee;
-  box-shadow: 0 4px 22px rgba(0, 0, 0, 0.06);
-}
 
-/* ======================================================
-   HEADER
-====================================================== */
-.header-row {
-  border-bottom: 2px solid #f0f0f0;
-  margin-bottom: 18px;
-  padding-bottom: 10px;
-}
-
-.main-header {
-  font-size: 26px;
-  font-weight: 700;
-  color: #2d2d2d;
-}
 
 /* ======================================================
    FILTER BAR
@@ -342,27 +371,6 @@ onMounted(loadReport)
   margin-bottom: 14px;
 }
 
-.show-hide-btn {
-  background: none;
-  border: none;
-  font-size: 15px;
-  font-weight: 600;
-  color: #2d2d5f;
-  cursor: pointer;
-  text-decoration: underline;
-}
-
-.download-btn {
-  background: var(--primary-color);
-  color: #fff;
-  padding: 10px 22px;
-  border-radius: 9px;
-  border: none;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.2s ease;
-}
 
 .download-btn:hover {
   opacity: 0.9;
@@ -482,128 +490,6 @@ onMounted(loadReport)
   padding: 28px;
   font-size: 15px;
   color: #888;
-}
-
-/* ======================================================
-   PAGINATION
-====================================================== */
-.pagination-container {
-  margin-top: 26px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.results-count {
-  font-size: 14px;
-  color: #666;
-}
-
-.page-btn {
-  padding: 8px 22px;
-  border-radius: 8px;
-  border: 1px solid #d0d0d0;
-  background: #fff;
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-
-.page-btn:hover {
-  background: #f5f5f5;
-}
-
-.page-btn:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-/* ======================================================
-   SHOW / HIDE COLUMNS MODAL
-====================================================== */
-.columns-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 3000;
-}
-
-.columns-modal {
-  width: 520px;
-  max-width: 92%;
-  background: #fff;
-  border-radius: 16px;
-  padding: 28px 32px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-}
-
-.columns-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 22px;
-}
-
-.columns-header h2 {
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.columns-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px 26px;
-  margin-bottom: 26px;
-}
-
-.column-item {
-  font-size: 15px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.columns-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 14px;
-}
-
-.select-all-btn {
-  background: none;
-  border: none;
-  font-weight: 600;
-  color: var(--primary-color);
-  cursor: pointer;
-}
-
-.cancel-btn {
-  background: #e7e7e7;
-  color: #333;
-  padding: 9px 22px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-}
-
-.cancel-btn:hover {
-  background: #dcdcdc;
-}
-
-.apply-btn {
-  background: var(--primary-color);
-  color: #fff;
-  padding: 9px 24px;
-  border-radius: 8px;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.apply-btn:hover {
-  opacity: 0.9;
 }
 
 /* ======================================================

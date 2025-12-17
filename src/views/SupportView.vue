@@ -3,29 +3,30 @@
     <div class="header-row">
       <div class="header-title-container">
         <h2 class="main-header">Support Cases</h2>
-        <p class="sub-header">Detailed overview and management of all customer support cases.</p>
+        <p class="sub-header">Detailed overview and management of all system cases.</p>
+
       </div>
         <button v-if="can('cases.create')" class="add-button" @click="openCreate = true">
           + Create Support
         </button>
       </div>
-<SupportFilters 
-    :clients="clients" 
-    :priorities="priorities" 
-    :employees="employees"
-    @applyFilters="handleFilters"
-/>
-<div class="case-tabs">
-  <button v-if="can('cases.view_all')" :class="['case-tab', activeTab === 'all' ? 'active' : '']"  @click="changeTab('all')">
-    All Cases
-  </button>
-  <button v-if="can('cases.view_assigned')" :class="['case-tab', activeTab === 'mine' ? 'active' : '']" @click="changeTab('mine')" >
-    My Cases
-  </button>
-  <button v-if="can('cases.view_unassigned')" :class="['case-tab', activeTab === 'unassigned' ? 'active' : '']" @click="changeTab('unassigned')">
-    Unassigned
-  </button>
-</div>
+    <SupportFilters 
+        :clients="clients" 
+        :priorities="priorities" 
+        :employees="employees"
+        @applyFilters="handleFilters"
+    />
+    <div class="case-tabs">
+      <button v-if="can('cases.view_all')" :class="['case-tab', activeTab === 'all' ? 'active' : '']"  @click="changeTab('all')">
+        All Cases
+      </button>
+      <button v-if="can('cases.view_assigned')" :class="['case-tab', activeTab === 'mine' ? 'active' : '']" @click="changeTab('mine')" >
+        My Cases
+      </button>
+      <button v-if="can('cases.view_unassigned')" :class="['case-tab', activeTab === 'unassigned' ? 'active' : '']" @click="changeTab('unassigned')">
+        Unassigned
+      </button>
+    </div>
     <!-- ===================== SHOW / HIDE COLUMNS BUTTON ===================== -->
     <button class="filter-button" @click="showFilter = true">Show / Hide Columns</button>
 
@@ -128,7 +129,9 @@
     </table>
     <!-- ===== PAGINATION ===== -->
     <div class="pagination-container mt-4">
-      <p class="results-count">{{ cases.length }} results</p>
+      <p class="results-count">
+        Showing {{ cases.length }} of {{ total }} cases
+      </p>
       <div>
         <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1 || isLoading" class="page-btn">
           &lt; Prev
@@ -504,282 +507,6 @@ async function removeEmployee(c, employeeId) {
 </script>
 
 <style scoped>
-/* CONTAINER */
-.table-container {
-  background: #ffffff;
-  padding: 24px 26px;
-  border-radius: 20px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.04);
-}
-
-/* HEADER */
-.header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 18px;
-}
-
-.main-header {
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--primary-color);
-}
-
-.sub-header {
-  font-size: 16px;
-  color: #777;
-}
-
-.add-button {
-  background: var(--primary-color);
-  color: #fff;
-  border: none;
-  padding: 10px 20px;
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-/* SHOW/HIDE COLUMNS BUTTON */
-.filter-button {
-  padding: 6px 0;
-  cursor: pointer;
-  color: var(--primary-color);
-  border: none;
-  background: transparent;
-  text-decoration: underline;
-  font-size: 18px;
-  margin-bottom: 15px;
-}
-
-/* MODAL */
-.filter-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 2000;
-}
-
-.filter-modal {
-  width: 750px;
-  max-width: 95%;
-  background: white;
-  border-radius: 16px;
-  padding: 32px 40px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-}
-
-.filter-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.filter-header h2 {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--primary-color);
-}
-
-.select-all-btn {
-  font-size: 18px;
-  background: none;
-  border: none;
-  color: var(--primary-color);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.filter-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  row-gap: 18px;
-  column-gap: 40px;
-  margin-bottom: 30px;
-}
-
-.filter-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 16px;
-}
-
-.filter-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-}
-
-.cancel-btn {
-  background: #e5e5e5;
-  padding: 10px 26px;
-  border-radius: 8px;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.apply-btn {
-  background: var(--primary-color);
-  color: white;
-  padding: 10px 26px;
-  border-radius: 8px;
-  border: none;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-/* TABLE */
-.custom-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.table-header-row th {
-  background: var(--table-header-bg);
-  padding: 12px 16px;
-  font-size: 20px;
-  text-align: left;
-  border-bottom: 1px solid var(--table-border);
-}
-
-.custom-table td {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--table-border);
-  vertical-align: top;
-  font-size: 18px;
-}
-
-.table-row-hover:hover td {
-  background: #fafafa;
-}
-
-.title-cell {
-  font-weight: 600;
-  color: #333;
-}
-
-.desc-cell {
-  color: #555;
-}
-
-/* EMPLOYEES LIST */
-.employee-line {
-  margin-bottom: 3px;
-  font-size: 16px;
-}
-
-/* BADGES */
-.badge {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.badge-soft {
-  background: #eef1ff;
-  color: #4b32c3;
-}
-
-.badge-status-open {
-  background: #fff4e5;
-  color: #b45b00;
-}
-
-.badge-status-assigned {
-  background: #e7f5ff;
-  color: #0b6fb8;
-}
-
-.badge-status-inprogress {
-  background: #fff3cd;
-  color: #896100;
-}
-
-.badge-status-reassigned {
-  background: #e0e7ff;
-  color: #3b3bb3;
-}
-
-.badge-status-closed {
-  background: #e6ffed;
-  color: #1e7a3b;
-}
-
-.badge-priority-high {
-  background: #ffe5e5;
-  color: #b3261e;
-}
-
-.badge-priority-middle {
-  background: #fff4e5;
-  color: #b45b00;
-}
-
-.badge-priority-low {
-  background: #e5f6ff;
-  color: #006395;
-}
-
-.badge-priority-normal {
-  background: #edf2ff;
-  color: #364fc7;
-}
-
-/* PAGINATION */
-.pagination-container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 18px;
-}
-
-.results-count {
-  font-size: 16px;
-  color: #666;
-}
-
-.page-btn {
-  padding: 5px 20px;
-  border-radius: 6px;
-  border: 1px solid gray;
-  background: white;
-  cursor: pointer;
-}
-
-.page-btn:disabled {
-  opacity: 0.5;
-}
-
-/* SKELETON */
-.skeleton-bar {
-  width: 100%;
-  height: 18px;
-  background: linear-gradient(90deg, #eee, #ddd, #eee);
-  border-radius: 4px;
-  animation: pulse 1.5s infinite ease-in-out;
-}
-
-@keyframes pulse {
-  0% {
-    opacity: 0.6;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0.6;
-  }
-}
 /* ACTION MENU */
 .action-cell {
   position: relative;
@@ -787,8 +514,13 @@ async function removeEmployee(c, employeeId) {
 
 .menu-trigger {
   cursor: pointer;
-  font-size: 20px;
+  font-size: 22px;
   padding: 5px;
+  color: var(--text-muted);
+
+}
+.menu-trigger:hover {
+  color: var(--text-main);
 }
 
 .menu-dropdown {
@@ -796,18 +528,21 @@ async function removeEmployee(c, employeeId) {
   top: 80%;
   right: 0;
   background: white;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  width: 120px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-  z-index: 9999;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  width: 140px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
 }
 
 .menu-item {
   padding: 10px;
+  font-size: var(--fs-section);
   cursor: pointer;
 }
-
+.menu-item:hover {
+  background: var(--bg-soft);
+}
 .menu-item.delete {
   color: red;
 }
@@ -815,11 +550,7 @@ async function removeEmployee(c, employeeId) {
 .menu-item:hover {
   background: #f4f4f4;
 }
-.clickable-title {
-  cursor: pointer;
-  color: var(--primary-color);
-  font-weight: 600;
-}
+
 .sortable {
   cursor: pointer;
   user-select: none;
@@ -850,11 +581,11 @@ async function removeEmployee(c, employeeId) {
 }
 
 .case-tab {
-  padding: 8px 20px;
-  font-size: 16px;
+  padding: 9px 20px;
+  font-size: 15px;
   border-radius: 20px;
   border: 1px solid #ddd;
-  background: white;
+  background: #fafafa;
   cursor: pointer;
   font-weight: 600;
 }
@@ -862,23 +593,14 @@ async function removeEmployee(c, employeeId) {
 .case-tab.active {
   background: var(--primary-color);
   color: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+
   border-color: var(--primary-color);
 }
-.workflow-btn {
-  margin-left: 8px;
-  padding: 4px 12px;
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  background: var(--primary-color);
-  color: white;
-  transition: 0.2s;
-}
 
-.workflow-btn:hover {
-  background: var(--primary-hover);
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
 }
-
 </style>

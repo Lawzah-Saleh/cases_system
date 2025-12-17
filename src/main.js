@@ -10,6 +10,7 @@ import './assets/styles/variables.css'
 import VueApexCharts from 'vue3-apexcharts'
 import Toast from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'
+import './assets/styles/table_style.css'
 
 const app = createApp(App)
 
