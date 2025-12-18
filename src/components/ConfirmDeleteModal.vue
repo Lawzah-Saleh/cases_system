@@ -76,42 +76,4 @@ function close() {
   color: #555;
   margin-bottom: 25px;
 }
-
-.btn-row {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-}
-
-.btn-danger {
-  background: #d94141;
-  color: white;
-  padding: 10px 22px;
-  border: none;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-}
-
-.btn-danger:hover {
-  background: #b83434;
-}
-
-.btn-secondary {
-  background: #e4e4e4;
-  padding: 10px 22px;
-  border: none;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-}
-
-@keyframes popIn {
-  from {
-    opacity: 0;
-    transform: scale(0.92);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
 </style>

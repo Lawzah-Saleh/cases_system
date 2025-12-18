@@ -4,13 +4,11 @@
       <!-- Header -->
       <div class="modal-header">
         <h3>Edit Client</h3>
-        <button class="close-btn" @click="close">×</button>
+        <button class="modal-close-btn" @click="close">×</button>
       </div>
 
-      <p class="modal-subtitle">Modify the information below to edit the client.</p>
-
       <!-- FORM -->
-      <form @submit.prevent="submit" class="form-grid">
+      <form @submit.prevent="submit" class="modal-form-grid">
         <!-- CLIENT NAME -->
         <div class="form-group">
           <label>Client Name</label>
@@ -33,7 +31,7 @@
         </div>
 
         <!-- CURRENT LOGO -->
-        <div class="form-group full">
+        <div class="form-group input-full">
           <label>Current Logo</label>
           <img
             v-if="props.client.logo_url"
@@ -45,19 +43,18 @@
         </div>
 
         <!-- NEW LOGO -->
-        <div class="form-group full">
+        <div class="form-group input-full">
           <label>Upload New Logo (optional)</label>
           <input type="file" @change="handleFile" />
           <p v-if="errors.logo" class="error-text">{{ errors.logo[0] }}</p>
         </div>
 
         <!-- BUTTONS -->
-        <div class="btn-row full">
+        <div class="btn-row input-full">
+          <button type="button" class="btn-secondary" @click="close">Cancel</button>
           <button class="btn-primary" type="submit" :disabled="loading">
             {{ loading ? 'Updating…' : 'Update Client' }}
           </button>
-
-          <button type="button" class="btn-secondary" @click="close">Cancel</button>
         </div>
       </form>
     </div>
@@ -159,120 +156,6 @@ function close() {
 </script>
 
 <style scoped>
-/* SAME STYLE AS CREATE */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
-
-.modal-large {
-  width: 550px;
-}
-
-.modal-content {
-  background: white;
-  padding: 28px;
-  border-radius: var(--radius-lg);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-  animation: popIn 0.25s ease;
-  position: relative;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.modal-header h3 {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--primary-color);
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 26px;
-  cursor: pointer;
-}
-
-.modal-subtitle {
-  font-size: 14px;
-  color: #777;
-  margin-bottom: 20px;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-
-.full {
-  grid-column: span 2;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-}
-
-label {
-  margin-bottom: 6px;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-input,
-select {
-  padding: 10px;
-  border: 1px solid var(--table-border);
-  border-radius: var(--radius-md);
-  font-size: 14px;
-}
-
-.btn-row {
-  display: flex;
-  gap: 12px;
-  margin-top: 10px;
-}
-
-.btn-primary {
-  background: var(--primary-color);
-  color: white;
-  padding: 10px 22px;
-  border: none;
-  border-radius: var(--radius-md);
-}
-
-.btn-secondary {
-  background: #e4e4e4;
-  padding: 10px 22px;
-  border: none;
-  border-radius: var(--radius-md);
-}
-
-.btn-primary:hover {
-  background: var(--primary-hover);
-}
-
-@keyframes popIn {
-  from {
-    opacity: 0;
-    transform: scale(0.92);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
 .preview-logo {
   width: 120px;
   border-radius: 8px;

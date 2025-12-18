@@ -230,33 +230,6 @@ function close() {
 </script>
 
 <style scoped>
-/* Overlay */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9000;
-}
-
-/* Modal */
-.modal-content {
-  width: 480px;
-  background: white;
-  padding: 30px;
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-  animation: popIn 0.25s ease;
-}
-
-/* Header */
-.modal-title {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--primary-color);
-}
 .modal-subtitle {
   color: #777;
   font-size: 14px;
@@ -376,21 +349,7 @@ function close() {
   background: var(--primary-color);
   color: white;
 }
-.assign-btn :hover{
+.assign-btn :hover {
   background: var(--primary-hover);
 }
-
-/* Animation */
-@keyframes popIn {
-  from {
-    transform: scale(0.93);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-
 </style>
