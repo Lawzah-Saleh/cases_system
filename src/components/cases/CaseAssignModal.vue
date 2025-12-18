@@ -114,17 +114,24 @@ fetchEmployees();
 const selectedEmployeesData = computed(() =>
   employees.value.filter((e) => selectedEmployees.value.includes(e.id))
 );
+const availableEmployees = computed(() => {
+  const assignedIds = props.caseData.employees.map(e => e.id);
+  const myEmployeeId = auth.user.employee?.id;
 
+  return employees.value.filter(emp =>
+    emp.id !== myEmployeeId &&
+    !assignedIds.includes(emp.id)
+  );
+});
 const filteredEmployees = computed(() => {
   let list = employees.value;
 
+  // For REASSIGN mode: use availableEmployees only
   if (props.mode === "reassign") {
-    
-    const userId = auth.user.id;
-    list = list.filter(emp => emp.id !== userId);
+    list = availableEmployees.value;
   }
 
-  // Apply search filter
+  // Apply search
   if (!search.value) return list;
 
   return list.filter(emp =>
@@ -133,6 +140,7 @@ const filteredEmployees = computed(() => {
       .includes(search.value.toLowerCase())
   );
 });
+
 
 
 function toggleDropdown() {

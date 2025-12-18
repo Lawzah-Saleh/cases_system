@@ -197,7 +197,6 @@ import CaseCreateModal from '@/components/cases/CaseCreateModal.vue'
 import CaseEditModal from '@/components/cases/CaseEditModal.vue'
 import CaseDeleteModal from '@/components/cases/CaseDeleteModal.vue'
 import CaseAssignModal from '@/components/cases/CaseAssignModal.vue'
-import EmployeesMultiSelect from '@/components/cases/EmployeesMultiSelect.vue'
 
 
 const showAssign = ref(false)
@@ -268,10 +267,6 @@ const priorities = ref([])
 const employees = ref([])
 
 
-// import { shallowRef } from 'vue'
-// const clients = shallowRef([])
-// const priorities = shallowRef([])
-
 async function loadFilterData() {
   const token = useAuthStore().token
 
@@ -288,10 +283,23 @@ async function loadFilterData() {
 
 }
 
-function openDetails(c) {
-  selectedCase.value = c
-  openDetailsModal.value = true
+async function openDetails(c) {
+  try {
+    const token = useAuthStore().token;
+
+    // Request fresh and full case data
+    const res = await axios.get(
+      `http://localhost:8000/api/cases/${c.id}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    selectedCase.value = res.data.case;
+    openDetailsModal.value = true;
+  } catch (e) {
+    console.error("Failed to load case details:", e);
+  }
 }
+
 const showDetails = ref(false)
 const showEdit = ref(false)
 

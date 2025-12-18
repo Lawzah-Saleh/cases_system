@@ -68,6 +68,8 @@
           <th v-if="isVisible('client')">Customer</th>
           <th v-if="isVisible('employees')">Team Members</th>
           <th v-if="isVisible('created')">Created At</th>
+          <th v-if="isVisible('accepted')">Accepted At</th>
+
         </tr>
       </thead>
 
@@ -100,6 +102,8 @@
             </div>
           </td>
           <td v-if="isVisible('created')">{{ formatDate(item.created_at) }}</td>
+          <td v-if="isVisible('accepted')">{{ formatDate(item.accepted_at) }}</td>
+
         </tr>
 
         <tr v-if="!isLoading && cases.length === 0">
@@ -177,7 +181,9 @@ const columns = ref([
   { key: 'priority', label: 'Priority', visible: true },
   { key: 'client', label: 'Client', visible: true },
   { key: 'employees', label: 'Employees', visible: true },
-  { key: 'created', label: 'Created At', visible: true }
+  { key: 'created', label: 'Created At', visible: true },
+  { key: 'accepted', label: 'Accepted At', visible: true }
+
 ])
 
 const isVisible = (key) => columns.value.find((c) => c.key === key)?.visible ?? false
