@@ -57,11 +57,57 @@
         {{ caseData.note || '—' }}
       </div>
 
-      <h3 class="modal-section-title">Assigned Employees</h3>
-      <div class="field-box employees-list">
-        <p v-for="e in caseData.employees" :key="e.id">• {{ e.first_name }} {{ e.last_name }}</p>
-        <p v-if="!caseData.employees?.length">—</p>
+    <h3 class="section-title">Assigned Employees</h3>
+
+    <div class="employees-container">
+
+      <div
+        v-for="e in caseData.employees"
+        :key="e.id"
+        class="employee-card"
+      >
+        <!-- EMPLOYEE HEADER -->
+        <div class="emp-header">
+          <span class="emp-dot">•</span>
+          <span class="emp-name">{{ e.first_name }} {{ e.last_name }}</span>
+        </div>
+
+        <!-- STATUS -->
+        <p class="emp-status">
+          <strong>Status:</strong>
+
+          <span v-if="e.case_status === 'closed'" class="status-badge closed">
+            <i class="icon">🔒</i> Closed
+          </span>
+
+          <span v-else-if="e.case_status === 'accepted'" class="status-badge accepted">
+            <i class="icon">✔️</i> Accepted
+          </span>
+
+          <span v-else class="status-badge pending">
+            <i class="icon">⏳</i> Pending
+          </span>
+        </p>
+
+        <!-- TIMELINE -->
+        <div class="timeline-box" v-if="e.timeline?.length">
+          <strong class="timeline-title">
+            <i class="icon-small">🕒</i> Timeline
+          </strong>
+          <ul class="timeline-list">
+            <li v-for="t in e.timeline" :key="t.time">
+              <span class="tl-time">{{ formatDate(t.time) }}</span>
+              –
+              <span class="tl-action">{{ readableAction(t.action) }}</span>
+            </li>
+          </ul>
+        </div>
+
       </div>
+
+      <p v-if="!caseData.employees?.length">—</p>
+    </div>
+
 
       <h3 class="modal-section-title">Attachment</h3>
       <div class="field-box">
@@ -110,7 +156,27 @@ function statusClass(status) {
     }[status] || ''
   )
 }
+function formatDate(date) {
+  if (!date) return "—"
+  return new Date(date).toLocaleString()
+}
 
+
+/* ==============================
+   TRANSLATE ACTION NAME
+============================== */
+function readableAction(action) {
+  const map = {
+    created: "Case created",
+    assigned: "Employee assigned",
+    assign_to_me: "Assigned to employee",
+    case_accepted: "Case accepted",
+    reassigned: "Reassigned",
+    removed_employee: "Employee removed",
+    closed: "Case closed"
+  }
+  return map[action] || action
+}
 function priorityBadgeClass(priority) {
   if (!priority) return ''
 
@@ -233,4 +299,106 @@ function priorityClass(priorityName) {
   color: var(--primary-color);
   font-weight: 600;
 }
+/* Container */
+.employees-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Each Employee Card */
+.employee-card {
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  padding: 14px 18px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* Header */
+.emp-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.emp-dot {
+  font-size: 20px;
+  line-height: 0;
+  margin-right: 6px;
+  color: #6c63ff;
+}
+
+.emp-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #222;
+}
+
+/* Status badges */
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.status-badge.accepted {
+  background: #e6ffed;
+  color: #1e7a3b;
+}
+
+.status-badge.closed {
+  background: #ffe6e6;
+  color: #b3261e;
+}
+
+.status-badge.pending {
+  background: #fff4e5;
+  color: #b45b00;
+}
+
+/* Timeline */
+.timeline-box {
+  margin-top: 10px;
+  background: #fafafa;
+  padding: 10px 12px;
+  border-left: 3px solid #6c63ff;
+  border-radius: 6px;
+}
+
+.timeline-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+}
+
+.timeline-list {
+  margin: 6px 0 0 0;
+  padding-left: 18px;
+}
+
+.timeline-list li {
+  font-size: 13px;
+  margin-bottom: 4px;
+  color: #333;
+}
+
+.tl-time {
+  color: #555;
+  font-weight: 500;
+}
+
+.tl-action {
+  color: #111;
+  font-weight: 600;
+}
+
+.icon-small {
+  margin-right: 4px;
+}
+
 </style>
