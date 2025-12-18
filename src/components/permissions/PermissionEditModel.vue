@@ -4,22 +4,20 @@
       <!-- Header -->
       <div class="modal-header">
         <h3>Edit Permission Category</h3>
-        <button class="close-btn" @click="close">×</button>
+        <button class="modal-close-btn" @click="close">×</button>
       </div>
 
-      <p class="modal-subtitle">Update the category and its permissions.</p>
-
       <!-- FORM -->
-      <form @submit.prevent="submit" class="form-grid">
+      <form @submit.prevent="submit" class="modal-form-grid">
         <!-- CATEGORY NAME -->
-        <div class="form-group full">
+        <div class="form-group input-full">
           <label>Category Name</label>
           <input v-model="form.category_name" required placeholder="Enter category name" />
           <p v-if="errors.category_name" class="error-text">{{ errors.category_name[0] }}</p>
         </div>
 
         <!-- PERMISSIONS DYNAMIC LIST -->
-        <div class="full">
+        <div class="input-full">
           <label>Permissions</label>
 
           <!-- SCROLL WRAPPER -->
@@ -49,12 +47,11 @@
         </div>
 
         <!-- BUTTONS -->
-        <div class="btn-row full">
+        <div class="btn-row input-full">
+          <button type="button" class="btn-secondary" @click="close">Cancel</button>
           <button class="btn-primary" type="submit" :disabled="loading">
             {{ loading ? 'Updating…' : 'Update Category' }}
           </button>
-
-          <button type="button" class="btn-secondary" @click="close">Cancel</button>
         </div>
       </form>
     </div>
@@ -134,70 +131,6 @@ function close() {
 </script>
 
 <style scoped>
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
-
-.modal-large {
-  width: 550px;
-  height: 600px;
-}
-
-.modal-content {
-  background: white;
-  padding: 28px;
-  border-radius: var(--radius-lg);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-  animation: popIn 0.25s ease;
-  position: relative;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.modal-header h3 {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--primary-color);
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 26px;
-  cursor: pointer;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-
-.full {
-  grid-column: span 2;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.modal-subtitle {
-  font-size: 14px;
-  color: #777;
-  margin-bottom: 35px;
-}
-
 .perm-input-row {
   display: flex;
   align-items: center;
@@ -214,56 +147,5 @@ function close() {
   height: 32px;
   border-radius: 6px;
   cursor: pointer;
-}
-
-.btn-row {
-  display: flex;
-  gap: 12px;
-  margin-top: 10px;
-}
-
-.btn-primary {
-  background: var(--primary-color);
-  color: white;
-  padding: 10px 22px;
-  border: none;
-  border-radius: var(--radius-md);
-}
-
-.btn-secondary {
-  background: #e4e4e4;
-  padding: 10px 22px;
-  border: none;
-  border-radius: var(--radius-md);
-}
-
-.error-text {
-  color: red;
-  font-size: 13px;
-}
-
-label {
-  margin-bottom: 6px;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-input,
-select {
-  padding: 10px;
-  border: 1px solid var(--table-border);
-  border-radius: var(--radius-md);
-  font-size: 14px;
-}
-
-@keyframes popIn {
-  from {
-    opacity: 0;
-    transform: scale(0.92);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
 }
 </style>

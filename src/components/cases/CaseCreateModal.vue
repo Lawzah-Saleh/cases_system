@@ -3,41 +3,46 @@
     <div class="modal-content modal-large">
       <div class="modal-header">
         <h3>Create New Support Case</h3>
-        <button class="close-btn" @click="close">×</button>
+        <button class="modal-close-btn" @click="close">×</button>
       </div>
 
       <form @submit.prevent="createCase">
-        <div class="form-grid">
+        <div class="modal-form-grid">
           <!-- Case Title -->
-          <div class="form-group full">
-            <h3 class="section-title">Case Title</h3>
-            <input type="text" v-model="form.title" class="input" placeholder="Enter Case Name" />
+          <div class="form-group input-full">
+            <h3 class="modal-section-title">Case Title</h3>
+            <input
+              type="text"
+              v-model="form.title"
+              class="modal-input"
+              placeholder="Enter Case Name"
+            />
           </div>
 
           <!-- Description -->
-          <div class="form-group full">
-            <h3 class="section-title">Description</h3>
+          <div class="form-group input-full">
+            <h3 class="modal-section-title">Description</h3>
             <textarea
               v-model="form.description"
-              class="input textarea"
+              class="modal-input modal-textarea"
               placeholder="Case Description"
             ></textarea>
           </div>
 
           <!-- NOTE FIELD (ADDED) -->
-          <div class="form-group full">
-            <h3 class="section-title">Note</h3>
+          <div class="form-group input-full">
+            <h3 class="modal-section-title">Note</h3>
             <textarea
               v-model="form.note"
-              class="input textarea"
+              class="modal-input modal-textarea"
               placeholder="Add internal note (optional)"
             ></textarea>
           </div>
 
           <!-- Client -->
           <div class="form-group">
-            <h3 class="section-title">Client</h3>
-            <select v-model="form.client_id" class="input">
+            <h3 class="modal-section-title">Client</h3>
+            <select v-model="form.client_id" class="modal-input">
               <option disabled value="">Select Client</option>
               <option v-for="c in clients" :key="c.id" :value="c.id">
                 {{ c.client_name }}
@@ -47,8 +52,8 @@
 
           <!-- Type -->
           <div class="form-group">
-            <h3 class="section-title">Type</h3>
-            <select v-model="form.type" class="input">
+            <h3 class="modal-section-title">Type</h3>
+            <select v-model="form.type" class="modal-input">
               <option disabled value="">Select Type</option>
               <option v-for="t in types" :key="t">
                 {{ t }}
@@ -60,8 +65,8 @@
 
           <!-- Priority -->
           <div class="form-group">
-            <h3 class="section-title">Priority</h3>
-            <select v-model="form.priority_id" class="input">
+            <h3 class="modal-section-title">Priority</h3>
+            <select v-model="form.priority_id" class="modal-input">
               <option disabled value="">Select Priority</option>
               <option v-for="p in priorities" :key="p.id" :value="p.id">
                 {{ p.priority_name }}
@@ -72,9 +77,9 @@
           <!-- Status (REMOVED) -->
 
           <!-- Employees -->
-          <div class="form-group full">
-            <h3 class="section-title">Assigned Employees</h3>
-            <select v-model="form.employee_ids" class="input" multiple>
+          <div class="form-group input-full">
+            <h3 class="modal-section-title">Assigned Employees</h3>
+            <select v-model="form.employee_ids" class="modal-input" multiple>
               <option v-for="e in employees" :key="e.id" :value="e.id">
                 {{ e.first_name }} {{ e.last_name }}
               </option>
@@ -82,13 +87,13 @@
           </div>
 
           <!-- Attachment -->
-          <div class="form-group full">
-            <h3 class="section-title">Attachment</h3>
-            <input type="file" @change="handleFile" class="input" />
+          <div class="form-group input-full">
+            <h3 class="modal-section-title">Attachment</h3>
+            <input type="file" @change="handleFile" class="modal-input" />
           </div>
         </div>
 
-        <div class="btn-row full">
+        <div class="btn-row input-full">
           <button class="btn-secondary" type="button" @click="close">Cancel</button>
           <button class="btn-primary" type="submit" :disabled="loading">
             {{ loading ? 'Creating...' : 'Create Case' }}
@@ -200,123 +205,3 @@ async function createCase() {
   }
 }
 </script>
-
-<style scoped>
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
-
-.modal-large {
-  width: 750px;
-}
-
-.modal-content {
-  background: white;
-  padding: 32px;
-  border-radius: var(--radius-lg);
-  box-shadow: 0 12px 42px rgba(0, 0, 0, 0.15);
-  animation: popIn 0.25s ease;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
-/* Header */
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 18px;
-}
-
-.modal-header h3 {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--primary-color);
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 26px;
-  cursor: pointer;
-  color: #444;
-}
-
-/* Form Grid */
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-}
-
-.full {
-  grid-column: span 2;
-}
-
-.section-title {
-  font-weight: 600;
-  color: var(--primary-color);
-  margin-bottom: 6px;
-  font-size: 15px;
-}
-
-.input {
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid var(--table-border);
-  width: 100%;
-  font-size: 14px;
-}
-
-.textarea {
-  min-height: 90px;
-}
-
-/* Buttons */
-.btn-row {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 22px;
-}
-
-.btn-primary {
-  background: var(--primary-color);
-  color: white;
-  padding: 10px 22px;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  border: none;
-  font-weight: 600;
-}
-
-.btn-primary:hover {
-  background: var(--primary-hover);
-}
-
-.btn-secondary {
-  background: #efefef;
-  padding: 10px 22px;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  border: none;
-  font-weight: 600;
-}
-
-@keyframes popIn {
-  from {
-    opacity: 0;
-    transform: scale(0.92);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-</style>
