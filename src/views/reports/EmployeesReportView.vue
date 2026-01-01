@@ -56,7 +56,7 @@
 
     <!-- ================= ACTION BAR ================= -->
     <div class="report-header-row">
-      <button class="show-hide-btn" @click="showColumnsModal = true">
+      <button class="filter-button" @click="showColumnsModal = true">
         Show / Hide Columns ({{ visibleColumns.length }}/{{ columns.length }})
       </button>
 
@@ -64,15 +64,15 @@
     </div>
 
     <!-- ================= SHOW / HIDE MODAL ================= -->
-    <div v-if="showColumnsModal" class="columns-overlay" @click.self="showColumnsModal = false">
-      <div class="columns-modal">
-        <div class="columns-header">
+    <div v-if="showColumnsModal" class="filter-overlay" @click.self="showColumnsModal = false">
+      <div class="filter-modal">
+        <div class="filter-header">
           <h2>Show / Hide Columns</h2>
           <button class="select-all-btn" @click="selectAllColumns">All</button>
         </div>
 
-        <div class="columns-grid">
-          <label v-for="col in columns" :key="col.key" class="column-item">
+        <div class="filter-grid">
+          <label v-for="col in columns" :key="col.key" class="filter-item">
             <input type="checkbox" v-model="col.visible" />
             {{ col.label }}
           </label>
@@ -328,7 +328,6 @@ onMounted(loadReport)
 .filters-row {
   display: flex;
   gap: 12px;
-  flex-wrap: wrap;
   background: #f3f3f7;
   padding: 14px 16px;
   border-radius: 12px;
@@ -356,24 +355,6 @@ onMounted(loadReport)
   color: var(--primary-color);
   cursor: pointer;
   text-decoration: underline;
-}
-
-/* ======================================================
-   ACTION BAR
-====================================================== */
-.report-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #f3f3f7;
-  padding: 14px 18px;
-  border-radius: 12px;
-  margin-bottom: 14px;
-}
-
-
-.download-btn:hover {
-  opacity: 0.9;
 }
 
 /* ======================================================
@@ -505,10 +486,6 @@ onMounted(loadReport)
     min-width: 100%;
   }
 
-  .report-header-row {
-    flex-direction: column;
-    gap: 10px;
-    align-items: flex-start;
-  }
+
 }
 </style>

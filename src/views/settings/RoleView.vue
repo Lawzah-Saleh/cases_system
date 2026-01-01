@@ -4,7 +4,7 @@
       <h2 class="main-header">
         <span class="link-back" @click="$router.back()">Setting</span> / Roles
       </h2>
-      <button class="add-button" @click="openCreate = true">+ Create Role</button>
+      <button class="download-btn" @click="openCreate = true">+ Create Role</button>
     </div>
 
     <!-- ===== FILTERS ===== -->
@@ -32,7 +32,7 @@
             <div class="menu-trigger" @click="toggleMenu(role.id)">⋮</div>
             <div v-if="openMenu === role.id" class="menu-dropdown">
               <div class="menu-item" @click="startEdit(role)">Edit</div>
-              <div class="menu-item delete" @click="deleterole(role)">Delete</div>
+              <div class="menu-item delete" @click="openDeleteModal(role)">Delete</div>
             </div>
           </td>
         </tr>
@@ -79,6 +79,14 @@
     :role="selectedRole"
     @close="openRoleDetailsModal = false"
   />
+
+  <ConfirmDeleteModal
+    v-if="showDeleteModal && deleteTarget"
+    title="Delete Role"
+    :message="`Are you sure you want to delete ${deleteTarget.role_name}?`"
+    @close="showDeleteModal = false"
+    @confirm="confirmDelete"
+  />
 </template>
 
 <script>
@@ -88,9 +96,10 @@ import { toast } from 'vue3-toastify'
 import RoleDetailsModel from '@/components/roles/RoleDetailsModel.vue'
 import RoleCreateModel from '@/components/roles/RoleCreateModel.vue'
 import RoleEditModel from '@/components/roles/RoleEditModel.vue'
+import ConfirmDeleteModal from '@/components/ConfirmDeleteModal.vue'
 
 export default {
-  components: { RoleDetailsModel, RoleCreateModel, RoleEditModel },
+  components: { RoleDetailsModel, RoleCreateModel, RoleEditModel,ConfirmDeleteModal },
   watch: {
     search() {
       this.debounceSearch()
@@ -107,10 +116,17 @@ export default {
       openEdit: false,
       selectedRole: null,
       openRoleDetailsModal: false,
-      isLoading: false
+      isLoading: false,
+      showDeleteModal: false,
+      deleteTarget: null,
     }
   },
   methods: {
+     openDeleteModal(role) {
+      this.deleteTarget = role
+      this.showDeleteModal = true
+    },
+
     openDetails(role) {
       this.selectedRole = role
       this.openRoleDetailsModal = true
@@ -134,13 +150,13 @@ export default {
       this.openMenu = this.openMenu === id ? null : id
     },
 
-    async deleterole(role) {
-      if (!confirm('Delete this role?')) return
+    async confirmDelete(finish) {
+      
 
       try {
         const token = useAuthStore().token
 
-        await axios.delete(`http://localhost:8000/api/roles/${role.id}`, {
+        await axios.delete(`http://localhost:8000/api/roles/${this.deleteTarget.id}`, {
           headers: { Authorization: `Bearer ${token}` }
         })
 
@@ -148,10 +164,12 @@ export default {
           autoClose: 1500
         })
 
-        await new Promise((resolve) => setTimeout(resolve, 500))
+        finish()
+        this.showDeleteModal = false
 
         this.handleRefresh()
       } catch (e) {
+        finish()
         console.error(e)
         toast.error('Failed to delete role.', { autoClose: 2000 })
       }

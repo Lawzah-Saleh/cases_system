@@ -31,6 +31,10 @@ export default {
     return axios.get(`http://localhost:8000/api/dashboard/cases-by-type?range=${range}`, token())
   },
 
+  getCasesByWayEntry(range) {
+    return axios.get(`http://localhost:8000/api/dashboard/cases-by-way-entry?range=${range}`, token())
+  },
+
   getTopClients(range) {
     return axios.get(`http://localhost:8000/api/dashboard/top-clients?range=${range}`, token())
   },

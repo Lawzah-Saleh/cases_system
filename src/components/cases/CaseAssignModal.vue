@@ -68,7 +68,7 @@
       <!-- Buttons -->
       <div class="actions">
         <button class="btn cancel-btn" @click="close">Cancel</button>
-          <button class="btn assign-btn" @click="assignToMe">
+          <button v-if="props.mode === 'assign'" class="btn assign-btn" @click="assignToMe">
             Assign to Me
           </button>
         <button class="btn assign-btn" @click="assign">Assign</button>
@@ -230,12 +230,6 @@ function close() {
 </script>
 
 <style scoped>
-.modal-subtitle {
-  color: #777;
-  font-size: 14px;
-  margin-bottom: 20px;
-}
-
 /* Field label */
 .field-label {
   font-size: 14px;
@@ -244,20 +238,6 @@ function close() {
   display: block;
 }
 
-/* Selected Box */
-.selected-box {
-  border: 1px solid #dcdcdc;
-  padding: 10px;
-  border-radius: 10px;
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  position: relative;
-  cursor: pointer;
-  background: white;
-}
 
 .placeholder {
   color: #aaa;
@@ -307,18 +287,40 @@ function close() {
   margin-bottom: 12px;
 }
 
-.employee-item {
+.employee-item,
+.item {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 6px;
+  justify-content: flex-start;
+  text-align: left;
 }
 
+.employee-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary-color);
+  cursor: pointer;
+}
+.employee-item input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary-color);
+  cursor: pointer;
+}
 .employee-item:hover {
   background: #f7f7ff;
   border-radius: 6px;
 }
-
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  cursor: pointer;
+  justify-content: flex-start; /* add this */
+}
 .no-results {
   text-align: center;
   padding: 10px;

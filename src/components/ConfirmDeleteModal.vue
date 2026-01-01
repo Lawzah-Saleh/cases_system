@@ -5,11 +5,12 @@
       <p class="modal-message">{{ message }}</p>
 
       <div class="btn-row">
-        <button class="btn-danger" @click="confirmDelete" :disabled="loading">
+        <button class="btn-secondary" @click="close">Cancel</button>
+
+          <button class="btn-danger" @click="confirmDelete" :disabled="loading">
           {{ loading ? 'Deleting…' : 'Delete' }}
         </button>
 
-        <button class="btn-secondary" @click="close">Cancel</button>
       </div>
     </div>
   </div>

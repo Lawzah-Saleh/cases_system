@@ -1,38 +1,31 @@
 <template>
   <div class="dashboard">
     <div class="cards">
-      <!-- Total Cases -->
-      <StatsCard
-        title="Total Cases"
+   <StatsCard
+        title="Support Cases"
         :total="cards.total_cases"
-        icon="bi bi-people"
+        icon="bi bi-headset"
         v-model="filterTotalCases"
         @update:modelValue="loadCards"
       />
-
-      <!-- Clients -->
       <StatsCard
         title="Clients"
         :total="cards.total_clients"
-        icon="bi bi-people"
+        icon="bi bi-people-fill"
         v-model="filterTotalClients"
         @update:modelValue="loadCards"
       />
-
-      <!-- Employees -->
       <StatsCard
         title="Employees"
         :total="cards.total_employees"
-        icon="bi bi-people"
+        icon="bi bi-person-badge"
         v-model="filterTotalEmployees"
         @update:modelValue="loadCards"
       />
-
-      <!-- Completion Rate -->
       <StatsCard
         title="Completion Rate"
         :total="completionRate + '%'"
-        icon="bi bi-pie-chart"
+        icon="bi bi-bar-chart-line-fill"
         v-model="filterCompletionRate"
         @update:modelValue="loadCards"
       />
@@ -43,12 +36,14 @@
       <div class="chart-box">
         <div class="chart-header">
           <h5>Daily Complaints</h5>
-          <select v-model="filterCasesPerDay" @change="loadCasesPerDay">
-            <option value="day">Today</option>
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
-            <option value="year">This Year</option>
-          </select>
+          <div>
+            <select v-model="filterCasesPerDay" @change="loadCasesPerDay">
+              <option value="day">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="year">This Year</option>
+            </select>
+          </div>
         </div>
         <apexchart
           type="bar"
@@ -58,7 +53,7 @@
         />
 
         <div class="d-flex justify-content-end mb-3">
-          <button @click="downloadCaseBerDayExcel" class="btn btn-success">Download Excel</button>
+          <button @click="downloadCaseBerDayExcel" class="download-btn">Download Excel</button>
         </div>
       </div>
 
@@ -66,12 +61,14 @@
       <div class="chart-box">
         <div class="chart-header">
           <h5>Cases by Status</h5>
-          <select v-model="filterCasesByStatus" @change="loadCasesByStatus">
-            <option value="day">Today</option>
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
-            <option value="year">This Year</option>
-          </select>
+          <div>
+            <select v-model="filterCasesByStatus" @change="loadCasesByStatus">
+              <option value="day">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="year">This Year</option>
+            </select>
+          </div>
         </div>
         <apexchart
           type="pie"
@@ -81,22 +78,24 @@
         />
 
         <div class="d-flex justify-content-end mb-3">
-          <button @click="downloadCaseStatusExcel" class="btn btn-success">Download Excel</button>
+          <button @click="downloadCaseStatusExcel" class="download-btn">Download Excel</button>
         </div>
       </div>
     </div>
 
-    <div class="charts-grid">
+    <div class="charts-grid charts-grid-wide">
       <!-- TYPE CHART -->
       <div class="chart-box">
         <div class="chart-header">
           <h5>Case Type</h5>
-          <select v-model="filterCasesByType" @change="loadCasesByType">
-            <option value="day">Today</option>
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
-            <option value="year">This Year</option>
-          </select>
+          <div>
+            <select v-model="filterCasesByType" @change="loadCasesByType">
+              <option value="day">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="year">This Year</option>
+            </select>
+          </div>
         </div>
         <apexchart
           type="donut"
@@ -105,18 +104,20 @@
           :series="casesByTypeSeries"
         />
         <div class="d-flex justify-content-end mb-3">
-          <button @click="downloadCaseTypeExcel" class="btn btn-success">Download Excel</button>
+          <button @click="downloadCaseTypeExcel" class="download-btn">Download Excel</button>
         </div>
       </div>
       <div class="chart-box">
         <div class="chart-header">
           <h5>Top Clients</h5>
-          <select v-model="filterTopClients" @change="loadTopClients">
-            <option value="day">Today</option>
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
-            <option value="year">This Year</option>
-          </select>
+          <div>
+            <select v-model="filterTopClients" @change="loadTopClients">
+              <option value="day">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="year">This Year</option>
+            </select>
+          </div>
         </div>
         <apexchart
           type="bar"
@@ -126,21 +127,24 @@
         />
 
         <div class="d-flex justify-content-end mb-3">
-          <button @click="downloadTopClientsExcel" class="btn btn-success">Download Excel</button>
+          <button @click="downloadTopClientsExcel" class="download-btn">Download Excel</button>
         </div>
       </div>
     </div>
     <!-- TOP CLIENTS -->
     <!-- PRIORITY CHART -->
+     <div class="charts-grid charts-grid-normal">
     <div class="chart-box">
       <div class="chart-header">
         <h5>Priority Levels</h5>
-        <select v-model="filterCasesByPriority" @change="loadCasesByPriority">
-          <option value="day">Today</option>
-          <option value="week">This Week</option>
-          <option value="month">This Month</option>
-          <option value="year">This Year</option>
-        </select>
+        <div>
+          <select v-model="filterCasesByPriority" @change="loadCasesByPriority">
+            <option value="day">Today</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+            <option value="year">This Year</option>
+          </select>
+        </div>
       </div>
       <apexchart
         type="donut"
@@ -150,8 +154,36 @@
       />
 
       <div class="d-flex justify-content-end mb-3">
-        <button @click="downloadCasePriorityExcel" class="btn btn-success">Download Excel</button>
+        <button @click="downloadCasePriorityExcel" class="download-btn">Download Excel</button>
       </div>
+    </div>
+
+
+    <div class="chart-box">
+        <div class="chart-header">
+          <h5>Case Entry</h5>
+          <div>
+            <select v-model="filterCasesByWayEntry" @change="loadCasesByWayEntry">
+              <option value="day">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="year">This Year</option>
+            </select>
+          </div>
+        </div>
+        <apexchart
+          type="donut"
+          height="300"
+          :options="casesByWayEntryOptions"
+          :series="casesByWayEntrySeries"
+        />
+        <div class="d-flex justify-content-end mb-3">
+          <button @click="downloadCaseWayEntryExcel" class="download-btn">Download Excel</button>
+        </div>
+      </div>
+
+
+
     </div>
   </div>
 </template>
@@ -168,6 +200,7 @@ import { useCasesByTypeChart } from '@/composables/charts/useCasesByTypeChart'
 import { useTopClientsChart } from '@/composables/charts/useTopClientsChart'
 import { useCasesPerDayChart } from '@/composables/charts/useCasesPerDayChart'
 import { useCasesByStatusChart } from '@/composables/charts/useCasesByStatusChart'
+import { useCasesBywayEntryChart } from '@/composables/charts/useCasesBywayEntryChart'
 
 export default {
   components: { StatsCard },
@@ -185,10 +218,14 @@ export default {
       filterTotalClients: 'month',
       filterTotalEmployees: 'month',
       filterCompletionRate: 'month',
+      filterCasesByWayEntry : 'month',
+
       cards: {},
       completionRate: 0,
 
       // charts data
+      casesByWayEntryOptions : {},
+      casesByWayEntrySeries : [],
       casesPerDayOptions: {},
       casesPerDaySeries: [],
       casesByStatusOptions: {},
@@ -209,7 +246,8 @@ export default {
       this.loadCasesByStatus(),
       this.loadCasesByPriority(),
       this.loadCasesByType(),
-      this.loadTopClients()
+      this.loadTopClients(),
+      this.loadCasesByWayEntry()
     ])
   },
 
@@ -299,6 +337,25 @@ export default {
         })
       }
     },
+
+    async downloadCaseWayEntryExcel()
+    {
+     try {
+        await downloadExcel(
+          `/dashboard/cases-per-way-entry/excel?range=${this.filterCasesByWayEntry}`,
+          'Cases-Per-Way-Of-Entry.xlsx'
+        )
+
+        toast.success('Excel file downloaded successfully!', {
+          timeout: 3000
+        })
+      } catch (err) {
+        console.error(err)
+        toast.error('Failed to download the Excel file.', {
+          timeout: 3000
+        })
+      }
+    },
     token() {
       return { headers: { Authorization: `Bearer ${useAuthStore().token}` } }
     },
@@ -314,6 +371,18 @@ export default {
       this.cards.total_employees = employeesRes.data.total_employees
       this.completionRate = completionRes.data.completion_rate
     },
+
+
+    async loadCasesByWayEntry (){
+      const res = await dashboardService.getCasesByWayEntry(this.filterCasesByWayEntry)
+
+      const { options, series } = useCasesBywayEntryChart(res.data)
+
+      this.casesByWayEntryOptions = options
+      this.casesByWayEntrySeries = series
+      
+    },
+
     async loadCasesPerDay() {
       const res = await dashboardService.getCasesPerDay(this.filterCasesPerDay)
 
@@ -359,111 +428,69 @@ export default {
 </script>
 
 <style>
-.card {
-  background: white;
-  padding: 18px;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.card-value {
-  font-size: 28px;
-  font-weight: 700;
-  color: #374151;
-}
 
 .dashboard {
-  padding: 20px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
   gap: 25px;
-}
+  margin: 0 auto;
 
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-bottom: 10px;
+
+}
 .chart-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 20px;
+
 }
 
 .chart-box {
   background: white;
   padding: 20px;
   border-radius: 14px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-}
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 
+}
+.chart-box:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
 .filter-select {
-  padding: 8px 12px;
+  padding: 8px 14px;
   border-radius: 8px;
-  border: 1px solid #ddd;
+  border: 1px solid #ccc;
   margin-bottom: 20px;
   font-size: 14px;
+  background-color: #f9f9f9;
 }
 
-.dashboard {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-}
 .charts-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
 }
-
-.charts-grid:first-of-type {
-  grid-template-columns: 2fr 1fr;
-}
-
-.charts-grid:last-of-type {
-  grid-template-columns: 1fr 1fr;
-}
-.chart-box {
-  background: white;
-  padding: 20px;
-  border-radius: 14px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-}
-
 .chart-title {
   font-size: 18px;
   font-weight: 600;
   margin-bottom: 10px;
   color: #333;
 }
-
-/* Responsive */
-@media (max-width: 900px) {
-  .charts-row {
-    grid-template-columns: 1fr;
-  }
+.charts-grid.charts-grid-wide {   
+  grid-template-columns: 1fr 1fr;
+ }
+.charts-grid.charts-grid-normal { 
+  grid-template-columns: 1fr 1fr; 
 }
 
-.dashboard {
-  padding: 20px;
-}
-.cards {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
-}
-.card {
-  background: #f8f8f8;
-  padding: 20px;
-  border-radius: 10px;
-  font-size: 20px;
-}
 .completion-box {
   background: #e3ffe3;
   padding: 20px;
@@ -472,26 +499,29 @@ export default {
 }
 
 select {
-  padding: 4px 6px;
-  border-radius: 6px;
-  border: none;
-  background-color: #f1f2f6;
-  font-size: 13px;
-}
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background-color: #f8f9fa;
+  font-size: 14px;
 
-.charts-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-}
-.charts-grid:first-of-type {
-  grid-template-columns: 2fr 1fr;
-}
-.charts-grid:last-of-type {
-  grid-template-columns: 1fr 1fr;
 }
 
 .apexcharts-menu-item.exportCSV {
   display: none !important;
+}
+/* Responsive */
+@media (max-width: 1200px) {
+  .charts-grid-wide { grid-template-columns: 1.5fr 1fr; }
+  .charts-grid-normal { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 900px) {
+  .charts-grid-wide,
+  .charts-grid-normal {
+    grid-template-columns: 1fr;
+  }
+  .dashboard {
+    padding: 20px;
+  }
 }
 </style>

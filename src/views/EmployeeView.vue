@@ -6,7 +6,7 @@
         <p class="sub-header">Detailed overview and management of all system employees.</p>
       </div>
 
-      <button class="add-button" @click="openCreate = true" :disabled="!auth.can('add employee')">
+      <button class="download-btn" @click="openCreate = true" :disabled="!auth.can('add employee')">
         + Create Employee
       </button>
     </div>
@@ -96,7 +96,7 @@
               <div
                 class="menu-item delete"
                 v-if="auth.can('edit employee')"
-                @click="deleteEmployee(emp)"
+                @click="openDeleteModal(emp)"
               >
                 Delete
               </div>
@@ -155,11 +155,19 @@
     @close="openEdit = false"
     @updated="handleRefresh"
   />
+
+  <ConfirmDeleteModal
+    v-if="showDeleteModal && deleteTarget"
+    title="Delete Employee"
+    :message="`Are you sure you want to delete ${deleteTarget.first_name}?`"
+    @close="showDeleteModal = false"
+    @confirm="confirmDelete"
+  />
 </template>
 <script>
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
-
+import ConfirmDeleteModal from '@/components/ConfirmDeleteModal.vue'
 import EmployeeCreateModal from '@/components/employees/EmployeeCreateModal.vue'
 import EmployeeEditModal from '@/components/employees/EmployeeEditModal.vue'
 import EmployeeDetailsModal from '@/components/employees/EmployeeDetailsModal.vue'
@@ -168,7 +176,8 @@ export default {
   components: {
     EmployeeCreateModal,
     EmployeeEditModal,
-    EmployeeDetailsModal
+    EmployeeDetailsModal,
+    ConfirmDeleteModal
   },
 
   data() {
@@ -189,7 +198,8 @@ export default {
       openEdit: false,
       openDetailsModal: false,
       selectedEmployee: null,
-
+      showDeleteModal: false,
+      deleteTarget: null,
       showFilter: false,
 
       columns: [
@@ -265,18 +275,30 @@ export default {
       this.openEdit = true
     },
 
-    async deleteEmployee(emp) {
-      if (!confirm('Delete this employee?')) return
+     openDeleteModal(emp) {
+      this.deleteTarget = emp
+      this.showDeleteModal = true
+      this.openMenu = null
+    },
 
+    async confirmDelete(finish) {
+    
       try {
         const token = useAuthStore().token
 
-        await axios.delete(`http://localhost:8000/api/employees/${emp.id}`, {
+        await axios.delete(`http://localhost:8000/api/employees/${this.deleteTarget.id}`, {
           headers: { Authorization: `Bearer ${token}` }
         })
 
+        toast.success('Employee deleted successfully!', { autoClose: 1500 })
+
+        finish()
+        this.showDeleteModal = false
         this.handleRefresh()
+        
       } catch (e) {
+        toast.error('Failed to delete employee.', { autoClose: 2000 })
+        finish()
         console.error(e)
       }
     },

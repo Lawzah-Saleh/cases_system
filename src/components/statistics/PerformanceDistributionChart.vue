@@ -58,11 +58,32 @@ const series = computed(() => [
 
 // Chart options
 const chartOptions = computed(() => ({
+    chart: {
+    toolbar: {
+      show: true,
+      tools: {
+        download: true,
+        selection: false,
+        zoom: false,
+        zoomin: false,
+        zoomout: false,
+        pan: false,
+        reset: false,
+      }
+    }
+  },
   labels: ["High (85–100)", "Medium (60–84)", "Low (<60)"],
-  colors: ["#2ecc71", "#f1c40f", "#e74c3c"],
+  colors: ["#22c55e", "#f59e0b", "#ef4444"],
   legend: {
-    position: "bottom",
-    fontSize: "14px"
+    position: 'bottom',
+    fontSize: '13px',
+    markers: {
+      radius: 6
+    },
+    itemMargin: {
+      horizontal: 10,
+      vertical: 6
+    }
   },
   dataLabels: {
     enabled: true,
@@ -70,24 +91,41 @@ const chartOptions = computed(() => ({
   },
   tooltip: {
     y: {
-      formatter: (value) => `${value} employees`
+      formatter: (value, { seriesIndex }) => {
+        const percentage = total.value
+          ? ((value / total.value) * 100).toFixed(1)
+          : 0
+        return `${value} employees (${percentage}%)`
+      }
     }
   },
   plotOptions: {
-    pie: {
-      donut: {
-        size: "65%",
-        labels: {
+  pie: {
+    donut: {
+      size: '68%',
+      labels: {
+        show: true,
+        name: {
+          fontSize: '14px',
+          color: '#6b7280'
+        },
+        value: {
+          fontSize: '22px',
+          fontWeight: 600,
+          color: '#111827'
+        },
+        total: {
           show: true,
-          total: {
-            show: true,
-            label: "Employees",
-            formatter: () => total.value
-          }
+          label: 'Employees',
+          fontSize: '13px',
+          color: '#6b7280',
+          formatter: () => total.value
         }
       }
     }
   }
+}
+
 }))
 </script>
 

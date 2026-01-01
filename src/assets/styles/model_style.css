@@ -126,6 +126,23 @@ select {
   width: 100%;
   font-size: 14px;
 }
+
+/* Selected Box */
+.selected-box {
+  border: 1px solid #dcdcdc;
+  padding: 10px;
+  border-radius: 10px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  cursor: pointer;
+  background: white;
+    position: relative;
+
+}
+
 .modal-textarea {
   min-height: 90px;
 }

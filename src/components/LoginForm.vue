@@ -28,7 +28,11 @@ const handleLogin = async () => {
    router.push('/app/dashboard')
 
   } catch (err) {
-    error.value = err.message   
+    if (err.message == "Invalid credentials")
+    error.value = "Invalid credentials"  
+
+    else 
+    error.value = "login Failed. Try again."
     response.value = err.raw    
   } finally {
     loading.value = false
@@ -87,11 +91,7 @@ const handleLogin = async () => {
           <p v-if="error" class="error">{{ error }}</p>
 
          
-          <div v-if="response" class="success-box">
-            <pre>{{ response }}</pre>
-          </div>
-
-         
+        
           <div v-if="token" class="token-box">
             <strong>Token:</strong> {{ token }}
           </div>

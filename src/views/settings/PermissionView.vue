@@ -5,7 +5,7 @@
         <span class="link-back" @click="$router.back()">Setting</span> / Permissions
       </h2>
 
-      <button class="add-button" @click="openCreate = true">+ Create permissions</button>
+      <button class="download-btn" @click="openCreate = true">+ Create permissions</button>
     </div>
 
     <!-- ===== FILTERS ===== -->
@@ -33,7 +33,7 @@
             <div class="menu-trigger" @click="toggleMenu(per.id)">⋮</div>
             <div v-if="openMenu === per.id" class="menu-dropdown">
               <div class="menu-item" @click="startEdit(per)">Edit</div>
-              <div class="menu-item delete" @click="deletepermission(per)">Delete</div>
+              <div class="menu-item delete" @click="openDeleteModal(per)">Delete</div>
             </div>
           </td>
         </tr>
@@ -82,6 +82,14 @@
     :permission="selectedPermission"
     @close="openPermissionDetailsModal = false"
   />
+
+   <ConfirmDeleteModal
+    v-if="showDeleteModal && deleteTarget"
+    title="Delete Permission"
+    :message="`Are you sure you want to delete ${deleteTarget.category_name}?`"
+    @close="showDeleteModal = false"
+    @confirm="confirmDelete"
+  />
 </template>
 
 <script>
@@ -91,9 +99,10 @@ import { toast } from 'vue3-toastify'
 import PermissionCreateModel from '@/components/permissions/PermissionCreateModel.vue'
 import PermissionEditModel from '@/components/permissions/PermissionEditModel.vue'
 import PermissionDetailsModel from '@/components/permissions/PermissionDetailsModel.vue'
+import ConfirmDeleteModal from '@/components/ConfirmDeleteModal.vue'
 
 export default {
-  components: { PermissionCreateModel, PermissionEditModel, PermissionDetailsModel },
+  components: { PermissionCreateModel, PermissionEditModel, PermissionDetailsModel, ConfirmDeleteModal },
   watch: {
     search() {
       this.debounceSearch()
@@ -110,10 +119,17 @@ export default {
       openEdit: false,
       selectedPermission: null,
       openPermissionDetailsModal: false,
-      isLoading: false
+      isLoading: false,
+      showDeleteModal: false,
+      deleteTarget: null,
     }
   },
   methods: {
+     openDeleteModal(per) {
+      this.deleteTarget = per
+      this.showDeleteModal = true
+    },
+
     openDetails(permission) {
       this.selectedPermission = permission
       this.openPermissionDetailsModal = true
@@ -136,13 +152,12 @@ export default {
       this.openMenu = this.openMenu === id ? null : id
     },
 
-    async deletepermission(permission) {
-      if (!confirm('Delete this permission?')) return
-
+    async confirmDelete(finish) {
+  
       try {
         const token = useAuthStore().token
 
-        await axios.delete(`http://localhost:8000/api/permission-categories/${permission.id}`, {
+        await axios.delete(`http://localhost:8000/api/permission-categories/${this.deleteTarget.id}`, {
           headers: { Authorization: `Bearer ${token}` }
         })
 
@@ -150,10 +165,12 @@ export default {
           autoClose: 1500
         })
 
-        await new Promise((resolve) => setTimeout(resolve, 500))
+        finish()
+        this.showDeleteModal = false
 
         this.handleRefresh()
       } catch (e) {
+         finish()
         console.error(e)
         toast.error('Failed to delete permission.', { autoClose: 2000 })
       }

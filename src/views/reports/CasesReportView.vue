@@ -16,7 +16,7 @@
     />
 
     <div class="report-header-row">
-      <button class="show-hide-btn" @click="showFilter = true">
+      <button class="filter-button" @click="showFilter = true">
         Show/Hide Columns ({{ visibleCount }}/{{ columns.length }})
       </button>
 
@@ -48,69 +48,72 @@
     </div>
 
     <!-- ===================== TABLE ===================== -->
-    <table class="custom-table">
-      <thead>
-        <tr class="table-header-row">
-          <th v-if="isVisible('id')">ID</th>
-          <th v-if="isVisible('title')" @click="setSort('title')" class="sortable">
-            Title <span>{{ sortBy === 'title' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</span>
-          </th>
-          <th v-if="isVisible('type')">Type</th>
-          <th v-if="isVisible('way_entry')">Way Entry</th>
-          <th v-if="isVisible('status')" @click="setSort('status')" class="sortable">
-            Status
-            <span>{{ sortBy === 'status' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</span>
-          </th>
-          <th v-if="isVisible('priority')" @click="setSort('priority')" class="sortable">
-            Priority
-            <span>{{ sortBy === 'priority' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</span>
-          </th>
-          <th v-if="isVisible('client')">Customer</th>
-          <th v-if="isVisible('employees')">Team Members</th>
-          <th v-if="isVisible('created')">Created At</th>
-          <th v-if="isVisible('accepted')">Accepted At</th>
+    <div class="table-scroll">
 
-        </tr>
-      </thead>
+        <table class="custom-table">
+          <thead>
+            <tr class="table-header-row">
+              <th v-if="isVisible('id')">ID</th>
+              <th v-if="isVisible('title')" @click="setSort('title')" class="sortable">
+                Title <span>{{ sortBy === 'title' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</span>
+              </th>
+              <th v-if="isVisible('type')">Type</th>
+              <th v-if="isVisible('way_entry')">Way Entry</th>
+              <th v-if="isVisible('status')" @click="setSort('status')" class="sortable">
+                Status
+                <span>{{ sortBy === 'status' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</span>
+              </th>
+              <th v-if="isVisible('priority')" @click="setSort('priority')" class="sortable">
+                Priority
+                <span>{{ sortBy === 'priority' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}</span>
+              </th>
+              <th v-if="isVisible('client')">Customer</th>
+              <th v-if="isVisible('employees')">Team Members</th>
+              <th v-if="isVisible('created')">Created At</th>
+              <th v-if="isVisible('accepted')">Accepted At</th>
 
-      <tbody>
-        <tr v-if="isLoading" v-for="n in 5" :key="n">
-          <td colspan="10"><div class="skeleton-bar"></div></td>
-        </tr>
+            </tr>
+          </thead>
 
-        <tr v-else v-for="(item, index) in cases" :key="item.id" class="table-row-hover">
-          <td v-if="isVisible('id')">{{ item.id }}</td>
-          <td v-if="isVisible('title')">{{ item.title }}</td>
-          <td v-if="isVisible('type')"><span class="badge badge-soft">{{ item.type }}</span></td>
-          <td v-if="isVisible('way_entry')">{{ item.way_entry }}</td>
-          <td v-if="isVisible('status')"><span class="badge" :class="statusBadgeClass(item.status)">
-  {{ item.status }}
-</span>
-</td>
-<td v-if="isVisible('priority')">
-  <span
-    class="badge"
-    :class="priorityBadgeClass(item.priority?.priority_name ?? '')"
-  >
-    {{ item.priority?.priority_name ?? '—' }}
-  </span>
-</td>
-          <td v-if="isVisible('client')">{{ item.client?.client_name ?? '—' }}</td>
-          <td v-if="isVisible('employees')">
-            <div v-for="e in item.employees" :key="e.id">
-              • {{ e.first_name }} {{ e.last_name }}
-            </div>
-          </td>
-          <td v-if="isVisible('created')">{{ formatDate(item.created_at) }}</td>
-          <td v-if="isVisible('accepted')">{{ formatDate(item.accepted_at) }}</td>
+          <tbody>
+            <tr v-if="isLoading" v-for="n in 5" :key="n">
+              <td colspan="10"><div class="skeleton-bar"></div></td>
+            </tr>
 
-        </tr>
+            <tr v-else v-for="(item, index) in cases" :key="item.id" class="table-row-hover">
+              <td v-if="isVisible('id')">  {{ (currentPage - 1) * 10 + (index + 1) }}</td>
+              <td v-if="isVisible('title')">{{ item.title }}</td>
+              <td v-if="isVisible('type')"><span class="badge badge-soft">{{ item.type }}</span></td>
+              <td v-if="isVisible('way_entry')">{{ item.way_entry }}</td>
+              <td v-if="isVisible('status')"><span class="badge" :class="statusBadgeClass(item.status)">
+      {{ item.status }}
+    </span>
+    </td>
+    <td v-if="isVisible('priority')">
+      <span
+        class="badge"
+        :class="priorityBadgeClass(item.priority?.priority_name ?? '')"
+      >
+        {{ item.priority?.priority_name ?? '—' }}
+      </span>
+    </td>
+              <td v-if="isVisible('client')">{{ item.client?.client_name ?? '—' }}</td>
+              <td v-if="isVisible('employees')">
+                <div v-for="e in item.employees" :key="e.id">
+                  • {{ e.first_name }} {{ e.last_name }}
+                </div>
+              </td>
+              <td v-if="isVisible('created')">{{ formatDate(item.created_at) }}</td>
+              <td v-if="isVisible('accepted')">{{ formatDate(item.accepted_at) }}</td>
 
-        <tr v-if="!isLoading && cases.length === 0">
-          <td colspan="10" class="empty-msg">No results found.</td>
-        </tr>
-      </tbody>
-    </table>
+            </tr>
+
+            <tr v-if="!isLoading && cases.length === 0">
+              <td colspan="10" class="empty-msg">No results found.</td>
+            </tr>
+          </tbody>
+        </table>
+    </div>
 
     <!-- ===== PAGINATION ===== -->
     <div class="pagination-container mt-4">
@@ -144,6 +147,9 @@ import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { useAuthStore } from '@/stores/auth'
 import ReportFilters from '@/components/cases/SupportFilters.vue'
+import { computed } from 'vue'
+import { toast } from 'vue3-toastify'
+const visibleCount = computed(() => columns.value.filter(c => c.visible).length)
 
 
 const auth = useAuthStore()
@@ -270,15 +276,21 @@ async function exportCSV() {
     link.setAttribute('download', 'cases-report.xlsx')
     document.body.appendChild(link)
     link.click()
+     toast.success('Excel file downloaded successfully!', {
+          timeout: 3000
+        })
     link.remove()
   } catch (error) {
+     toast.error('Excel file downloaded successfully!', {
+          timeout: 3000
+        })
     console.error('EXPORT ERROR:', error)
   }
 }
 
 onMounted(() => {
-  loadFilterData()
   loadReport()
+  loadFilterData()
 })
 
 const clients = ref([])
@@ -360,6 +372,10 @@ function priorityBadgeClass(priority) {
   padding: 25px;
   font-size: 15px;
   color: #999;
+}
+.table-scroll {
+  overflow-x: auto; 
+  width: 100%;
 }
 
 

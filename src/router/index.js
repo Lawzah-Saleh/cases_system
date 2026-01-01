@@ -53,6 +53,11 @@ const routes = [
         name: 'clients-report',
         component: () => import('@/views/reports/ClientsReportView.vue')
       },
+      {
+        path: 'reports/reassigned-cases',
+        name: 'reassigned-cases-report',
+        component: () => import('@/views/reports/ReassignedCasesReportView.vue')
+      },
 
       {
         path: 'settings',

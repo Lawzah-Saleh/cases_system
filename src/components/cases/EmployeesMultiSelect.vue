@@ -107,61 +107,77 @@ function remove(id) {
 .tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 10px;
+  gap: 6px;
+  padding: 11px 10px;
   background: #f8f8f8;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  min-height: 48px;
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+  min-height: 44px;
   align-items: center;
+  cursor: text;
 }
 
 .tag {
   background: #ecebff;
-  padding: 6px 10px;
-  border-radius: 8px;
+  padding: 4px 8px;
+  border-radius: 6px;
   font-size: 13px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .remove {
   cursor: pointer;
-  color: #777;
+  color: #555;
+  font-weight: 600;
 }
 
 .tag-input {
+  flex: 1;
+  min-width: 80px;
   border: none;
   outline: none;
   background: transparent;
   font-size: 14px;
+  padding: 2px;
 }
 
+/* Dropdown */
 .dropdown {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 4px);
   left: 0;
   width: 100%;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  margin-top: 5px;
-  max-height: 180px;
+  background: #ffffff;
+  border: 1px solid #dcdcdc;
+  border-radius: 8px;
+  max-height: 200px;
   overflow-y: auto;
   z-index: 1000;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .item {
-  padding: 10px;
+  padding: 8px 10px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
+  transition: background-color 0.15s ease;
 }
 
-.item:hover {
+.item:hover,
+.item[aria-selected="true"] {
   background: #f0f0ff;
+}
+
+/* Your checkbox fix */
+.item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary-color); /* tint the checkbox to your theme */
+  cursor: pointer;
+  /* remove pointer-events:none so the checkbox itself is clickable */
 }
 </style>

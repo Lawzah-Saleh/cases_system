@@ -6,7 +6,7 @@
         <p class="sub-header">Detailed overview and management of all system cases.</p>
 
       </div>
-        <button v-if="can('cases.create')" class="add-button" @click="openCreate = true">
+        <button v-if="can('cases.create')" class="download-btn" @click="openCreate = true">
           + Create Support
         </button>
       </div>

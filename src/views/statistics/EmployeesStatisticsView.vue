@@ -6,12 +6,13 @@
         <span class="link-back" @click="$router.back()">statistics</span>
         / Employee Performance statistics
       </h2>
+      <div>
       <select v-model="range" @change="loadStatistics">
         <option value="day">Today</option>
         <option value="week">This Week</option>
         <option value="month">This Month</option>
         <option value="year">This Year</option>
-      </select>
+      </select></div>
     </div>
 
     <!-- SKELETON LOADING -->
@@ -75,18 +76,7 @@
           </template>
           <template #info> Employee with the shortest first response time </template>
         </StatCard>
-        <!-- <StatCard
-          title="Best SLA"
-          :value="stats.best_sla ? stats.best_sla.sla_rate + '%' : '—'"
-          color="#2980b9"
-        >
-          <template #subtitle>
-            {{ stats.best_sla?.name }}
-          </template>
-          <template #info>
-            Employee with the highest SLA compliance rate
-          </template>
-        </StatCard> -->
+
         <StatCard title="SLA Breach Rate" :value="slaBreach.rate + '%'" color="#e74c3c">
           <template #subtitle> {{ slaBreach.breached }} of {{ slaBreach.total }} cases </template>
           <template #info> Percentage of closed cases that violated SLA </template>

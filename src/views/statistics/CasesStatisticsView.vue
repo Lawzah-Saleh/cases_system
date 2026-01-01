@@ -1,479 +1,236 @@
 <template>
-  <div class="case-report-page">
-    <div class="dashboard">
-      <div class="title-container">
-        <h2 class="page-title">
-          <span class="link-back" @click="$router.back()">Statistics</span> / Cases Statistics
-        </h2>
-      </div>
-      <div class="cards">
-        <!-- Total Cases -->
-        <StatsCard
-          title="Total Cases"
-          :total="cards.total_cases"
-          icon="bi bi-people"
-          v-model="filterTotalCases"
-          @update:modelValue="loadCards"
-        />
-
-        <!-- Completion Rate -->
-        <StatsCard
-          title="Completion Rate"
-          :total="completionRate + '%'"
-          icon="bi bi-pie-chart"
-          v-model="filterCompletionRate"
-          @update:modelValue="loadCards"
-        />
-      </div>
-
-      <!-- DAILY CASES CHART -->
-      <div class="charts-grid">
-        <div class="chart-box">
-          <div class="chart-header">
-            <h5>Daily Complaints</h5>
-            <select v-model="filterCasesPerDay" @change="loadCasesPerDay">
-              <option value="day">Today</option>
-              <option value="week">This Week</option>
-              <option value="month">This Month</option>
-              <option value="year">This Year</option>
-            </select>
-          </div>
-          <apexchart
-            type="bar"
-            height="300"
-            :options="casesPerDayOptions"
-            :series="casesPerDaySeries"
-          />
-
-          <div class="d-flex justify-content-end mb-3">
-            <button @click="downloadCaseBerDayExcel" class="btn btn-success">Download Excel</button>
-          </div>
-        </div>
-
-        <!-- STATUS CHART -->
-        <div class="chart-box">
-          <div class="chart-header">
-            <h5>Cases by Status</h5>
-            <select v-model="filterCasesByStatus" @change="loadCasesByStatus">
-              <option value="day">Today</option>
-              <option value="week">This Week</option>
-              <option value="month">This Month</option>
-              <option value="year">This Year</option>
-            </select>
-          </div>
-          <apexchart
-            type="pie"
-            height="300"
-            :options="casesByStatusOptions"
-            :series="casesByStatusSeries"
-          />
-
-          <div class="d-flex justify-content-end mb-3">
-            <button @click="downloadCaseStatusExcel" class="btn btn-success">Download Excel</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="charts-grid">
-        <!-- TYPE CHART -->
-        <div class="chart-box">
-          <div class="chart-header">
-            <h5>Case Type</h5>
-            <select v-model="filterCasesByType" @change="loadCasesByType">
-              <option value="day">Today</option>
-              <option value="week">This Week</option>
-              <option value="month">This Month</option>
-              <option value="year">This Year</option>
-            </select>
-          </div>
-          <apexchart
-            type="donut"
-            height="300"
-            :options="casesByTypeOptions"
-            :series="casesByTypeSeries"
-          />
-          <div class="d-flex justify-content-end mb-3">
-            <button @click="downloadCaseTypeExcel" class="btn btn-success">Download Excel</button>
-          </div>
-        </div>
-
-        <div class="chart-box">
-          <div class="chart-header">
-            <h5>Priority Levels</h5>
-            <select v-model="filterCasesByPriority" @change="loadCasesByPriority">
-              <option value="day">Today</option>
-              <option value="week">This Week</option>
-              <option value="month">This Month</option>
-              <option value="year">This Year</option>
-            </select>
-          </div>
-          <apexchart
-            type="donut"
-            height="300"
-            :options="casesByPriorityOptions"
-            :series="casesByPrioritySeries"
-          />
-
-          <div class="d-flex justify-content-end mb-3">
-            <button @click="downloadCasePriorityExcel" class="btn btn-success">
-              Download Excel
-            </button>
-          </div>
-        </div>
+  <div class="page-container">
+    <!-- ================= HEADER ================= -->
+    <div class="page-header">
+      <h2 class="main-header">
+        <span class="link-back" @click="$router.back()">statistics</span>
+        / Case Statistics
+      </h2>
+      <div class="range-select">
+        <select v-model="range" @change="loadStatistics">
+          <option value="day">Today</option>
+          <option value="week">This Week</option>
+          <option value="month">This Month</option>
+          <option value="year">This Year</option>
+        </select>
+        <span v-if="loading" class="loading-text">Loading...</span>
       </div>
     </div>
+
+    <!-- SKELETON LOADING -->
+    <div v-if="loading" class="stats-grid">
+      <SkeletonCard v-for="i in 6" :key="i" />
+    </div>
+
+    <!-- ================= CASE STATISTICS SECTION ================= -->
+    <div v-else class="stats-grid">
+      <StatCard title="Total Cases" :value="cards.total_cases" color="#2980b9">
+      <template #subtitle>
+        Closed: {{ cards.closed_cases.closure_rate }}% | Open: {{ 100 - cards.closed_cases.closure_rate }}%
+      </template>
+
+
+
+        <template #info>
+          Total number of cases including both open and closed.
+        </template>
+      </StatCard>
+
+      <StatCard
+        title="Closed Cases"
+        :value="cards.closed_cases.total"
+        :color="getColor(cards.closed_cases.closure_rate)"
+      >
+        <template #subtitle>
+          Closure Rate: {{ cards.closed_cases.closure_rate }}%
+        </template>
+        <template #info>Number of cases successfully closed in selected period</template>
+      </StatCard>
+
+      <StatCard
+        title="Open Backlog"
+        :value="cards.open_backlog.total"
+        :color="getColor(cards.open_backlog.breach_rate, true)"
+      >
+        <template #subtitle>
+          Breach Rate: {{ cards.open_backlog.breach_rate }}%
+        </template>
+        <template #info>
+          Number of open cases exceeding priority SLA
+        </template>
+      </StatCard>
+
+      <StatCard
+        title="Avg Resolution Time (days)"
+        :value="cards.avg_resolution_time"
+        color="#8e44ad"
+      >
+        <template #info>
+          Average time taken to resolve closed cases
+        </template>
+      </StatCard>
+
+      <StatCard
+        title="SLA Compliance"
+        :value="cards.sla_compliance.total_closed"
+        :color="getColor(cards.sla_compliance.compliance_rate)"
+      >
+        <template #subtitle>
+          Compliance: {{ cards.sla_compliance.compliance_rate }}%
+        </template>
+        <template #info>
+          Percentage of closed cases within SLA
+        </template>
+      </StatCard>
+
+      <StatCard
+        title="High Priority Risk"
+        :value="cards.high_priority_risk.total_closed"
+        :color="getColor(cards.high_priority_risk.breach_rate, true)"
+      >
+        <template #subtitle>
+          Breach: {{ cards.high_priority_risk.breach_rate }}%
+        </template>
+        <template #info>
+          High priority cases that exceeded SLA
+        </template>
+      </StatCard>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-wrapper">
+        <SlaBreachByPriority />
+      </div>
+      <div class="chart-wrapper">
+        <CaseStatusChart />
+      </div>
+
+    </div>
+
+
+
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted } from 'vue'
 import axios from 'axios'
-import StatsCard from '@/components/Dashboard/StatsCard.vue'
-import { useAuthStore } from '../../stores/auth'
-import { toast } from 'vue3-toastify'
-import { downloadExcel } from '@/services/excelService'
-import dashboardService from '@/services/dashboardService'
-import { useCasesByPriorityChart } from '@/composables/charts/useCasesByPriorityChart'
-import { useCasesByTypeChart } from '@/composables/charts/useCasesByTypeChart'
-import { useTopClientsChart } from '@/composables/charts/useTopClientsChart'
-import { useCasesPerDayChart } from '@/composables/charts/useCasesPerDayChart'
-import { useCasesByStatusChart } from '@/composables/charts/useCasesByStatusChart'
+import StatCard from '@/components/statistics/StatCard.vue'
+import SkeletonCard from '@/components/statistics/SkeletonCard.vue'
+import SlaBreachByPriority from '@/components/statistics/SlaBreachByPriority.vue'
+import CaseStatusChart from '@/components/statistics/CaseStatusChart.vue'
 
-export default {
-  components: { StatsCard },
+import { useAuthStore } from '@/stores/auth'
 
-  data() {
-    return {
-      // individual filters
-      filterCards: 'month',
-      filterCasesPerDay: 'month',
-      filterCasesByStatus: 'month',
-      filterCasesByPriority: 'month',
-      filterCasesByType: 'month',
-      filterTopClients: 'month',
-      filterTotalCases: 'month',
-      filterTotalClients: 'month',
-      filterTotalEmployees: 'month',
-      filterCompletionRate: 'month',
-      cards: {},
-      completionRate: 0,
+const auth = useAuthStore()
 
-      // charts data
-      casesPerDayOptions: {},
-      casesPerDaySeries: [],
-      casesByStatusOptions: {},
-      casesByStatusSeries: [],
-      casesByPriorityOptions: {},
-      casesByPrioritySeries: [],
-      casesByTypeOptions: {},
-      casesByTypeSeries: [],
-      topClientsOptions: {},
-      topClientsSeries: []
-    }
-  },
+const loading = ref(false)
+const showCharts = ref(true)
 
-  async mounted() {
-    await Promise.all([
-      this.loadCards(),
-      this.loadCasesPerDay(),
-      this.loadCasesByStatus(),
-      this.loadCasesByPriority(),
-      this.loadCasesByType(),
-      this.loadTopClients()
-    ])
-  },
+const cards = ref({
+  total_cases: 0,
+  closed_cases: { total: 0, closure_rate: 0 },
+  open_backlog: { total: 0, breached: 0, breach_rate: 0 },
+  avg_resolution_time: 0,
+  sla_compliance: { total_closed: 0, compliance_rate: 0 },
+  high_priority_risk: { total_closed: 0, breached: 0, breach_rate: 0, avg_resolution_days: 0 }
+})
 
-  methods: {
-    async downloadCasePriorityExcel() {
-      try {
-        await downloadExcel(
-          `/dashboard/cases-per-priority/excel?range=${this.filterCasesByPriority}`,
-          'Cases-Per-Priority.xlsx'
-        )
+const range = ref('month')
+const chartData = ref([])
 
-        toast.success('Excel file downloaded successfully!', {
-          timeout: 3000
-        })
-      } catch (err) {
-        console.error(err)
-        toast.error('Failed to download the Excel file.', {
-          timeout: 3000
-        })
-      }
-    },
-    async downloadCaseStatusExcel() {
-      try {
-        await downloadExcel(
-          `/dashboard/cases-per-status/excel?range=${this.filterCasesByStatus}`,
-          'Cases-Per-Status.xlsx'
-        )
-
-        toast.success('Excel file downloaded successfully!', {
-          timeout: 3000
-        })
-      } catch (err) {
-        console.error(err)
-        toast.error('Failed to download the Excel file.', {
-          timeout: 3000
-        })
-      }
-    },
-    async downloadCaseTypeExcel() {
-      try {
-        await downloadExcel(
-          `/dashboard/cases-per-type/excel?range=${this.filterCasesByType}`,
-          'Cases-Per-Type.xlsx'
-        )
-
-        toast.success('Excel file downloaded successfully!', {
-          timeout: 3000
-        })
-      } catch (err) {
-        console.error(err)
-        toast.error('Failed to download the Excel file.', {
-          timeout: 3000
-        })
-      }
-    },
-    async downloadTopClientsExcel() {
-      try {
-        await downloadExcel(
-          `/dashboard/top-clients/excel?range=${this.filterTopClients}`,
-          'Top-Clients.xlsx'
-        )
-
-        toast.success('Excel file downloaded successfully!', {
-          timeout: 3000
-        })
-      } catch (err) {
-        console.error(err)
-        toast.error('Failed to download the Excel file.', {
-          timeout: 3000
-        })
-      }
-    },
-    async downloadCaseBerDayExcel() {
-      try {
-        await downloadExcel(
-          `/dashboard/cases-per-day/excel?range=${this.filterCasesPerDay}`,
-          'Cases-Per-Day.xlsx'
-        )
-
-        toast.success('Excel file downloaded successfully!', {
-          timeout: 3000
-        })
-      } catch (err) {
-        console.error(err)
-        toast.error('Failed to download the Excel file.', {
-          timeout: 3000
-        })
-      }
-    },
-    token() {
-      return { headers: { Authorization: `Bearer ${useAuthStore().token}` } }
-    },
-
-    async loadCards() {
-      const casesRes = await dashboardService.getCards(this.filterTotalCases)
-      const clientsRes = await dashboardService.getCards(this.filterTotalClients)
-      const employeesRes = await dashboardService.getCards(this.filterTotalEmployees)
-      const completionRes = await dashboardService.getCompletionRate(this.filterCompletionRate)
-
-      this.cards.total_cases = casesRes.data.total_cases
-      this.cards.total_clients = clientsRes.data.total_clients
-      this.cards.total_employees = employeesRes.data.total_employees
-      this.completionRate = completionRes.data.completion_rate
-    },
-    async loadCasesPerDay() {
-      const res = await dashboardService.getCasesPerDay(this.filterCasesPerDay)
-
-      const { options, series } = useCasesPerDayChart(res.data)
-
-      this.casesPerDayOptions = options
-      this.casesPerDaySeries = series
-    },
-    async loadCasesByStatus() {
-      const res = await dashboardService.getCasesByStatus(this.filterCasesByStatus)
-
-      const { options, series } = useCasesByStatusChart(res.data)
-
-      this.casesByStatusOptions = options
-      this.casesByStatusSeries = series
-    },
-    async loadCasesByPriority() {
-      const res = await dashboardService.getCasesByPriority(this.filterCasesByPriority)
-
-      const { options, series } = useCasesByPriorityChart(res.data)
-
-      this.casesByPriorityOptions = options
-      this.casesByPrioritySeries = series
-    },
-    async loadCasesByType() {
-      const res = await dashboardService.getCasesByType(this.filterCasesByType)
-
-      const { options, series } = useCasesByTypeChart(res.data)
-
-      this.casesByTypeOptions = options
-      this.casesByTypeSeries = series
-    },
-    async loadTopClients() {
-      const res = await dashboardService.getTopClients(this.filterTopClients)
-
-      const { options, series } = useTopClientsChart(res.data)
-
-      this.topClientsOptions = options
-      this.topClientsSeries = series
-    }
+const getColor = (value, inverse = false) => {
+  if (inverse) {
+    if (value <= 20) return '#27ae60'
+    if (value <= 50) return '#f39c12'
+    return '#e74c3c'
+  } else {
+    if (value >= 80) return '#27ae60'
+    if (value >= 50) return '#f39c12'
+    return '#e74c3c'
   }
 }
+import { useRouter } from 'vue-router'
+const router = useRouter()
+
+
+
+const loadStatistics = async () => {
+  loading.value = true
+  try {
+    const res = await axios.get('http://localhost:8000/api/statistics/cards', {
+      headers: { Authorization: `Bearer ${auth.token}` },
+      params: { range: range.value }
+    })
+    if (res.data && res.data.cards) {
+      cards.value = res.data.cards
+
+      // تحضير بيانات المخطط
+      chartData.value = [
+        { name: 'Closed', value: cards.value.closed_cases.total },
+        { name: 'Open', value: cards.value.open_backlog.total },
+        { name: 'High Priority Breach', value: cards.value.high_priority_risk.total_closed }
+      ]
+    }
+  } catch (err) {
+    console.error('Failed to load case statistics', err)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(loadStatistics)
+
 </script>
 
-<style>
-.card {
-  background: white;
-  padding: 18px;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.card-value {
-  font-size: 28px;
-  font-weight: 700;
-  color: #374151;
-}
-
-.dashboard {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-}
-
-.chart-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.chart-box {
-  background: white;
-  padding: 20px;
-  border-radius: 14px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-}
-
-.filter-select {
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  margin-bottom: 20px;
-  font-size: 14px;
-}
-
-.dashboard {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-}
-.charts-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-}
-
-.charts-grid:first-of-type {
-  grid-template-columns: 2fr 1fr;
-}
-
-.charts-grid:last-of-type {
-  grid-template-columns: 1fr 1fr;
-}
-.chart-box {
-  background: white;
-  padding: 20px;
-  border-radius: 14px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-}
-
-.chart-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 10px;
-  color: #333;
-}
-
-/* Responsive */
-@media (max-width: 900px) {
-  .charts-row {
-    grid-template-columns: 1fr;
-  }
-}
-
-.dashboard {
-  padding: 20px;
-}
-.cards {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
-}
-.card {
-  background: #f8f8f8;
-  padding: 20px;
-  border-radius: 10px;
-  font-size: 20px;
-}
-.completion-box {
-  background: #e3ffe3;
-  padding: 20px;
-  margin-top: 20px;
-  border-radius: 10px;
-}
-
-select {
-  padding: 4px 6px;
-  border-radius: 6px;
-  border: none;
-  background-color: #f1f2f6;
-  font-size: 13px;
-}
-
-.charts-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-}
-.charts-grid:first-of-type {
-  grid-template-columns: 2fr 1fr;
-}
-.charts-grid:last-of-type {
-  grid-template-columns: 1fr 1fr;
-}
-
-.apexcharts-menu-item.exportCSV {
-  display: none !important;
-}
-
-.page-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: #222;
-}
-
-.case-report-page {
-  background: #fff;
-  padding: 24px 28px;
+<style scoped>
+.page-container {
+  background-color: white;
+  padding: 24px;
   border-radius: 16px;
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
 }
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.range-select {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.range-select select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-weight: 600;
+}
+
+.loading-text {
+  font-size: 14px;
+  color: #999;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.charts-grid {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.chart-wrapper {
+  flex: 1 1 45%;
+  min-width: 300px;
+}
+
 </style>

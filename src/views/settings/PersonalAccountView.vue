@@ -60,13 +60,11 @@ const form = reactive({
 
 async function loadAccount() {
   try {
-    const res = await axios.get('http://localhost:8000/api/users', {
+    const res = await axios.get('http://localhost:8000/api/myaccount', {
       headers: { Authorization: `Bearer ${auth.token}` }
     })
 
-    const user = res.data.data[0]
-
-    if (!user) return
+    const user = res.data.user
 
     form.username = user.username || ''
     form.email = user.employee?.email || ''
@@ -74,6 +72,7 @@ async function loadAccount() {
     console.error(e)
   }
 }
+
 
 async function submit() {
   Object.keys(errors).forEach((k) => (errors[k] = null))

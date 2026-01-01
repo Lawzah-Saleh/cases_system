@@ -73,18 +73,52 @@
               </option>
             </select>
           </div>
+<div class="form-group input-full">
+  <h3 class="modal-section-title">Assigned Employees</h3>
 
-          <!-- Status (REMOVED) -->
+  <!-- Selected Chips -->
+  <div class="selected-chips" v-if="form.employee_ids.length">
+    <span
+      class="chip"
+      v-for="id in form.employee_ids"
+      :key="id"
+      @click="removeEmployee(id)"
+    >
+      {{ employees.find(e => e.id === id)?.first_name }} {{ employees.find(e => e.id === id)?.last_name }}
+      <span class="chip-remove">×</span>
+    </span>
+  </div>
 
-          <!-- Employees -->
-          <div class="form-group input-full">
-            <h3 class="modal-section-title">Assigned Employees</h3>
-            <select v-model="form.employee_ids" class="modal-input" multiple>
-              <option v-for="e in employees" :key="e.id" :value="e.id">
-                {{ e.first_name }} {{ e.last_name }}
-              </option>
-            </select>
-          </div>
+  <!-- Scrollable Checkbox + Primary -->
+  <div class="checkbox-group">
+    <label
+      v-for="e in employees"
+      :key="e.id"
+      class="checkbox-item"
+    >
+      <input
+        type="checkbox"
+        :value="e.id"
+        v-model="form.employee_ids"
+      />
+      <span>{{ e.first_name }} {{ e.last_name }}</span>
+
+      <!-- Primary radio -->
+      <input
+        type="radio"
+        name="primary_employee"
+        :value="e.id"
+        v-model="form.primary_employee_id"
+        :disabled="!form.employee_ids.includes(e.id)"
+        class="primary-radio"
+      />
+
+      <span class="primary-label">Primary</span>
+    </label>
+  </div>
+</div>
+
+
 
           <!-- Attachment -->
           <div class="form-group input-full">
@@ -152,6 +186,7 @@ const form = ref({
   type: '',
   priority_id: '',
   employee_ids: [],
+  primary_employee_id: null, // <--- new field
   attachment: null,
   way_entry: 'manual'
 })
@@ -171,7 +206,9 @@ async function createCase() {
     for (const key in form.value) {
       if (key === 'employee_ids') {
         form.value[key].forEach((id) => fd.append('employee_ids[]', id))
-      } else if (key === 'attachment' && form.value.attachment === null) {
+          }else if (key === 'primary_employee_id') {
+        fd.append('primary_employee_id', form.value[key])
+      }  else if (key === 'attachment' && form.value.attachment === null) {
         continue
       } else if (key === 'note' && !form.value.note) {
         continue
@@ -205,3 +242,68 @@ async function createCase() {
   }
 }
 </script>
+<style scoped>
+/* Selected Employee Chips */
+.selected-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background-color: #e0f2fe; /* light-blue */
+  border-radius: 12px;
+  font-size: 13px;
+  color: #0369a1; /* blue-700 */
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.chip:hover {
+  background-color: #bae6fd; /* hover blue */
+}
+
+.chip-remove {
+  font-weight: bold;
+}
+
+/* Checkbox Group */
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 8px;
+  border: 1px solid #d1d5db; /* gray-300 */
+  border-radius: 8px;
+  background-color: #ffffff;
+}
+
+/* Individual Checkbox Items */
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.checkbox-item:hover {
+  background-color: #f3f4f6; /* gray-100 */
+}
+
+/* Checkbox Input */
+.checkbox-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #3b82f6; /* blue-500 */
+}
+</style>

@@ -12,12 +12,12 @@
         class="search-input"
         v-model="search"
         @input="onSearch"
-        placeholder="Search employee..."
+        placeholder="Search client..."
       />
     </div>
     <!-- FILTER BAR -->
     <div class="report-header-row">
-      <button class="show-hide-btn" @click="showFilter = true">
+      <button class="filter-button" @click="showFilter = true">
         Show/Hide Columns ({{ visibleCount }}/{{ columns.length }})
       </button>
 
@@ -28,6 +28,7 @@
       <div class="filter-modal">
         <div class="filter-header">
           <h2>Show/Hide Columns</h2>
+
           <button class="select-all-btn" @click="selectAllColumns">All</button>
         </div>
 
@@ -78,8 +79,9 @@
 
     <!-- PAGINATION -->
     <div class="pagination-container">
-      <p class="results-count">Page {{ currentPage }} of {{ lastPage }}</p>
-
+    <p class="results-count">
+      Showing {{ rows.length }} clients
+    </p>
       <div>
         <button
           class="page-btn"
@@ -219,16 +221,6 @@ onMounted(() => {
   width: 200px;
 }
 
-
-.report-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #f3f3f7;
-  padding: 14px 18px;
-  border-radius: 10px;
-  margin-bottom: 12px;
-}
 
 .search-input {
   padding: 9px 14px;

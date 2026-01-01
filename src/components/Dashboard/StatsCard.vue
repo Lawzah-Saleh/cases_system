@@ -14,7 +14,9 @@
         <h4 class="title">{{ title }}</h4>
         <span class="total">{{ total }}</span>
       </div>
-      <i v-if="icon" :class="['icon', icon]"></i>
+      <div v-if="icon" class="icon-wrapper">
+        <i :class="['icon', icon]"></i>
+      </div>
     </div>
   </div>
 </template>
@@ -30,60 +32,63 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue'])
-
-// LOCAL COPY (this fixes your error)
 const localValue = ref(props.modelValue)
 
-// keep local updated when parent changes
-watch(
-  () => props.modelValue,
-  (val) => (localValue.value = val)
-)
+watch(() => props.modelValue, (val) => (localValue.value = val))
 
-// emit change to parent
 function emitChange() {
   emit('update:modelValue', localValue.value)
 }
 </script>
 
 <style scoped>
+:root {
+  --primary-color: #190f4a;
+  --brand-accent: #F5B51D;
+}
+
 .stats-card {
   position: relative;
-  background: #ffffff;
+  background: linear-gradient(145deg, #ffffff, #fbfbfd);
   border-radius: 18px;
   padding: 22px;
-  box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.06);
   width: 100%;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .stats-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0px 10px 28px rgba(0, 0, 0, 0.1);
+  transform: translateY(-6px);
+  box-shadow: 0px 14px 28px rgba(0, 0, 0, 0.12);
 }
 
-/* TOP RIGHT AREA (select + icon) */
+/* Top-right select */
 .top-right {
   position: absolute;
   top: 14px;
   right: 14px;
-
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
 .top-right select {
-  padding: 4px 6px;
-  border-radius: 6px;
-  border: none;
-  background-color: #f1f2f6;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  background-color: #f9f9f9;
   font-size: 13px;
+  color: var(--primary-color);
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
 }
 
-/* CONTENT LEFT SIDE */
+.top-right select:hover {
+  border-color: var(--primary-color);
+}
+
+/* Content */
 .content {
   display: flex;
   align-items: center;
@@ -100,18 +105,33 @@ function emitChange() {
 .title {
   font-size: 15px;
   font-weight: 600;
-  color: #333;
+  color: var(--primary-color);
 }
 
 .total {
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 700;
-  color: #222;
+  color: var(--primary-color);
+}
+
+.icon-wrapper {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  background: rgba(245, 181, 29, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+}
+
+.icon-wrapper:hover {
+  transform: scale(1.1);
 }
 
 .icon {
-  padding-right: 20px;
-  font-size: 40px;
-  color: #555;
+  font-size: 28px;
+  color: var(--brand-accent);
 }
 </style>

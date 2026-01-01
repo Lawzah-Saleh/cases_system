@@ -50,7 +50,7 @@
         </router-link>
       </li>
 
-      <li>
+      <li v-if="auth.can('view settings')">
         <router-link to="/app/settings">
           <i class="bi bi-gear-fill"></i>
           <span class="menu-text">Setting</span>
@@ -153,8 +153,9 @@ onBeforeUnmount(() => window.removeEventListener('resize', handleResize))
   padding: 14px 20px;
   color: var(--sidebar-text);
   text-decoration: none;
-  font-size: 18px;
-  font-weight: 500;  border-radius: 8px;
+  font-size: 20px;
+  font-weight: 600;
+  border-radius: 8px;
   transition: all 0.2s ease-in-out;
     position: relative;
 

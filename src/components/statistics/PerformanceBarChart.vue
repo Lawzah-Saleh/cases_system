@@ -17,7 +17,7 @@ import { computed } from 'vue'
 const props = defineProps({
   data: {
     type: Array,
-    default: () => []   // ← يمنع أي crash
+    default: () => []
   }
 })
 
@@ -29,42 +29,103 @@ const chartSeries = computed(() => [
 ])
 
 const chartOptions = computed(() => ({
-  chart: {
-    toolbar: { show: false }
+chart: {
+    type: 'bar',
+    toolbar: {
+      show: true,
+      tools: { download: true }
+    },
+    fontFamily: 'Inter, sans-serif'
   },
+
+  plotOptions: {
+    bar: {
+      borderRadius: 8,
+      columnWidth: '45%',
+      distributed: false,
+      colors: {
+        ranges: [
+          {
+            from: 0,
+            to: 55,
+            color: '#ef4444'
+          },
+          {
+            from: 60,
+            to: 84,
+            color: '#6366f1'
+          },
+          {
+            from: 85,
+            to: 100,
+            color: '#22c55e'
+          }
+        ]
+      }
+    }
+  },
+
+  dataLabels: {
+    enabled: true,
+    formatter: (val) => `${val}%`,
+    style: {
+      fontSize: '12px',
+      colors: ['#374151']
+    }
+  },
+
   xaxis: {
     categories: props.data.map(item => item.name),
-    labels: { rotate: -45 }
+    labels: {
+      rotate: -30,
+      style: {
+        fontSize: '12px',
+        colors: '#6b7280'
+      }
+    }
   },
-  plotOptions: {
-    bar: { columnWidth: '60%' }
+
+  yaxis: {
+    max: 100,
+    labels: {
+      style: { colors: '#6b7280' }
+    }
   },
-  colors: props.data.map(item =>
-    item.value >= 85 ? '#2ecc71'
-    : item.value >= 60 ? '#f1c40f'
-    : '#e74c3c'
-  ),
-  dataLabels: { enabled: false }
+
+  grid: {
+    borderColor: '#e5e7eb',
+    strokeDashArray: 4
+  },
+
+  tooltip: {
+    y: {
+      formatter: (val) => `${val}%`
+    }
+  },
+
+  legend: { show: false }
 }))
 </script>
-
-
 <style scoped>
 .chart-box {
-  padding: 20px;
-  background: white;
-  border-radius: 14px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+  padding: 22px;
+  background: linear-gradient(180deg, #ffffff, #fafafa);
+  border-radius: 18px;
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.06),
+    inset 0 1px 0 rgba(255,255,255,0.6);
 }
 
 .chart-title {
   font-size: 18px;
-  margin-bottom: 12px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 14px;
 }
 
 @media (max-width: 768px) {
   .chart-box {
-    padding: 15px;
+    padding: 16px;
   }
 
   .chart-title {

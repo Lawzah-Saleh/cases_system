@@ -45,6 +45,17 @@
           Insights into client activity, engagement, and historical data.
         </template>
       </GlobalCard>
+      <GlobalCard
+          title="Reassigned Cases"
+          @click="goTo('/app/reports/reassigned-cases')"
+        >
+          <template #icon>
+            <i class="bi bi-arrow-left-right"></i>
+          </template>
+          <template #description>
+            Detailed report of all reassigned cases, including old and new employees, assigned, accepted, and closed dates.
+          </template>
+        </GlobalCard>
     </div>
   </div>
 </template>

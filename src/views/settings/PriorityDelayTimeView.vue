@@ -31,7 +31,7 @@
             <div class="menu-trigger" @click="toggleMenu(priority.id)">⋮</div>
             <div v-if="openMenu === priority.id" class="menu-dropdown">
               <div class="menu-item" @click="startEdit(priority)">Edit</div>
-              <div class="menu-item delete" @click="deletepriority(priority)">Delete</div>
+              <div class="menu-item delete" @click="openDeleteModal(priority)">Delete</div>
             </div>
           </td>
         </tr>
@@ -56,6 +56,14 @@
     @close="openEdit = false"
     @updated="handleRefresh"
   />
+
+   <ConfirmDeleteModal
+    v-if="showDeleteModal && deleteTarget"
+    title="Delete Priority"
+    :message="`Are you sure you want to delete ${deleteTarget.priority_name}?`"
+    @close="showDeleteModal = false"
+    @confirm="confirmDelete"
+  />
 </template>
 
 <script>
@@ -63,8 +71,10 @@ import axios from 'axios'
 import { useAuthStore } from '../../stores/auth'
 import { toast } from 'vue3-toastify'
 import PriorityEditModal from '@/components/priorities/PriorityEditModal.vue'
+import ConfirmDeleteModal from '@/components/ConfirmDeleteModal.vue'
+
 export default {
-  components: { PriorityEditModal },
+  components: { PriorityEditModal,ConfirmDeleteModal },
   watch: {
     search() {
       this.debounceSearch()
@@ -79,10 +89,16 @@ export default {
       openEdit: false,
       selectedPriority: null,
       openPriorityDetailsModal: false,
-      isLoading: false
+      isLoading: false,
+      showDeleteModal: false,
+      deleteTarget: null,
     }
   },
   methods: {
+     openDeleteModal(priority) {
+      this.deleteTarget = priority
+      this.showDeleteModal = true
+    },
     openDetails(priority) {
       this.selectedPriority = priority
       this.openPriorityDetailsModal = true
@@ -106,13 +122,12 @@ export default {
       this.openMenu = this.openMenu === id ? null : id
     },
 
-    async deletepriority(priority) {
-      if (!confirm('Delete this priority?')) return
-
+    async confirmDelete(finish) {
+    
       try {
         const token = useAuthStore().token
 
-        await axios.delete(`http://localhost:8000/api/priorities/${priority.id}`, {
+        await axios.delete(`http://localhost:8000/api/priorities/${this.deleteTarget.id}`, {
           headers: { Authorization: `Bearer ${token}` }
         })
 
@@ -120,11 +135,13 @@ export default {
           autoClose: 1500
         })
 
-        await new Promise((resolve) => setTimeout(resolve, 500))
+        finish()
+        this.showDeleteModal = false
 
         this.handleRefresh()
       } catch (e) {
         console.error(e)
+        finish()
         toast.error('Failed to delete priority.', { autoClose: 2000 })
       }
     },

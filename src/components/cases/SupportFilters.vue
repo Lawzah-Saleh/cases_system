@@ -71,7 +71,6 @@
       </div>
     </div>
 
-    <!-- ROW 3 (No empty spaces) -->
     <div class="filter-row row-3">
       <div class="field">
         <label>Employees</label>
@@ -144,7 +143,6 @@ const tags = computed(() => {
         })
       }
     }
-    // If it's a single value
     else if (value) {
       arr.push({
         key,
@@ -194,7 +192,6 @@ const typeOptions = [
   margin-bottom: 25px;
 }
 
-/* GRID ROWS */
 .filter-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -202,12 +199,10 @@ const typeOptions = [
   margin-bottom: 10px;
 }
 
-/* Row 3 should visually fill the entire row */
 .row-3 {
   grid-template-columns: 1fr 1fr 1fr;
 }
 
-/*** FIELDS ***/
 .field {
   display: flex;
   flex-direction: column;
@@ -220,7 +215,6 @@ const typeOptions = [
   color: #444;
 }
 
-/*** INPUTS ***/
 .input {
   width: 100%;
   padding: 12px 14px;
@@ -238,7 +232,6 @@ const typeOptions = [
   outline: none;
 }
 
-/*** BUTTONS ***/
 .action-field {
   display: flex;
   align-items: end;

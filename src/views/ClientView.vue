@@ -6,7 +6,7 @@
         <p class="sub-header">Detailed overview and management of all the clients.</p>
       </div>
 
-      <button class="add-button" @click="openCreate = true" :disabled="!auth.can('add client')">
+      <button class="download-btn" @click="openCreate = true" :disabled="!auth.can('add client')">
         + Add Client
       </button>
     </div>
@@ -102,8 +102,9 @@
     </table>
 
     <div class="pagination-container mt-4 flex items-center justify-between">
-      <p class="text-result">{{ clients.length }} results</p>
-
+    <p class="results-count">
+      Showing {{ clients.length }} users
+    </p>
       <div>
         <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1" class="page-btn">
           &lt; Prev

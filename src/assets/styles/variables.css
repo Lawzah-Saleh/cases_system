@@ -11,7 +11,6 @@
   --primary-color: #190f4a;
   --primary-hover: #2e2677;
 
-  --brand-primary: #14164D;
   --brand-accent: #F5B51D;
 
   --table-header-bg: #f5f4fa;
@@ -24,6 +23,11 @@
   --sidebar-text: #fff;
   --sidebar-hover: #3a3a5a;
   --appbar-height: 60px;
+  --card-bg: #ffffff;
+  --card-shadow: rgba(0, 0, 0, 0.08);
+  --chart-bg: #ffffff;
+  --select-bg: #f5f5f5;
+
 }
 
 .main-layout {

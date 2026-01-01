@@ -6,7 +6,7 @@
         <p class="sub-header">Overview and management of all system user accounts.</p>
       </div>
 
-      <button class="add-button" @click="openCreate = true" :disabled="!auth.can('add user')">
+      <button class="download-btn" @click="openCreate = true" :disabled="!auth.can('add user')">
         + Create User
       </button>
     </div>
@@ -99,10 +99,9 @@
 
     <!-- ===== PAGINATION ===== -->
     <div class="pagination-container mt-4 flex items-center justify-between">
-      <p class="results-count">
-        {{ total }} results
-        <span v-if="lastPage > 1"> — Page {{ currentPage }} of {{ lastPage }} </span>
-      </p>
+    <p class="results-count">
+      Showing {{ users.length }} of {{ total }} users
+    </p>
 
       <div>
         <button
