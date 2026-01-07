@@ -1,16 +1,13 @@
 <template>
   <div class="modal-overlay" @click.self="close">
     <div class="modal-content">
-      <!-- Header -->
       <h2 class="modal-title">Assign Employees</h2>
       <p class="modal-subtitle">
         Choose one or more employees to handle this support case.
       </p>
 
-      <!-- Label -->
       <label class="field-label">Select Employees</label>
 
-      <!-- Selected Box -->
       <div class="selected-box" @click="toggleDropdown">
         <template v-if="selectedEmployees.length">
           <div
@@ -27,8 +24,6 @@
 
         <span class="arrow">{{ dropdownOpen ? '▲' : '▼' }}</span>
       </div>
-
-      <!-- Dropdown -->
       <div v-if="dropdownOpen" class="dropdown-box animate">
         <input
           v-model="search"
@@ -65,7 +60,7 @@
         </p>
       </div>
 
-      <!-- Buttons -->
+    
       <div class="actions">
         <button class="btn cancel-btn" @click="close">Cancel</button>
           <button v-if="props.mode === 'assign'" class="btn assign-btn" @click="assignToMe">
@@ -83,7 +78,7 @@ import { useAuthStore } from "@/stores/auth";
 import axios from "axios";
 import { toast } from "vue3-toastify";
 
-const API_URL = "http://localhost:8000/api";   // <-- ADD THIS HERE
+const API_URL = "http://localhost:8000/api"; 
 
 const props = defineProps({
   caseData: Object,
@@ -99,7 +94,6 @@ const search = ref("");
 
 const auth = useAuthStore();
 
-// Load employees from API
 async function fetchEmployees() {
   const res = await axios.get("http://localhost:8000/api/employees", {
     headers: { Authorization: `Bearer ${auth.token}` },
@@ -109,8 +103,6 @@ async function fetchEmployees() {
 }
 
 fetchEmployees();
-
-// computed: selected employee objects
 const selectedEmployeesData = computed(() =>
   employees.value.filter((e) => selectedEmployees.value.includes(e.id))
 );
@@ -131,7 +123,6 @@ const filteredEmployees = computed(() => {
     list = availableEmployees.value;
   }
 
-  // Apply search
   if (!search.value) return list;
 
   return list.filter(emp =>
@@ -152,11 +143,9 @@ function removeTag(id) {
 }
 const selectedEmployee = ref(null);
 
-
 async function assign() {
   try {
     const token = useAuthStore().token;
-    
     let res;
 
     if (props.mode === "assign") {
@@ -169,7 +158,6 @@ async function assign() {
     emit("close");
     toast.success("Employees assigned successfully!");
     }
-
 
  if (props.mode === "reassign") {
 
@@ -192,8 +180,6 @@ toast.success("Case reassigned successfully!");
 
   return;
 }
-
-
   } catch (err) {
 
     console.error(err);
@@ -221,9 +207,6 @@ async function assignToMe() {
     toast.error("Failed to assign the case to you.");
   }
 }
-
-
-
 function close() {
   emit("close");
 }
@@ -238,7 +221,6 @@ function close() {
   display: block;
 }
 
-
 .placeholder {
   color: #aaa;
   font-size: 14px;
@@ -249,8 +231,6 @@ function close() {
   font-size: 14px;
   color: #555;
 }
-
-/* Tag */
 .tag-item {
   background: #f0f0ff;
   color: #4b32c3;
@@ -268,8 +248,6 @@ function close() {
   font-size: 14px;
   color: #777;
 }
-
-/* Dropdown */
 .dropdown-box {
   margin-top: 8px;
   border: 1px solid #dcdcdc;
@@ -326,8 +304,6 @@ function close() {
   padding: 10px;
   color: #777;
 }
-
-/* Buttons */
 .actions {
   display: flex;
   justify-content: flex-end;
