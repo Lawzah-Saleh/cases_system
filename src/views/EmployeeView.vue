@@ -79,7 +79,6 @@
             {{ emp.user?.role?.role_name ?? '—' }}
           </td>
 
-          <!-- ACTION MENU -->
           <td class="action-cell">
             <div
               v-if="auth.can('edit employee') || auth.can('delete employee')"
@@ -111,8 +110,6 @@
         </tr>
       </tbody>
     </table>
-
-    <!-- ===== PAGINATION ===== -->
     <div class="pagination-container mt-4 flex items-center justify-between">
       <p class="results-count">
   Showing {{ employees.length }} of {{ total }} employees
@@ -145,8 +142,6 @@
     @close="openDetailsModal = false"
     @edit="startEdit"
   />
-
-  <!-- ===== CREATE MODAL ===== -->
   <EmployeeCreateModal v-if="openCreate" @close="openCreate = false" @created="handleRefresh" />
 
   <EmployeeEditModal
