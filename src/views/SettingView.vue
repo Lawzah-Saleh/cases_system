@@ -7,7 +7,6 @@
     </p>
 
     <div class="cards-grid">
-      <!-- PERMISSIONS -->
       <GlobalCard
         title="Permission"
         @click="goTo('/app/settings/permission')"
@@ -19,8 +18,6 @@
           Control access rights and permissions across the system.
         </template>
       </GlobalCard>
-
-      <!-- ROLES -->
       <GlobalCard
         title="Role"
         @click="goTo('/app/settings/role')"
@@ -32,8 +29,6 @@
           Define user roles and assign permissions to each role.
         </template>
       </GlobalCard>
-
-      <!-- PERSONAL ACCOUNT -->
       <GlobalCard
         title="Personal Account"
         @click="goTo('/app/settings/personalAccount')"
@@ -45,8 +40,6 @@
           Manage your profile details, password, and preferences.
         </template>
       </GlobalCard>
-
-      <!-- CASES DELAY -->
       <GlobalCard
         title="Cases Delay Time"
         @click="goTo('/app/settings/cases_delay_time')"
