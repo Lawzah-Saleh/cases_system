@@ -1,9 +1,6 @@
 <template>
   <div class="main-layout">
-    <!-- Sidebar ثابت -->
     <Sidebar :isOpen="isOpen" @close="isOpen = false" />
-
-    <!-- Main content -->
     
       <AppBar @toggle="toggleSidebar" />
       <main class="content">
