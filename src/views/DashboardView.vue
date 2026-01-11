@@ -31,7 +31,7 @@
       />
     </div>
 
-    <!-- DAILY CASES CHART -->
+    
     <div class="charts-grid">
       <div class="chart-box">
         <div class="chart-header">
@@ -57,7 +57,7 @@
         </div>
       </div>
 
-      <!-- STATUS CHART -->
+    
       <div class="chart-box">
         <div class="chart-header">
           <h5>Cases by Status</h5>
@@ -84,7 +84,7 @@
     </div>
 
     <div class="charts-grid charts-grid-wide">
-      <!-- TYPE CHART -->
+      
       <div class="chart-box">
         <div class="chart-header">
           <h5>Case Type</h5>
@@ -131,8 +131,6 @@
         </div>
       </div>
     </div>
-    <!-- TOP CLIENTS -->
-    <!-- PRIORITY CHART -->
      <div class="charts-grid charts-grid-normal">
     <div class="chart-box">
       <div class="chart-header">
