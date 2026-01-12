@@ -45,8 +45,6 @@
         </div>
       </div>
     </div>
-
-    <!-- TABLE -->
     <table class="custom-table">
       <thead>
         <tr class="table-header-row">
@@ -77,7 +75,6 @@
       </tbody>
     </table>
 
-    <!-- PAGINATION -->
     <div class="pagination-container">
     <p class="results-count">
       Showing {{ rows.length }} clients
@@ -175,7 +172,7 @@ function changePage(page) {
   loadReport(page)
 }
 
-/* ================= EXPORT ================= */
+
 async function exportExcel() {
   const visibleColumns = columns.value.filter((c) => c.visible).map((c) => c.key)
 
@@ -212,7 +209,6 @@ onMounted(() => {
   border-radius: 12px;
   margin-bottom: 18px;
 }
-/* reuse SAME style language as cases report */
 .search-input {
   padding: 10px;
   border: 1px solid var(--table-border);
@@ -220,7 +216,6 @@ onMounted(() => {
   background: #fff;
   width: 200px;
 }
-
 
 .search-input {
   padding: 9px 14px;
