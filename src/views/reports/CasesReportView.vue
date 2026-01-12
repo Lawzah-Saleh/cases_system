@@ -350,14 +350,11 @@ function priorityBadgeClass(priority) {
 </script>
 
 <style scoped>
-/* ACTION ROW (Export / Filters Button) */
 .export-row {
   display: flex;
   justify-content: flex-end;
   margin-bottom: 10px;
 }
-
-/* SORT ARROWS */
 .sortable {
   cursor: pointer;
   user-select: none;
@@ -365,8 +362,6 @@ function priorityBadgeClass(priority) {
 .sortable:hover {
   color: var(--primary-color);
 }
-
-/* EMPTY STATE */
 .empty-msg {
   text-align: center;
   padding: 25px;
